@@ -17,7 +17,7 @@ export function ProjectsSection() {
               href={`/projects/${project.slug}`}
               className="group flex h-full flex-col transition-colors hover:bg-surface"
             >
-              <div className="relative aspect-[5/2] overflow-hidden border-b border-edge">
+              <div className="relative aspect-[5/2.2] overflow-hidden border-b border-edge">
                 {project.cover ? (
                   <Image
                     src={project.cover}

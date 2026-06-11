@@ -33,7 +33,7 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <main>
       {/* Cover */}
-      <div className="relative h-28 overflow-hidden sm:h-48">
+      <div className="relative h-32 overflow-hidden sm:h-56">
         {project.cover ? (
           <Image
             src={project.cover}

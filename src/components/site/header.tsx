@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { File, FileText, FileUser } from "lucide-react";
-import { profile } from "@/data/profile";
 import { ThemeToggle } from "./theme-toggle";
 
 const nav = [
@@ -33,14 +31,6 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <a
-            href={profile.resume}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="tactile inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[11px] text-muted"
-          >
-            <FileUser className="size-3.5" /> Resume
-          </a>
           <ThemeToggle />
         </div>
       </div>
