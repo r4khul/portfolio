@@ -24,9 +24,7 @@ export function ThemeToggle() {
   );
 
   const toggleTheme = (event: React.MouseEvent) => {
-    const isDark = resolvedTheme === "dark";
-
-    // Audio feedback
+    // Audio feedback - optimized for immediate play
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {});
@@ -34,7 +32,7 @@ export function ThemeToggle() {
 
     // Peak Transition: View Transition API with circular clip-path
     if (!(document as any).startViewTransition) {
-      setTheme(isDark ? "light" : "dark");
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
       return;
     }
 
@@ -46,24 +44,21 @@ export function ThemeToggle() {
     );
 
     const transition = (document as any).startViewTransition(async () => {
-      setTheme(isDark ? "light" : "dark");
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
     });
 
     transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
       document.documentElement.animate(
         {
-          clipPath: isDark ? [...clipPath].reverse() : clipPath,
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
         },
         {
-          duration: 500,
-          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
-          pseudoElement: isDark
-            ? "::view-transition-old(root)"
-            : "::view-transition-new(root)",
+          duration: 700,
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+          pseudoElement: "::view-transition-new(root)",
         }
       );
     });
