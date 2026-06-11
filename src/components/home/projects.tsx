@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { getProjects } from "@/lib/projects";
@@ -14,10 +15,26 @@ export function ProjectsSection() {
           <Reveal key={project.slug} delay={i * 0.06} className="bg-background">
             <Link
               href={`/projects/${project.slug}`}
-              className="group flex h-full flex-col p-5 transition-colors hover:bg-surface sm:p-6"
+              className="group flex h-full flex-col transition-colors hover:bg-surface"
             >
+              <div className="relative aspect-[5/2] overflow-hidden border-b border-edge">
+                {project.cover ? (
+                  <Image
+                    src={project.cover}
+                    alt={`${project.title} cover`}
+                    fill
+                    sizes="(min-width: 640px) 360px, 100vw"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                  />
+                ) : (
+                  <div className="dotgrid size-full" aria-hidden />
+                )}
+              </div>
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold tracking-tight">{project.title}</h3>
+                <h3 className="text-[15px] font-semibold tracking-tight">
+                  {project.title}
+                </h3>
                 <ArrowUpRight className="size-4 shrink-0 text-faint transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
               </div>
               <p className="mt-1 font-mono text-[10.5px] tracking-wide text-faint uppercase">
@@ -41,6 +58,7 @@ export function ProjectsSection() {
                   </li>
                 )}
               </ul>
+              </div>
             </Link>
           </Reveal>
         ))}

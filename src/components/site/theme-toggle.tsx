@@ -18,7 +18,7 @@ export function ThemeToggle() {
     <button
       type="button"
       aria-label="Toggle theme"
-      className="flex size-8 items-center justify-center rounded-md border border-edge text-muted transition-colors hover:bg-surface hover:text-foreground"
+      className="tactile flex size-8 items-center justify-center rounded-full text-muted"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
       {mounted && resolvedTheme === "light" ? (

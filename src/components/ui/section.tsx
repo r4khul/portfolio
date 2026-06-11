@@ -16,21 +16,35 @@ export function Section({ id, index, title, children }: SectionProps) {
     <section id={id} className="bleed-line relative scroll-mt-20">
       <span
         aria-hidden
-        className="absolute -top-px -left-[4.5px] select-none text-[9px] leading-[1px] text-faint"
+        className="absolute -top-[4px] -left-[5px] flex size-[9px] items-center justify-center select-none"
       >
-        +
+        <span className="absolute h-full w-px bg-faint" />
+        <span className="absolute h-px w-full bg-faint" />
       </span>
       <span
         aria-hidden
-        className="absolute -top-px -right-[4.5px] select-none text-[9px] leading-[1px] text-faint"
+        className="absolute -top-[4px] -right-[5px] flex size-[9px] items-center justify-center select-none"
       >
-        +
+        <span className="absolute h-full w-px bg-faint" />
+        <span className="absolute h-px w-full bg-faint" />
       </span>
-      <div className="flex items-baseline justify-between px-4 pt-10 pb-6 sm:px-8">
-        <h2 className="text-sm font-semibold tracking-widest uppercase">{title}</h2>
-        <span className="font-mono text-[11px] text-faint select-none">{index}</span>
+      <div className="flex items-baseline justify-between px-4 pt-12 pb-7 sm:px-8">
+        <h2 className="flex items-baseline gap-3">
+          <span className="font-mono text-[11px] tracking-widest text-faint select-none">
+            {index}
+          </span>
+          <span className="font-serif text-[26px] leading-none tracking-tight sm:text-[28px]">
+            {title}
+          </span>
+        </h2>
+        <span
+          aria-hidden
+          className="hidden font-mono text-[10px] tracking-[0.2em] text-faint uppercase select-none sm:inline"
+        >
+          § {title}
+        </span>
       </div>
-      <div className="px-4 pb-12 sm:px-8">{children}</div>
+      <div className="px-4 pb-14 sm:px-8">{children}</div>
     </section>
   );
 }

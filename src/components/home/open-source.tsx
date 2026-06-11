@@ -34,7 +34,7 @@ export function OpenSourceSection() {
                       href={pr.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-md border border-edge px-2 py-1 font-mono text-[11px] text-muted transition-colors hover:bg-surface hover:text-foreground"
+                      className="tactile inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted"
                     >
                       <GitMerge className="size-3 text-purple-400" />
                       {pr.title} · merged

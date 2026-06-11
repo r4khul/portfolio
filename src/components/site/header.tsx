@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { File, FileText, FileUser } from "lucide-react";
 import { profile } from "@/data/profile";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -36,9 +37,9 @@ export function Header() {
             href={profile.resume}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md border border-edge px-2.5 py-1.5 font-mono text-[11px] text-muted transition-colors hover:bg-surface hover:text-foreground"
+            className="tactile inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[11px] text-muted"
           >
-            cv.pdf
+            <FileUser className="size-3.5" /> Resume
           </a>
           <ThemeToggle />
         </div>

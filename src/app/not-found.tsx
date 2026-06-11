@@ -6,10 +6,10 @@ export default function NotFound() {
       <p className="font-mono text-[11px] tracking-widest text-faint uppercase">
         Error — FIG. 404
       </p>
-      <h1 className="text-3xl font-bold tracking-tight">Page not found</h1>
+      <h1 className="font-serif text-4xl tracking-tight">Page not found</h1>
       <Link
         href="/"
-        className="mt-2 rounded-md border border-edge-strong px-4 py-2 text-[13px] font-medium transition-colors hover:bg-surface"
+        className="tactile mt-2 rounded-md px-4 py-2 text-[13px] font-medium"
       >
         Back home
       </Link>

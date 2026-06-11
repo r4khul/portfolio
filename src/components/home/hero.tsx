@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   CalendarClock,
   Code2,
@@ -17,7 +18,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-center gap-3 font-mono text-[13px] text-muted">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-edge text-faint">
+      <span className="tactile flex size-6 shrink-0 items-center justify-center rounded-full text-faint">
         {icon}
       </span>
       {children}
@@ -28,29 +29,36 @@ function InfoRow({
 export function Hero() {
   return (
     <section aria-label="Intro">
-      {/* Blueprint cover */}
-      <div className="dotgrid relative h-40 sm:h-52">
-        <span
+      {/* Cover banner */}
+      <div className="relative h-40 overflow-hidden sm:h-52">
+        <Image
+          src="/images/site/pfp-banner.png"
+          alt=""
+          fill
+          priority
+          className="object-cover"
           aria-hidden
-          className="absolute right-4 bottom-2 font-mono text-[10px] tracking-widest text-faint select-none sm:right-8"
-        >
-          FIG. 01 — PORTFOLIO
-        </span>
+        />
       </div>
 
       {/* Identity block */}
       <div className="bleed-line relative">
         <div className="flex items-end gap-4 px-4 sm:gap-6 sm:px-8">
-          <div className="hatch -mt-12 flex size-24 shrink-0 items-center justify-center rounded-full border border-edge-strong bg-background sm:-mt-16 sm:size-32">
-            <span className="font-mono text-2xl font-bold tracking-tighter sm:text-3xl">
-              RP
-            </span>
+          <div className="relative z-10 -mt-12 size-24 shrink-0 overflow-hidden rounded-full border-2 border-edge-strong bg-background sm:-mt-16 sm:size-32">
+            <Image
+              src="/images/site/pfp.png"
+              alt="Rakhul Prakash"
+              width={128}
+              height={128}
+              priority
+              className="size-full object-cover"
+            />
           </div>
           <div className="min-w-0 flex-1 pb-1">
-            <h1 className="truncate text-2xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="truncate font-serif text-[34px] leading-none tracking-tight sm:text-5xl">
               Rakhul Prakash
             </h1>
-            <p className="mt-1 border-t border-edge pt-1 font-mono text-[13px] text-muted">
+            <p className="mt-2 border-t border-edge pt-2 font-mono text-[12px] tracking-wide text-muted">
               {profile.role}
             </p>
           </div>

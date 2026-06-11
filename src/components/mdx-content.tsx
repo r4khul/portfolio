@@ -5,12 +5,21 @@ import type { ComponentProps } from "react";
 const components = {
   h2: (props: ComponentProps<"h2">) => (
     <h2
-      className="mt-12 mb-4 border-t border-edge pt-8 text-lg font-semibold tracking-tight first:mt-0 first:border-t-0 first:pt-0"
+      className="mt-12 mb-4 border-t border-edge pt-8 font-serif text-[24px] tracking-tight first:mt-0 first:border-t-0 first:pt-0"
       {...props}
     />
   ),
   h3: (props: ComponentProps<"h3">) => (
-    <h3 className="mt-8 mb-3 text-[15px] font-semibold" {...props} />
+    <h3 className="mt-8 mb-3 text-[15px] font-semibold tracking-tight" {...props} />
+  ),
+  img: (props: ComponentProps<"img">) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className="my-6 w-full rounded-lg border border-edge"
+      loading="lazy"
+      alt={props.alt ?? ""}
+      {...props}
+    />
   ),
   p: (props: ComponentProps<"p">) => (
     <p className="my-4 text-[14.5px] leading-relaxed text-muted" {...props} />

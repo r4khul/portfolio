@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 
-const PROJECTS_DIR = path.join(process.cwd(), "content", "projects");
+const PROJECTS_DIR = path.join(process.cwd(), "src", "content", "projects");
 
 export type ProjectFrontmatter = {
   title: string;
@@ -14,6 +14,7 @@ export type ProjectFrontmatter = {
   stack: string[];
   links: { label: string; url: string }[];
   year: string;
+  cover?: string;
 };
 
 export type Project = ProjectFrontmatter & { content: string };
