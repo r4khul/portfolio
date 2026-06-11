@@ -22,7 +22,7 @@ export function Hero() {
           alt=""
           fill
           priority
-          className="object-cover object-[95%_center] sm:object-center"
+          className="object-cover object-[90%_center] sm:object-center"
           aria-hidden
         />
       </div>
