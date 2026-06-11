@@ -11,7 +11,7 @@
   --edge: rgba(0, 0, 0, 0.09);
   --edge-strong: rgba(0, 0, 0, 0.16);
   --pattern: rgba(0, 0, 0, 0.05);
-  --accent: #059669;
+  --accent: #2563eb;
   --ring: rgba(0, 0, 0, 0.35);
   --tactile-from: #ffffff;
   --tactile-to: #f1f1f2;
@@ -33,7 +33,7 @@
   --edge: rgba(255, 255, 255, 0.09);
   --edge-strong: rgba(255, 255, 255, 0.17);
   --pattern: rgba(255, 255, 255, 0.055);
-  --accent: #34d399;
+  --accent: #60a5fa;
   --ring: rgba(255, 255, 255, 0.45);
   --tactile-from: #202024;
   --tactile-to: #121215;
@@ -58,6 +58,18 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-instrument-serif);
+  --animate-status-breath: status-breath 3s ease-in-out infinite;
+}
+
+@keyframes status-breath {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(2.2);
+    opacity: 0.85;
+  }
 }
 
 html {
@@ -121,6 +133,29 @@ body {
 .tactile-primary:active {
   transform: translateY(0.5px);
   filter: brightness(0.96);
+}
+
+/* Tactile accent button - themed with accent color */
+.tactile-accent {
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 5%, var(--tactile-from)), color-mix(in srgb, var(--accent) 2%, var(--tactile-to)));
+  color: var(--accent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent) 10%, var(--tactile-highlight)),
+    var(--tactile-shadow);
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease;
+}
+.tactile-accent:hover {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 10%, var(--tactile-from)), color-mix(in srgb, var(--accent) 5%, var(--tactile-to)));
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.tactile-accent:active {
+  transform: translateY(0.5px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 /* Diagonal-hatch blueprint pattern */
