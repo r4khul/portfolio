@@ -1,4 +1,4 @@
-import { ArrowUpRight, GitMerge } from "lucide-react";
+import { ArrowUpRight, GitMerge, GitPullRequest } from "lucide-react";
 import { openSource } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -27,20 +27,27 @@ export function OpenSourceSection() {
                 </span>
               </div>
               <p className="mt-1 text-[12.5px] text-faint">{contribution.context}</p>
-              <ul className="mt-3 flex flex-wrap gap-2" aria-label="Merged pull requests">
-                {contribution.prs.map((pr) => (
-                  <li key={pr.url}>
-                    <a
-                      href={pr.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="tactile inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted"
-                    >
-                      <GitMerge className="size-3 text-purple-400" />
-                      {pr.title} · merged
-                    </a>
-                  </li>
-                ))}
+              <ul className="mt-3 flex flex-wrap gap-2" aria-label="Pull requests">
+                {contribution.prs.map((pr) => {
+                  const isReview = pr.status === "review";
+                  return (
+                    <li key={pr.url}>
+                      <a
+                        href={pr.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tactile inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted"
+                      >
+                        {isReview ? (
+                          <GitPullRequest className="size-3 text-blue-500 dark:text-blue-400" />
+                        ) : (
+                          <GitMerge className="size-3 text-purple-400" />
+                        )}
+                        {pr.title} · {isReview ? "under review" : "merged"}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </article>
           </Reveal>

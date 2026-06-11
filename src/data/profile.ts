@@ -84,7 +84,7 @@ export type OssContribution = {
   repoUrl: string;
   users: string;
   context: string;
-  prs: { title: string; url: string }[];
+  prs: { title: string; url: string; status?: "merged" | "review" }[];
 };
 
 export const openSource: OssContribution[] = [
@@ -117,6 +117,19 @@ export const openSource: OssContribution[] = [
     users: "4k+ users",
     context: "Open-source personal finance app",
     prs: [{ title: "PR #672", url: "https://github.com/flow-mn/flow/pull/672" }],
+  },
+  {
+    repo: "ente-io/ente",
+    repoUrl: "https://github.com/ente-io/ente",
+    users: "27k+ stars",
+    context: "Fully open-source, end-to-end encrypted photo backup & locker",
+    prs: [
+      {
+        title: "PR #10807",
+        url: "https://github.com/ente-io/ente/pull/10807",
+        status: "review",
+      },
+    ],
   },
 ];
 
