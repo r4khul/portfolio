@@ -18,6 +18,7 @@ export const profile = {
 export type Experience = {
   company: string;
   companyUrl: string;
+  logo: string;
   title: string;
   period: string;
   location: string;
@@ -30,6 +31,7 @@ export const experience: Experience[] = [
   {
     company: "Finfresh Wealth Creation",
     companyUrl: "https://www.linkedin.com/company/finfreshwealth/",
+    logo: "/images/office/finfresh.png",
     title: "Flutter Developer Intern",
     period: "Feb 2026 — May 2026",
     location: "Chennai, India · IITM Incubated",
