@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fcfcfc;
+  --surface: #f6f6f6;
+  --foreground: #18181b;
+  --muted: #52525b;
+  --faint: #a1a1aa;
+  --edge: rgba(0, 0, 0, 0.09);
+  --edge-strong: rgba(0, 0, 0, 0.16);
+  --pattern: rgba(0, 0, 0, 0.05);
+  --accent: #059669;
+  --ring: rgba(0, 0, 0, 0.35);
+}
+
+.dark {
+  --background: #09090b;
+  --surface: #101013;
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #5d5d66;
+  --edge: rgba(255, 255, 255, 0.09);
+  --edge-strong: rgba(255, 255, 255, 0.17);
+  --pattern: rgba(255, 255, 255, 0.055);
+  --accent: #34d399;
+  --ring: rgba(255, 255, 255, 0.45);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-edge: var(--edge);
+  --color-edge-strong: var(--edge-strong);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  overflow-x: clip;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Diagonal-hatch blueprint pattern */
+.hatch {
+  background-image: repeating-linear-gradient(
+    315deg,
+    var(--pattern) 0,
+    var(--pattern) 1px,
+    transparent 1px,
+    transparent 50%
+  );
+  background-size: 10px 10px;
+}
+
+/* Dotted blueprint grid */
+.dotgrid {
+  background-image: radial-gradient(var(--pattern) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Horizontal rule that bleeds past the content rail */
+.bleed-line {
+  position: relative;
+}
+.bleed-line::before {
+  content: "";
+  position: absolute;
+  inset-inline: calc(-1 * max((100vw - 100%) / 2, 0px));
+  top: 0;
+  height: 1px;
+  background: var(--edge);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
