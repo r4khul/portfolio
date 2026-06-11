@@ -31,8 +31,23 @@ export const metadata: Metadata = {
   },
   description:
     "CS engineer focused on mobile development with Flutter — architecture, performance, and shipping reliable software people actually use.",
-  keywords: ["Flutter", "Mobile Engineer", "Dart", "Rakhul Prakash", "r4khul"],
+  keywords: [
+    "Flutter",
+    "Mobile Engineer",
+    "Dart",
+    "Rakhul Prakash",
+    "r4khul",
+    "Software Engineer",
+    "Chennai",
+    "Android Development",
+    "iOS Development",
+  ],
   authors: [{ name: profile.name, url: profile.url }],
+  icons: {
+    icon: "/images/site/pfp.png",
+    shortcut: "/images/site/pfp.png",
+    apple: "/images/site/pfp.png",
+  },
   openGraph: {
     title: `${profile.name} — Mobile Engineer`,
     description:
@@ -41,13 +56,34 @@ export const metadata: Metadata = {
     siteName: profile.name,
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/images/site/pfp-banner.png",
+        width: 1200,
+        height: 630,
+        alt: `${profile.name} — Mobile Engineer`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${profile.name} — Mobile Engineer`,
+    description:
+      "CS engineer focused on mobile development with Flutter — architecture, performance, and shipping reliable software.",
     creator: "@r4khul",
+    images: ["/images/site/pfp-banner.png"],
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
