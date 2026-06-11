@@ -1,0 +1,71 @@
+---
+title: "Unfilter"
+slug: "unfilter"
+order: 3
+description: "An Android app analyzer that reveals tech stacks and frameworks of installed apps — fully offline, with usage, process, and consumption insights."
+type: "Personal · Open Source"
+status: "Released"
+year: "2025"
+stack: ["Flutter", "Dart", "Riverpod", "Platform Channels", "Fastlane", "GitHub Actions", "Play Store"]
+links:
+  - label: "GitHub"
+    url: "https://github.com/r4khul/unfilter"
+  - label: "Play Store"
+    url: "https://play.google.com/store/apps/details?id=com.escapebranch.unfilter"
+---
+
+## Problem
+
+Modern Android apps are built with diverse frameworks — native, Flutter, React Native, Unity, KMP. But there's no simple, offline-first way to inspect the tech stack behind installed apps along with their runtime behavior and resource usage. Existing tools are developer-only, require root, or depend on online services.
+
+## Constraints
+
+- Fully offline, no root access
+- Low overhead on system performance
+- Compatible with mid-range devices
+- Accurate framework detection despite limited OS-level visibility
+- Clean UI usable by developers and non-developers alike
+- Updates must not depend on Play Store availability
+
+## Approach
+
+Designed Unfilter as an offline analyzer that inspects installed packages, infers tech stacks via signature-based detection, and surfaces system insights — memory, storage, running processes — through a clean UI. Architecture cleanly separates package discovery, stack detection, system stats, and update management.
+
+| Decision | Reason | Trade-off |
+| --- | --- | --- |
+| Offline detection via package inspection | No privacy issues or network dependency | Accuracy bound by known signatures |
+| Launch-time re-sync over persistent listeners | Android restricts background listeners | Explicit revalidation instead of realtime |
+| Gated OTA updates (GitHub-hosted JSON) | Bypass Play Store constraints, controlled rollouts | Manual version management |
+| Flutter + platform channels | Fast UI iteration with deep system access | Complexity at the native boundary |
+
+## Hard problems
+
+### Detecting installs/removals reliably
+
+Android offers no reliable always-on mechanism without background restrictions or elevated permissions. Implemented a sync-on-launch package re-scan plus a manual "Revalidate" fallback — correctness without violating OS constraints or battery budgets.
+
+### OOM crashes on 4GB devices
+
+Intensive scans crashed low-end devices. Fixed with image cache dimension capping via `ResizeImage`, batched processing limited to 2 concurrent tasks matching the native thread pool, and aggressive cache clearing on widget disposal.
+
+### Framework detection accuracy
+
+Obfuscation and diverse build configs break naive detection. Built multi-vector detection combining static, binary, and heuristic analysis over a continuously updated signature database, with confidence scoring and graceful fallback.
+
+## Architecture
+
+- **Frontend** — Flutter 3.10+ · Riverpod · Material 3 with adaptive dark/light theming
+- **Native** — Platform channels · NIO file traversal · PackageManager integration · UsageStats API
+- **Core** — DeviceAppsRepository (TTL caching) · detection engine · performance monitor · OTA update service
+- **Data** — 30+ field `DeviceApp` entity · repository pattern · compute-isolated JSON caching · stream-based progress
+
+## Stats
+
+- ~25,000+ lines across Flutter, Dart, and native Android
+- 95% detection accuracy across 10+ major frameworks
+- &lt;150MB peak memory · 2–3s scan for 100 apps
+- Shipped on Play Store + GitHub releases
+
+## What I learned
+
+Design around Android's constraints, not against them. Offline-first tools demand trust in local heuristics and graceful failure. Update systems are product features, not deployment mechanics. Performance is adoption-critical on mid-range devices.

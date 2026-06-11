@@ -1,0 +1,69 @@
+---
+title: "Thrifty"
+slug: "thrifty"
+order: 4
+description: "An offline-first personal finance app with background sync, bilingual support (English/Tamil), and real-time analytics — built with Flutter."
+type: "Personal · Open Source"
+status: "Released"
+year: "2025"
+stack: ["Flutter", "Dart", "Riverpod", "Drift", "Sqlite3", "GoRouter", "GitHub Actions"]
+links:
+  - label: "GitHub"
+    url: "https://github.com/r4khul/thrifty"
+  - label: "Release v1.0.0"
+    url: "https://github.com/r4khul/thrifty/releases/tag/v1.0.0"
+---
+
+## Problem
+
+Personal finance apps typically require constant connectivity, fragment transaction data, and ignore regional language needs. The goal: a finance manager that works offline-first, supports Tamil alongside English, provides real-time analytics, and syncs seamlessly when connectivity returns.
+
+## Constraints
+
+- Reliable offline operation on local SQLite
+- Secure PIN-based auth with biometric support
+- Real-time financial analytics with visual charts
+- Background sync with configurable remote endpoints
+- Fast transaction logging for daily use
+- File attachments for receipts
+- Android + iOS
+
+## Approach
+
+Built Thrifty with Flutter and clean architecture: Drift ORM for type-safe local persistence, Riverpod for state, and a robust sync mechanism that works with varied backend configurations.
+
+| Decision | Reason | Trade-off |
+| --- | --- | --- |
+| Flutter + Riverpod | Type-safe reactive state, great performance | Riverpod learning curve |
+| Drift ORM + SQLite | Type-safe queries, automatic migrations | Codegen build step |
+| Offline-first with sync | Works regardless of network | Conflict-resolution complexity |
+| Feature-based modules | Maintainability and scalability | Initial setup cost |
+| English/Tamil bilingual | Regional language accessibility | Translation maintenance |
+
+## Hard problems
+
+### Offline-first sync with conflict resolution
+
+Users modify financial data offline; changes must merge cleanly when connectivity returns. Naive timestamp/last-write-wins approaches lost data. Final design: `editedLocally` flags with intelligent conflict resolution in the `TransactionRepository` — sync state management, graceful partial-failure handling, automatic sync triggers, timestamp-based conflict detection, and network-failure fallbacks.
+
+### Real-time analytics over large datasets
+
+Category aggregations and live chart updates strained UI performance. Built an analytics engine on optimized queries and reactive state: structured `FinancialDataModels` feed chart components like `CategoryDonutChart` with smooth animated updates, backed by caching and lazy loading.
+
+## Architecture
+
+- **Frontend** — Flutter 3.10 (FVM) · Riverpod · GoRouter with deep linking · Material 3
+- **Data** — SQLite + Drift (schema v7, auto-migrations) · 5 tables · Flutter Secure Storage for PIN/tokens
+- **Sync** — REST integration with configurable endpoints · Dio with interceptors · mock-server support (Mockoon, JSON Server, ngrok)
+- **Services** — TransactionRepository, CategoryRepository, AuthRepository, NotificationService, SyncService
+
+## Stats
+
+- ~12,000+ lines · 20+ pinned dependencies
+- 69 tests · 80.5% code coverage
+- Full English/Tamil localization, 50+ strings
+- Android (API 21+) and iOS (12+)
+
+## What I learned
+
+Offline-first demands disciplined state and conflict strategy. Financial apps need rigorous validation. i18n goes beyond translation — fonts, formats, culture. Type-safe DB layers eliminate whole classes of runtime errors.

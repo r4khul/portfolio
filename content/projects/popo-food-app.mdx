@@ -1,0 +1,69 @@
+---
+title: "POPO Food App"
+slug: "popo-food-app"
+order: 2
+description: "A corporate-focused food delivery app for a restaurant chain in Pune — browse menus, order, and pay securely through a smooth, reliable interface."
+type: "Client · Freelance"
+status: "Building"
+year: "2025"
+stack: ["Flutter", "Dart", "BLoC", "Supabase", "Firebase", "PayU", "GCP", "GitHub Actions"]
+links:
+  - label: "Demo Video"
+    url: "https://drive.google.com/file/d/1Woa-20xWp1JJr2bPe44avd3_Gr5m-UYH/view"
+---
+
+## Problem
+
+Corporate professionals face unique food-delivery challenges during work hours — limited options near office complexes, peak-hour delays, and no specialized features for workplace ordering. Consumer apps don't address floor/desk delivery, bulk ordering, or office-schedule integration.
+
+The client needed a specialized delivery solution for corporate environments with real-time order tracking, seamless payments, and delivery to specific office locations rather than just addresses.
+
+## Constraints
+
+- Reliable on mid-range Android devices (minSdk 21)
+- Real-time order tracking with offline fallback
+- Secure PayU payment integration
+- Corporate-specific delivery locations (floor/desk)
+- Low data usage for office network environments
+- Fast checkout for busy professionals
+- Scalable architecture for multiple restaurant partners
+
+## Approach
+
+Built POPO with Flutter, Clean Architecture, and BLoC state management for a scalable, maintainable structure. Real-time order tracking runs through Supabase, payments through PayU, and delivery logistics are optimized for workplace environments.
+
+| Decision | Reason | Trade-off |
+| --- | --- | --- |
+| Flutter + BLoC | Predictable state flow for enterprise apps | More boilerplate |
+| Clean Architecture, feature modules | Separation of concerns, testability | Higher initial setup cost |
+| Supabase backend & realtime | Built-in realtime subscriptions and auth | Vendor dependency |
+| PayU integration | Corporate-friendly, Indian-market focused | Complex callback scenarios |
+| Realtime with polling fallback | Reliability in poor networks | Connection-management complexity |
+
+## Hard problems
+
+### Real-time tracking on unreliable office networks
+
+Office WiFi destabilizes during peak hours, breaking real-time order updates. Built a hybrid system: Supabase WebSocket subscriptions with intelligent fallback polling. The `RealtimeOrderService` manages five connection states — disconnected, connecting, connected, reconnecting, pollingFallback — and switches transport automatically based on network conditions, with exponential backoff and local state caching so no data is lost during outages.
+
+### PayU gateway integration
+
+PayU's SDK demands complex hash generation, multiple callback scenarios, and precise merchant configuration. Built a comprehensive `PayUPaymentService` implementing the full protocol: server-side SHA512 hash validation with salt, callback handling for success/failure/pending states, robust error recovery, and clean staging/production environment switching.
+
+## Architecture
+
+- **Frontend** — Flutter 3.38 (FVM) · Clean Architecture · BLoC · service locator DI · flutter_screenutil
+- **Backend** — Supabase PostgreSQL with realtime subscriptions · Supabase Auth with Google Sign-In
+- **Payments** — PayU Checkout Pro with server-side hash validation
+- **Services** — RealtimeOrderService, PayUPaymentService, UserService, RestaurantService, OrderService
+
+## Stats
+
+- ~15,000+ lines across Flutter and native Android
+- 20+ RESTful endpoints with realtime subscriptions
+- 8+ optimized Supabase tables
+- Full PayU production deployment
+
+## What I learned
+
+Real-time systems need robust fallbacks in production; payment gateways demand testing every failure scenario; corporate apps carry unique UX requirements; and network resilience is critical in variable connectivity environments.
