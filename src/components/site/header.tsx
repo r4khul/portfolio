@@ -17,7 +17,7 @@ export function Header() {
           aria-label="Home"
           className="font-mono text-sm font-bold tracking-tighter select-none"
         >
-          {"<r4khul />"}
+          {"r4khul"}
         </Link>
         <div className="flex items-center gap-1 sm:gap-4">
           <nav aria-label="Primary" className="hidden items-center gap-4 sm:flex">

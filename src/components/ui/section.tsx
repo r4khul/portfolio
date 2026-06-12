@@ -37,12 +37,6 @@ export function Section({ id, index, title, children }: SectionProps) {
             {title}
           </span>
         </h2>
-        <span
-          aria-hidden
-          className="hidden font-mono text-[10px] tracking-[0.2em] text-faint uppercase select-none sm:inline"
-        >
-          § {title}
-        </span>
       </div>
       <div className="px-4 pb-14 sm:px-8">{children}</div>
     </section>
