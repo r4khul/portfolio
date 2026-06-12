@@ -10,7 +10,7 @@ export const profile = {
   resume: "/r4khul_resume.pdf",
   about: [
     "I'm Rakhul, a CS engineer who likes building things that people actually use.",
-    "My focus is mobile development with Flutter — from architecture and performance to edge cases and deployment. I've worked on startup products, open-source projects, and real client apps, where reliability matters more than demos.",
+    "My focus is mobile development with Flutter, from architecture and performance to edge cases and deployment. I've worked on startup products, open-source projects, and real client apps, where reliability matters more than demos.",
     "I'm at my best when I can take ownership, learn fast, and turn messy problems into solid, shippable software.",
   ],
 } as const;
@@ -33,11 +33,11 @@ export const experience: Experience[] = [
     companyUrl: "https://www.linkedin.com/company/finfreshwealth/",
     logo: "/images/office/finfresh.png",
     title: "Flutter Developer Intern",
-    period: "Feb 2026 — May 2026",
+    period: "Feb 2026 - May 2026",
     location: "Chennai, India · IITM Incubated",
     status: "active",
     summary:
-      "Owned development of 2 fintech apps — performance, scalable architecture, and measurable impact across payments, onboarding, and release pipelines.",
+      "Owned development of 2 fintech apps, performance, scalable architecture, and measurable impact across payments, onboarding, and release pipelines.",
     highlights: [
       "Integrated 10+ data-intensive API endpoints with caching & virtualization strategies, reducing latency",
       "Built CI/CD pipelines with Fastlane & GitHub Actions, cutting release cycles by 50%+",
@@ -140,7 +140,7 @@ export const education = {
   schoolUrl: "https://www.rajalakshmi.org/",
   degree: "B.E. Computer Science and Engineering",
   university: "Anna University",
-  period: "Nov 2022 — May 2026",
+  period: "Nov 2022 - May 2026",
   cgpa: "8.28",
 } as const;
 

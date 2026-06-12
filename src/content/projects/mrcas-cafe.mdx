@@ -2,7 +2,7 @@
 title: "MRCAS Café"
 slug: "mrcas-cafe"
 order: 1
-description: "MRCAS Café puts the entire college canteen in your pocket — order food in seconds and collect it without waiting in line."
+description: "MRCAS Café puts the entire college canteen in your pocket, order food in seconds and collect it without waiting in line."
 type: "Client · Freelance"
 status: "Deployed"
 year: "2025"
@@ -15,7 +15,7 @@ links:
 
 ## Problem
 
-Traditional campus store systems create friction during peak academic hours — long queues during breaks, manual order handling, inventory mismanagement, and zero real-time visibility into orders and stock. Students and faculty waste valuable time in lines while store staff struggle with demand spikes during lunch breaks and exam periods.
+Traditional campus store systems create friction during peak academic hours: long queues during breaks, manual order handling, inventory mismanagement, and zero real-time visibility into orders and stock. Students and faculty waste valuable time in lines while store staff struggle with demand spikes during lunch breaks and exam periods.
 
 The client needed a modern digital ordering platform built for a campus environment: real-time order management, seamless digital payments, efficient inventory handling, and multi-role access for customers and store administrators.
 
@@ -45,24 +45,24 @@ Built MRCAS Café as a complete digital campus store ecosystem using Flutter wit
 
 ### Real-time order sync during campus rush hours
 
-Lunch breaks caused sudden spikes in concurrent orders — multiple users ordering the same item simultaneously created synchronization issues and inventory inconsistencies.
+Lunch breaks caused sudden spikes in concurrent orders, multiple users ordering the same item simultaneously created synchronization issues and inventory inconsistencies.
 
-Solved with atomic Firestore transactions: every order validates and updates stock inside a transaction block so simultaneous requests can never oversell. Added a business-level stock-buffering strategy — only active sellable inventory is exposed while 10–15 hidden backup units are held internally — preventing sudden stock exhaustion during rush periods. Optimistic UI updates plus Firestore snapshot listeners and local caching keep the experience smooth under heavy load.
+Solved with atomic Firestore transactions: every order validates and updates stock inside a transaction block so simultaneous requests can never oversell. Added a business-level stock-buffering strategy, only active sellable inventory is exposed while 10-15 hidden backup units are held internally, preventing sudden stock exhaustion during rush periods. Optimistic UI updates plus Firestore snapshot listeners and local caching keep the experience smooth under heavy load.
 
 ### Race conditions in concurrent ordering
 
-Two users could grab the last unit of an item at nearly the same time, risking duplicate deductions or negative inventory. Every deduction now runs in a transaction that reads the latest stock, verifies availability at transaction time, deducts only on success, and automatically retries on concurrent modification — strong consistency even at peak concurrency.
+Two users could grab the last unit of an item at nearly the same time, risking duplicate deductions or negative inventory. Every deduction now runs in a transaction that reads the latest stock, verifies availability at transaction time, deducts only on success, and automatically retries on concurrent modification, strong consistency even at peak concurrency.
 
 ### Multi-method payments across platforms
 
-Built a complete Razorpay payment service with secure transaction handling, multi-platform checkout, comprehensive payment state management, retry flows, transaction logging, and fallback handling for interrupted payments — with separate paths for mobile SDK and web checkout behind one consistent UX.
+Built a complete Razorpay payment service with secure transaction handling, multi-platform checkout, comprehensive payment state management, retry flows, transaction logging, and fallback handling for interrupted payments, with separate paths for mobile SDK and web checkout behind one consistent UX.
 
 ## Architecture
 
-- **Frontend** — Flutter 3.8+ · Material 3 · Clean Architecture with modular features · Provider state
-- **Backend** — Firestore real-time DB · Firebase Auth (Google Sign-In) · Firebase Storage · Cloud Functions
-- **Payments** — Razorpay with multi-method support
-- **Services** — OrderService, InventoryService, PaymentService, AuthService, MenuService
+- **Frontend** - Flutter 3.8+ · Material 3 · Clean Architecture with modular features · Provider state
+- **Backend** - Firestore real-time DB · Firebase Auth (Google Sign-In) · Firebase Storage · Cloud Functions
+- **Payments** - Razorpay with multi-method support
+- **Services** - OrderService, InventoryService, PaymentService, AuthService, MenuService
 
 ## Outcome
 
@@ -72,4 +72,4 @@ Built a complete Razorpay payment service with secure transaction handling, mult
 
 ## What I learned
 
-Real-time systems demand careful concurrency handling; atomic transactions are non-negotiable for inventory under load; optimistic UI dramatically improves perceived performance; and business-level strategies — like backup inventory buffering — matter as much as technical solutions.
+Real-time systems demand careful concurrency handling; atomic transactions are non-negotiable for inventory under load; optimistic UI dramatically improves perceived performance; and business-level strategies, like backup inventory buffering, matter as much as technical solutions.

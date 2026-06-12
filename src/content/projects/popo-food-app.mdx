@@ -2,7 +2,7 @@
 title: "POPO Food App"
 slug: "popo-food-app"
 order: 2
-description: "A corporate-focused food delivery app for a restaurant chain in Pune — browse menus, order, and pay securely through a smooth, reliable interface."
+description: "A corporate-focused food delivery app for a restaurant chain in Pune, browse menus, order, and pay securely through a smooth, reliable interface."
 type: "Client · Freelance"
 status: "Building"
 year: "2025"
@@ -15,7 +15,7 @@ links:
 
 ## Problem
 
-Corporate professionals face unique food-delivery challenges during work hours — limited options near office complexes, peak-hour delays, and no specialized features for workplace ordering. Consumer apps don't address floor/desk delivery, bulk ordering, or office-schedule integration.
+Corporate professionals face unique food-delivery challenges during work hours: limited options near office complexes, peak-hour delays, and no specialized features for workplace ordering. Consumer apps don't address floor/desk delivery, bulk ordering, or office-schedule integration.
 
 The client needed a specialized delivery solution for corporate environments with real-time order tracking, seamless payments, and delivery to specific office locations rather than just addresses.
 
@@ -45,7 +45,7 @@ Built POPO with Flutter, Clean Architecture, and BLoC state management for a sca
 
 ### Real-time tracking on unreliable office networks
 
-Office WiFi destabilizes during peak hours, breaking real-time order updates. Built a hybrid system: Supabase WebSocket subscriptions with intelligent fallback polling. The `RealtimeOrderService` manages five connection states — disconnected, connecting, connected, reconnecting, pollingFallback — and switches transport automatically based on network conditions, with exponential backoff and local state caching so no data is lost during outages.
+Office WiFi destabilizes during peak hours, breaking real-time order updates. Built a hybrid system: Supabase WebSocket subscriptions with intelligent fallback polling. The `RealtimeOrderService` manages five connection states: disconnected, connecting, connected, reconnecting, and pollingFallback. It switches transport automatically based on network conditions, with exponential backoff and local state caching so no data is lost during outages.
 
 ### PayU gateway integration
 
@@ -53,10 +53,10 @@ PayU's SDK demands complex hash generation, multiple callback scenarios, and pre
 
 ## Architecture
 
-- **Frontend** — Flutter 3.38 (FVM) · Clean Architecture · BLoC · service locator DI · flutter_screenutil
-- **Backend** — Supabase PostgreSQL with realtime subscriptions · Supabase Auth with Google Sign-In
-- **Payments** — PayU Checkout Pro with server-side hash validation
-- **Services** — RealtimeOrderService, PayUPaymentService, UserService, RestaurantService, OrderService
+- **Frontend** - Flutter 3.38 (FVM) · Clean Architecture · BLoC · service locator DI · flutter_screenutil
+- **Backend** - Supabase PostgreSQL with realtime subscriptions · Supabase Auth with Google Sign-In
+- **Payments** - PayU Checkout Pro with server-side hash validation
+- **Services** - RealtimeOrderService, PayUPaymentService, UserService, RestaurantService, OrderService
 
 ## Stats
 

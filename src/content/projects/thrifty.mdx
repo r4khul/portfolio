@@ -2,7 +2,7 @@
 title: "Thrifty"
 slug: "thrifty"
 order: 4
-description: "An offline-first personal finance app with background sync, bilingual support (English/Tamil), and real-time analytics — built with Flutter."
+description: "An offline-first personal finance app with background sync, bilingual support (English/Tamil), and real-time analytics, built with Flutter."
 type: "Personal · Open Source"
 status: "Released"
 year: "2025"
@@ -45,7 +45,7 @@ Built Thrifty with Flutter and clean architecture: Drift ORM for type-safe local
 
 ### Offline-first sync with conflict resolution
 
-Users modify financial data offline; changes must merge cleanly when connectivity returns. Naive timestamp/last-write-wins approaches lost data. Final design: `editedLocally` flags with intelligent conflict resolution in the `TransactionRepository` — sync state management, graceful partial-failure handling, automatic sync triggers, timestamp-based conflict detection, and network-failure fallbacks.
+Users modify financial data offline; changes must merge cleanly when connectivity returns. Naive timestamp/last-write-wins approaches lost data. Final design: `editedLocally` flags with intelligent conflict resolution in the `TransactionRepository`: sync state management, graceful partial-failure handling, automatic sync triggers, timestamp-based conflict detection, and network-failure fallbacks.
 
 ### Real-time analytics over large datasets
 
@@ -53,10 +53,10 @@ Category aggregations and live chart updates strained UI performance. Built an a
 
 ## Architecture
 
-- **Frontend** — Flutter 3.10 (FVM) · Riverpod · GoRouter with deep linking · Material 3
-- **Data** — SQLite + Drift (schema v7, auto-migrations) · 5 tables · Flutter Secure Storage for PIN/tokens
-- **Sync** — REST integration with configurable endpoints · Dio with interceptors · mock-server support (Mockoon, JSON Server, ngrok)
-- **Services** — TransactionRepository, CategoryRepository, AuthRepository, NotificationService, SyncService
+- **Frontend** - Flutter 3.10 (FVM) · Riverpod · GoRouter with deep linking · Material 3
+- **Data** - SQLite + Drift (schema v7, auto-migrations) · 5 tables · Flutter Secure Storage for PIN/tokens
+- **Sync** - REST integration with configurable endpoints · Dio with interceptors · mock-server support (Mockoon, JSON Server, ngrok)
+- **Services** - TransactionRepository, CategoryRepository, AuthRepository, NotificationService, SyncService
 
 ## Stats
 
@@ -67,4 +67,4 @@ Category aggregations and live chart updates strained UI performance. Built an a
 
 ## What I learned
 
-Offline-first demands disciplined state and conflict strategy. Financial apps need rigorous validation. i18n goes beyond translation — fonts, formats, culture. Type-safe DB layers eliminate whole classes of runtime errors.
+Offline-first demands disciplined state and conflict strategy. Financial apps need rigorous validation. i18n goes beyond translation: fonts, formats, and culture. Type-safe DB layers eliminate whole classes of runtime errors.
