@@ -46,6 +46,7 @@ export function BackToTop() {
             bottom-6 right-4
             sm:right-8
             xl:bottom-10 xl:right-[calc(50vw-24rem-5rem)]
+            cursor-pointer
           "
         >
           <ArrowUp className="size-5" strokeWidth={1.5} />

@@ -1,16 +1,16 @@
 "use client";
 
 import { ArrowUpRight, Mail, Calendar } from "lucide-react";
-import { useTheme } from "next-themes";
 import { profile } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
 export function ContactSection() {
-  const { resolvedTheme } = useTheme();
-
   const handleCalClick = (e: React.MouseEvent) => {
-    if (typeof window !== "undefined" && !(window as any).Cal) {
+    // On mobile, cal.com's modal may not fire reliably — open directly as fallback
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    if (isMobile || typeof window === "undefined" || !(window as any).Cal) {
+      e.preventDefault();
       window.open("https://cal.com/r4khul/meet", "_blank", "noopener,noreferrer");
     }
   };
@@ -41,7 +41,6 @@ export function ContactSection() {
               data-cal-link="r4khul/meet"
               data-cal-config={JSON.stringify({
                 layout: "month_view",
-                theme: resolvedTheme === "light" ? "light" : "dark",
                 useSlotsViewOnSmallScreen: "true",
               })}
               className="tactile inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-medium cursor-pointer"

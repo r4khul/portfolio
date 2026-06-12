@@ -137,8 +137,10 @@ export default function RootLayout({
     >
       <body className="flex min-h-svh flex-col">
         <JsonLd />
-        <CalEmbed />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          {/* Cal.com embed initializer — must live inside ThemeProvider */}
+          <CalEmbed />
+
           {/* Left-gutter side navigation — only visible on xl+ */}
           <SideNav />
 

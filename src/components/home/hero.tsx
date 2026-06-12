@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { FaGithub, FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import { SiLeetcode } from "react-icons/si";
-import { useTheme } from "next-themes";
 import { profile, socials } from "@/data/profile";
 import { LocalTime } from "@/components/site/local-time";
 import { ResumeButton } from "@/components/ui/resume-button";
@@ -17,13 +16,15 @@ import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
 import { GitHubContributionGraph } from "@/components/home/github-graph";
 
 export function Hero() {
-  const { resolvedTheme } = useTheme();
-
   const handleCalClick = (e: React.MouseEvent) => {
-    if (typeof window !== "undefined" && !(window as any).Cal) {
+    // On mobile, cal.com's modal may not fire reliably — open directly as fallback
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    if (isMobile || typeof window === "undefined" || !(window as any).Cal) {
+      e.preventDefault();
       window.open("https://cal.com/r4khul/meet", "_blank", "noopener,noreferrer");
     }
   };
+
   return (
     <section aria-label="Intro">
       {/* Cover banner */}
@@ -138,7 +139,6 @@ export function Hero() {
                 data-cal-link="r4khul/meet"
                 data-cal-config={JSON.stringify({
                   layout: "month_view",
-                  theme: resolvedTheme === "light" ? "light" : "dark",
                   useSlotsViewOnSmallScreen: "true",
                 })}
                 className="tactile-primary flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 cursor-pointer transition-all hover:-translate-y-0.5 shadow-sm"
