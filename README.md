@@ -1,4 +1,4 @@
-# Rakhul Prakash — Portfolio
+# Rakhul Prakash | Portfolio
 
 A high-performance, developer-first personal portfolio website built with extreme restraint and precise technical-blueprint styling. Inspired by chanhdai.com, manixh.dev, and ramx.in.
 
@@ -21,8 +21,8 @@ A high-performance, developer-first personal portfolio website built with extrem
 ## Architecture & Code Performance
 
 - **Zero-hydration layout:** All static metadata, structural rails, and icons are rendered as React Server Components (RSC).
-- **No-Layout-Shift (CLS):** Hydration-safe widgets (Theme Toggle, Local Time) are rendered using modern APIs (`useSyncExternalStore` or client mounts) to prevent flashing.
-- **SEO Ready:** Complete schema, rich meta tags, static robots.txt, and a fully dynamic, typed sitemap matching SSG static page exports.
+- **Zero Layout Shift (CLS):** Hydration-safe widgets (Theme Toggle, Local Time) are rendered using modern APIs (`useSyncExternalStore` or client mounts) to prevent flashing.
+- **SEO Ready:** Complete schema, rich meta tags, robots.txt, and a fully dynamic, typed sitemap matching SSG page exports.
 - **Fast Build Times:** Configured with Turbopack by default, compiling page routes and compiling fully static, optimized routes in seconds.
 
 ## Project Structure

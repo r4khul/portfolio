@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <main className="dotgrid flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
       <p className="font-mono text-[11px] tracking-widest text-faint uppercase">
-        Error — FIG. 404
+        Error - FIG. 404
       </p>
       <h1 className="font-serif text-4xl tracking-tight">Page not found</h1>
       <Link

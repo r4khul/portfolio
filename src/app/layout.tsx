@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { profile } from "@/data/profile";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,11 +27,11 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   metadataBase: new URL(profile.url),
   title: {
-    default: `${profile.name} — Mobile Engineer`,
-    template: `%s — ${profile.name}`,
+    default: `${profile.name} | Mobile Engineer`,
+    template: `%s | ${profile.name}`,
   },
   description:
-    "CS engineer focused on mobile development with Flutter — architecture, performance, and shipping reliable software people actually use.",
+    "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software people actually use.",
   keywords: [
     "Flutter",
     "Mobile Engineer",
@@ -49,9 +50,9 @@ export const metadata: Metadata = {
     apple: "/images/site/pfp.png",
   },
   openGraph: {
-    title: `${profile.name} — Mobile Engineer`,
+    title: `${profile.name} | Mobile Engineer`,
     description:
-      "CS engineer focused on mobile development with Flutter — architecture, performance, and shipping reliable software.",
+      "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software.",
     url: profile.url,
     siteName: profile.name,
     locale: "en_US",
@@ -61,15 +62,15 @@ export const metadata: Metadata = {
         url: "/images/site/pfp-banner.png",
         width: 1200,
         height: 630,
-        alt: `${profile.name} — Mobile Engineer`,
+        alt: `${profile.name} | Mobile Engineer`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${profile.name} — Mobile Engineer`,
+    title: `${profile.name} | Mobile Engineer`,
     description:
-      "CS engineer focused on mobile development with Flutter — architecture, performance, and shipping reliable software.",
+      "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software.",
     creator: "@r4khul",
     images: ["/images/site/pfp-banner.png"],
   },
@@ -106,6 +107,7 @@ export default function RootLayout({
           <div className="mx-auto w-full max-w-3xl border-x border-edge">
             <Footer />
           </div>
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
