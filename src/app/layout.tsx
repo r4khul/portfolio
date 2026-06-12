@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { SideNav } from "@/components/site/side-nav";
+import { MobileNav } from "@/components/site/mobile-nav";
+import { BackToTop } from "@/components/site/back-to-top";
 import { StripeBar } from "@/components/site/stripe-bar";
 import { Footer } from "@/components/site/footer";
 import { profile } from "@/data/profile";
@@ -103,6 +105,12 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {/* Left-gutter side navigation — only visible on xl+ */}
           <SideNav />
+
+          {/* Mobile navigation drawer — only visible below xl */}
+          <MobileNav />
+
+          {/* Back to top button */}
+          <BackToTop />
 
           {/* Main content rail */}
           <div className="mx-auto w-full max-w-3xl flex-1 border-x border-edge">

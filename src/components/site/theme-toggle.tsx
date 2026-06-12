@@ -8,7 +8,13 @@ import { useSyncExternalStore } from "react";
 
 const emptySubscribe = () => () => {};
 
-export const ThemeToggle = memo(() => {
+export const ThemeToggle = memo(({
+  className = "tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-90",
+  iconClassName = "relative size-4.5"
+}: {
+  className?: string;
+  iconClassName?: string;
+} = {}) => {
   const { resolvedTheme, setTheme } = useTheme();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -79,10 +85,10 @@ export const ThemeToggle = memo(() => {
     <button
       type="button"
       aria-label="Toggle theme"
-      className="tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-90"
+      className={className}
       onClick={toggleTheme}
     >
-      <div className="relative size-4.5">
+      <div className={iconClassName}>
         <motion.div
           animate={{
             scale: isLight ? 1 : 0,
