@@ -236,3 +236,172 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIDE NAV — Wheel-picker editorial navigation in the left gutter
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Outer container — fixed to full viewport height, right-aligned within gutter */
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  display: none; /* hidden on mobile — shown at xl */
+  height: 100%;
+  /* Width = half of the space between viewport edge and content rail (max-w-3xl = 48rem) */
+  width: calc((100vw - 48rem) / 2);
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none; /* only interactive children get events */
+  /* Promote to its own compositing layer — prevents scroll repaints */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+@media (min-width: 1280px) {
+  .side-nav {
+    display: flex;
+  }
+}
+
+/* Nav list */
+.side-nav__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  padding-right: 1.5rem;
+  pointer-events: auto;
+  /* Contain style recalcs to this subtree */
+  contain: style;
+}
+
+/* Individual nav item — only animates transform + opacity (compositor-only) */
+.side-nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  text-align: right;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  /* Pre-allocate on GPU, only compositor properties used */
+  will-change: transform, opacity;
+  transition:
+    opacity 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    gap 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Idle — shrunk, faded, shifted right */
+.side-nav__item--idle {
+  opacity: 0.28;
+  transform: scale(0.86) translateX(8px) translateZ(0);
+}
+.side-nav__item--idle:hover {
+  opacity: 0.6;
+  transform: scale(0.93) translateX(4px) translateZ(0);
+}
+
+/* Active — full size, full opacity */
+.side-nav__item--active {
+  opacity: 1;
+  transform: scale(1) translateX(0) translateZ(0);
+  gap: 18px; /* Increased by 4px as requested */
+}
+
+/* Icon container — fixed 18×18 box prevents layout shifts */
+.side-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--faint);
+  transition: color 220ms ease;
+}
+.side-nav__icon svg {
+  width: 100%;
+  height: 100%;
+}
+.side-nav__icon--active {
+  color: var(--foreground);
+}
+
+/* Label — Instrument Serif.
+   Fixed font-size of 16px (25% bigger than old 13px).
+   Active scale(1.25) gives the visual "bigger" feel with zero layout reflow.
+   transform-origin: right center so it scales outward toward the content rail. */
+.side-nav__label {
+  font-family: var(--font-instrument-serif);
+  font-size: 16px;
+  color: var(--faint);
+  white-space: nowrap;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  will-change: transform, color;
+  transition:
+    color 220ms ease,
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: right center;
+  transform: scale(1) translateZ(0);
+}
+.side-nav__label--active {
+  color: var(--foreground);
+  /* Scale 25% in-place — pure compositor, zero layout reflow */
+  transform: scale(1.25) translateZ(0);
+}
+
+/* Theme toggle anchored below the nav list */
+.side-nav__toggle {
+  margin-top: 2rem;
+  padding-right: 1.5rem;
+  pointer-events: auto;
+}
+
+/* Rotated moniker at the bottom of the gutter */
+.side-nav__brand {
+  position: absolute;
+  bottom: 2.5rem;
+  right: 20px;
+  padding-right: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--faint);
+  opacity: 0.35;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg) translateZ(0);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   STRIPE BAR — Decorative diagonal hatch banner (replaces header)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.stripe-bar__pattern {
+  background-image: repeating-linear-gradient(
+    -52deg,
+    var(--pattern) 0,
+    var(--pattern) 1px,
+    transparent 1px,
+    transparent 14px
+  );
+  background-size: 20px 20px;
+}
+
+.stripe-bar__vignette {
+  background: linear-gradient(
+    to right,
+    var(--background) 0%,
+    transparent 20%,
+    transparent 80%,
+    var(--background) 100%
+  );
+}

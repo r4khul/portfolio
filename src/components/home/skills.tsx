@@ -5,7 +5,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export const SkillsSection = memo(() => {
   return (
-    <Section id="skills" index="04" title="Stack">
+    <Section id="skills" index="04" title="Skills">
       <div className="space-y-5">
         {skills.map((group, i) => (
           <Reveal key={group.label} delay={i * 0.04}>

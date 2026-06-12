@@ -13,7 +13,7 @@ type SectionProps = {
  */
 export const Section = memo(({ id, index, title, children }: SectionProps) => {
   return (
-    <section id={id} className="bleed-line relative scroll-mt-20">
+    <section id={id} className="bleed-line relative scroll-mt-4">
       <div className="flex items-baseline justify-between px-4 pt-12 pb-7 sm:px-8">
         <h2 className="flex items-baseline gap-3">
           <span className="font-mono text-[11px] tracking-widest text-faint select-none">

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { Header } from "@/components/site/header";
+import { SideNav } from "@/components/site/side-nav";
+import { StripeBar } from "@/components/site/stripe-bar";
 import { Footer } from "@/components/site/footer";
 import { profile } from "@/data/profile";
 import { Analytics } from "@vercel/analytics/next";
@@ -100,10 +101,16 @@ export default function RootLayout({
     >
       <body className="flex min-h-svh flex-col">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <Header />
+          {/* Left-gutter side navigation — only visible on xl+ */}
+          <SideNav />
+
+          {/* Main content rail */}
           <div className="mx-auto w-full max-w-3xl flex-1 border-x border-edge">
+            {/* Stripe banner replaces the old header */}
+            <StripeBar />
             {children}
           </div>
+
           <div className="mx-auto w-full max-w-3xl border-x border-edge">
             <Footer />
           </div>
