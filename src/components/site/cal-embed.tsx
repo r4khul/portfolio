@@ -5,7 +5,7 @@ import { getCalApi } from "@calcom/embed-react";
 
 export function CalEmbed() {
   useEffect(() => {
-    let calInstance: ((...args: unknown[]) => void) | null = null;
+    let calInstance: Awaited<ReturnType<typeof getCalApi>> | null = null;
 
     const applyThemeStyles = (isDark: boolean) => {
       if (isDark) {
