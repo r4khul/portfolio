@@ -1,7 +1,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Pin } from "lucide-react";
 import { getProjects } from "@/lib/projects";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -10,7 +10,7 @@ export const ProjectsSection = memo(() => {
   const projects = getProjects();
 
   return (
-    <Section id="projects" index="03" title="Projects">
+    <Section id="projects" index="04" title="Projects">
       <div className="grid gap-px overflow-hidden rounded-lg border border-edge bg-edge sm:grid-cols-2">
         {projects.map((project, i) => (
           <Reveal key={project.slug} delay={i * 0.06} className="bg-background">
@@ -33,9 +33,17 @@ export const ProjectsSection = memo(() => {
               </div>
               <div className="flex flex-1 flex-col p-5 sm:p-6">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="text-[15px] font-semibold tracking-tight">
-                  {project.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[15px] font-semibold tracking-tight">
+                    {project.title}
+                  </h3>
+                  {project.slug === "unfilter" && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--contrib-4)]/30 bg-[var(--contrib-4)]/5 px-2 py-0.5 text-[9px] font-semibold tracking-wider text-[var(--contrib-4)] font-mono uppercase">
+                      <Pin className="size-2.5 fill-[var(--contrib-4)] rotate-45" />
+                      pinned
+                    </span>
+                  )}
+                </div>
                 <ArrowUpRight className="size-4 shrink-0 text-faint transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
               </div>
               <p className="mt-1 font-mono text-[10.5px] tracking-wide text-faint uppercase">

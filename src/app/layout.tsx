@@ -8,6 +8,8 @@ import { StripeBar } from "@/components/site/stripe-bar";
 import { Footer } from "@/components/site/footer";
 import { profile } from "@/data/profile";
 import { Analytics } from "@vercel/analytics/next";
+import { JsonLd } from "@/components/site/json-ld";
+import { CalEmbed } from "@/components/site/cal-embed";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
   description:
     "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software people actually use.",
   keywords: [
-    "Flutter",
+    "Flutter Developer",
     "Mobile Engineer",
     "Dart",
     "Rakhul Prakash",
@@ -45,13 +47,42 @@ export const metadata: Metadata = {
     "Chennai",
     "Android Development",
     "iOS Development",
+    "Cross-platform Development",
+    "Mobile App Performance",
+    "Clean Architecture",
+    "BLoC",
+    "Riverpod",
+    "React.js",
+    "TypeScript",
+    "Firebase",
+    "Supabase",
+    "Open Source Contributor",
+    "Rajalakshmi Engineering College",
+    "Portfolio",
   ],
   authors: [{ name: profile.name, url: profile.url }],
-  icons: {
-    icon: "/images/site/pfp.png",
-    shortcut: "/images/site/pfp.png",
-    apple: "/images/site/pfp.png",
+  creator: profile.name,
+  publisher: profile.name,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
   },
+  alternates: {
+    canonical: "/",
+  },
+  icons: {
+    icon: [
+      { url: "/images/site/pfp.png" },
+      { url: "/images/site/pfp.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/site/pfp.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/images/site/pfp.png",
+    apple: [
+      { url: "/images/site/pfp.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
   openGraph: {
     title: `${profile.name} | Mobile Engineer`,
     description:
@@ -88,6 +119,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    google: "your-google-verification-code", // User can replace this later
+  },
 };
 
 export default function RootLayout({
@@ -102,6 +136,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-svh flex-col">
+        <JsonLd />
+        <CalEmbed />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {/* Left-gutter side navigation — only visible on xl+ */}
           <SideNav />

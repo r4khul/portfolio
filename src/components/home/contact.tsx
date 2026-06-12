@@ -1,9 +1,20 @@
-import { ArrowUpRight } from "lucide-react";
+"use client";
+
+import { ArrowUpRight, Mail, Calendar } from "lucide-react";
+import { useTheme } from "next-themes";
 import { profile } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
 export function ContactSection() {
+  const { resolvedTheme } = useTheme();
+
+  const handleCalClick = (e: React.MouseEvent) => {
+    if (typeof window !== "undefined" && !(window as any).Cal) {
+      window.open("https://cal.com/r4khul/meet", "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <Section id="contact" index="07" title="Contact">
       <Reveal>
@@ -20,16 +31,25 @@ export function ContactSection() {
               href={`mailto:${profile.email}`}
               className="tactile-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-medium"
             >
+              <Mail className="size-3.5" />
               Email me
             </a>
-            <a
-              href={profile.cal}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tactile inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-[13px] font-medium"
+            <button
+              type="button"
+              onClick={handleCalClick}
+              data-cal-namespace="meet"
+              data-cal-link="r4khul/meet"
+              data-cal-config={JSON.stringify({
+                layout: "month_view",
+                theme: resolvedTheme === "light" ? "light" : "dark",
+                useSlotsViewOnSmallScreen: "true",
+              })}
+              className="tactile inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-medium cursor-pointer"
             >
-              Book a call <ArrowUpRight className="size-3.5 text-faint" />
-            </a>
+              <Calendar className="size-3.5" />
+              <span>Book a call</span>
+              <ArrowUpRight className="size-3.5 text-faint ml-0.5" />
+            </button>
           </div>
         </div>
       </Reveal>

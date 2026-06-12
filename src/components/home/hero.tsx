@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import {
   CalendarClock,
@@ -7,6 +9,7 @@ import {
 } from "lucide-react";
 import { FaGithub, FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import { SiLeetcode } from "react-icons/si";
+import { useTheme } from "next-themes";
 import { profile, socials } from "@/data/profile";
 import { LocalTime } from "@/components/site/local-time";
 import { ResumeButton } from "@/components/ui/resume-button";
@@ -14,6 +17,13 @@ import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
 import { GitHubContributionGraph } from "@/components/home/github-graph";
 
 export function Hero() {
+  const { resolvedTheme } = useTheme();
+
+  const handleCalClick = (e: React.MouseEvent) => {
+    if (typeof window !== "undefined" && !(window as any).Cal) {
+      window.open("https://cal.com/r4khul/meet", "_blank", "noopener,noreferrer");
+    }
+  };
   return (
     <section aria-label="Intro">
       {/* Cover banner */}
@@ -121,17 +131,23 @@ export function Hero() {
                   Email Me
                 </span>
               </a>
-              <a
-                href={profile.cal}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="tactile-primary flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 transition-all hover:-translate-y-0.5 shadow-sm"
+              <button
+                type="button"
+                onClick={handleCalClick}
+                data-cal-namespace="meet"
+                data-cal-link="r4khul/meet"
+                data-cal-config={JSON.stringify({
+                  layout: "month_view",
+                  theme: resolvedTheme === "light" ? "light" : "dark",
+                  useSlotsViewOnSmallScreen: "true",
+                })}
+                className="tactile-primary flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 cursor-pointer transition-all hover:-translate-y-0.5 shadow-sm"
               >
                 <Calendar className="size-4.5" />
                 <span className="font-sans text-[14px] font-medium tracking-wide">
                   Schedule Call
                 </span>
-              </a>
+              </button>
             </div>
           </div>
           
