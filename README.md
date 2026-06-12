@@ -1,54 +1,60 @@
-# Rakhul Prakash | Portfolio
+# Portfolio Site
 
-A high-performance, developer-first personal portfolio website built with extreme restraint and precise technical-blueprint styling.
+My personal portfolio site. Clean, fast, and built with modern tools.
 
-## Design System & Blueprint Aesthetic
+<div style="display: flex; gap: 1rem; align-items: stretch;">
+  <img src="docs/screenshot-web.png" alt="Web View" style="width: 75%; height: auto; object-fit: cover;" />
+  <img src="docs/screenshot-mobile.png" alt="Mobile View" style="width: 25%; height: auto; object-fit: cover;" />
+</div>
 
-- **Visual Frame:** Vertical rail layout with full-bleed section rules and dotted blueprint background (`.dotgrid`, `.hatch`).
-- **Restraint:** High-contrast dark-first design with monochrome details and a single emerald pulse accent representing live availability status.
-- **Micro-Interactions:** Subtle, fluid entrance animations using `motion` that respect system preference (`prefers-reduced-motion`).
-- **Typography:** Geist Sans coupled with monospace annotations (Geist Mono) and custom terminal elements.
+## What's in here
 
-## Tech Stack
+- **Next.js 16** with App Router
+- **Tailwind CSS v4** for styling
+- **Motion** for smooth animations
+- **Dark/Light mode** toggle
+- **Audio feedback** on clicks (can be muted)
+- **MDX** for project writeups
+- **Fully responsive** - works on mobile and desktop
 
-- **Framework:** Next.js 16 (Turbopack, App Router, React 19.2)
-- **Styling:** Tailwind CSS v4 (Zero-runtime, modern CSS engine)
-- **Content:** MDX-powered project case studies via `next-mdx-remote/rsc` + `gray-matter`
-- **Animations:** Motion
-- **Icons:** Lucide React
-- **Theme:** `next-themes` (Dark/Light sync, hydration-safe via `useSyncExternalStore`)
+## How it's built
 
-## Architecture & Code Performance
+Everything is server-side rendered where possible. Static content like the navigation, metadata, and icons don't hydrate on the client. This keeps the site fast and prevents layout shifts.
 
-- **Zero-hydration layout:** All static metadata, structural rails, and icons are rendered as React Server Components (RSC).
-- **Zero Layout Shift (CLS):** Hydration-safe widgets (Theme Toggle, Local Time) are rendered using modern APIs (`useSyncExternalStore` or client mounts) to prevent flashing.
-- **SEO Ready:** Complete schema, rich meta tags, robots.txt, and a fully dynamic, typed sitemap matching SSG page exports.
-- **Fast Build Times:** Configured with Turbopack by default, compiling page routes and compiling fully static, optimized routes in seconds.
+Project details are written in MDX and rendered dynamically. The theme toggle and other interactive bits use modern React APIs to avoid hydration mismatches.
 
-## Project Structure
+## Tech stack
 
-```txt
-site/
-├── content/               # MDX Case Studies
-│   └── projects/          # Markdown projects (mrcas-cafe, popo, thrifty, unfilter)
-├── src/
-│   ├── app/               # Next.js App Router (Layout, Page, Sitemap, Robots)
-│   ├── components/        # React components (Home, Site, UI, MDX-Content)
-│   ├── data/              # Typed static content (profile.ts)
-│   └── lib/               # Utility functions (MDX parser & metadata filters)
-└── public/                # Static assets (Resume, Favicon)
-```
+- **Next.js 16** (Turbopack, App Router, React 19.2)
+- **Tailwind CSS v4**
+- **Motion** (animations)
+- **Lucide React** (icons)
+- **next-themes** (theme switching)
+- **MDX** (content)
 
-## Running the Application
+## Running it
 
-### Development
 ```bash
 npm run dev
 ```
 
-### Build & Export Verification
+Build:
+
 ```bash
 npm run build
 ```
-The build script automatically triggers static export optimization and TypeScript checking.
+
+## Structure
+
+```
+site/
+├── content/           # MDX project files
+│   └── projects/
+├── src/
+│   ├── app/          # Next.js pages
+│   ├── components/   # React components
+│   ├── data/         # Static data
+│   └── lib/          # Utilities
+└── public/           # Static assets
+```
 
