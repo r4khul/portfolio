@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { FaGithub, FaGooglePlay } from "react-icons/fa";
 import { getProject, getProjects } from "@/lib/projects";
 import { MdxContent } from "@/components/mdx-content";
+import { GithubStats } from "@/components/project/github-stats";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,6 +26,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: { title: project.title, description: project.description },
   };
 }
+
+const getLinkIcon = (label: string) => {
+  const normalized = label.toLowerCase();
+  if (normalized.includes("github")) {
+    return <FaGithub className="size-3.5 text-muted transition-colors group-hover:text-foreground" />;
+  }
+  if (normalized.includes("play store") || normalized.includes("google play")) {
+    return <FaGooglePlay className="size-3.5 text-muted transition-colors group-hover:text-foreground" />;
+  }
+  return <ArrowUpRight className="size-3 text-faint transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />;
+};
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
@@ -74,9 +87,10 @@ export default async function ProjectPage({ params }: Props) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="tactile inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-medium"
+                className="tactile inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[12.5px] font-medium group"
               >
-                {link.label} <ArrowUpRight className="size-3 text-faint" />
+                {getLinkIcon(link.label)}
+                <span>{link.label}</span>
               </a>
             ))}
           </div>
@@ -92,6 +106,10 @@ export default async function ProjectPage({ params }: Props) {
             ))}
           </ul>
         </header>
+
+        {project.slug === "unfilter" && (
+          <GithubStats repo="r4khul/unfilter" />
+        )}
       </div>
 
       <article className="bleed-line px-4 py-10 sm:px-8">

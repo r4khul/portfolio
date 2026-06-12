@@ -63,7 +63,7 @@ const components = {
   ),
   td: (props: ComponentProps<"td">) => (
     <td
-      className="border-b border-edge px-3 py-2.5 align-top leading-relaxed text-muted last:border-b-0"
+      className="border-b border-edge px-3 py-2.5 align-top leading-relaxed text-muted"
       {...props}
     />
   ),

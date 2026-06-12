@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   User,
   Briefcase,
@@ -24,6 +25,7 @@ const nav = [
 const SECTION_IDS = nav.map((n) => n.href.replace("/#", ""));
 
 export const SideNav = memo(() => {
+  const pathname = usePathname();
   const [active, setActive] = useState<string>("");
 
   const handleClick = useCallback(
@@ -41,6 +43,15 @@ export const SideNav = memo(() => {
   );
 
   useEffect(() => {
+    if (pathname !== "/") {
+      if (pathname.startsWith("/projects/")) {
+        setActive("projects");
+      } else {
+        setActive("");
+      }
+      return;
+    }
+
     // Use scroll position to detect active section — more reliable than
     // IntersectionObserver with aggressive rootMargin for terminal sections.
     const sectionEls = SECTION_IDS
@@ -66,7 +77,7 @@ export const SideNav = memo(() => {
       // Near-bottom special case: if we're within 80px of the page bottom, 
       // highlight the last section regardless
       const nearBottom =
-        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
+         window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
       if (nearBottom) current = sectionEls[sectionEls.length - 1].id;
 
       setActive(current);
@@ -86,7 +97,7 @@ export const SideNav = memo(() => {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <aside aria-label="Site navigation" className="side-nav">
