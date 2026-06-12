@@ -9,6 +9,7 @@ import {
   FolderOpen,
   Wrench,
   GitMerge,
+  BookOpen,
   Mail,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
@@ -19,6 +20,7 @@ const nav = [
   { label: "Skills",      href: "/#skills",      icon: Wrench },
   { label: "Projects",    href: "/#projects",    icon: FolderOpen },
   { label: "Open Source", href: "/#open-source", icon: GitMerge },
+  { label: "Blogs",       href: "/#blogs",       icon: BookOpen },
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
 
