@@ -1,24 +1,25 @@
+import { memo } from "react";
 import Image from "next/image";
 import { experience } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
-export function ExperienceSection() {
+export const ExperienceSection = memo(() => {
   return (
     <Section id="experience" index="02" title="Experience">
       <div className="relative space-y-12">
         {experience.map((job) => (
-          <div key={job.company} className="relative pl-16">
+          <div key={job.company}>
             <Reveal>
-              <article>
+              <article className="relative pl-16">
                 {/* Logo Avatar */}
-                <div className="absolute left-0 top-0 flex size-12 items-center justify-center overflow-hidden rounded-full border border-edge bg-subtle shadow-sm">
+                <div className="tactile absolute left-0 top-0 flex size-12 items-center justify-center overflow-hidden rounded-full shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
                   <Image
                     src={job.logo}
                     alt={`${job.company} logo`}
                     width={48}
                     height={48}
-                    className="size-full object-cover"
+                    className="size-full rounded-full object-cover"
                   />
                 </div>
 
@@ -59,4 +60,6 @@ export function ExperienceSection() {
       </div>
     </Section>
   );
-}
+});
+
+ExperienceSection.displayName = 'ExperienceSection';

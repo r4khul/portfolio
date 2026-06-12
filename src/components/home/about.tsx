@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { profile } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
-export function About() {
+export const About = memo(() => {
   return (
     <Section id="about" index="01" title="About">
       <Reveal>
@@ -14,4 +15,6 @@ export function About() {
       </Reveal>
     </Section>
   );
-}
+});
+
+About.displayName = 'About';

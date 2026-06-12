@@ -13,7 +13,7 @@ export function ContactSection() {
           </h3>
           <p className="mt-3 max-w-prose text-[14px] leading-relaxed text-muted">
             Open to mobile engineering roles and freelance work. The fastest way to
-            reach me is email — or grab a slot directly on my calendar.
+            reach me is email, or grab a slot directly on my calendar.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a

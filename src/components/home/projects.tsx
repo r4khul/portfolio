@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -5,7 +6,7 @@ import { getProjects } from "@/lib/projects";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
-export function ProjectsSection() {
+export const ProjectsSection = memo(() => {
   const projects = getProjects();
 
   return (
@@ -65,4 +66,6 @@ export function ProjectsSection() {
       </div>
     </Section>
   );
-}
+});
+
+ProjectsSection.displayName = 'ProjectsSection';

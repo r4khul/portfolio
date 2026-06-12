@@ -6,57 +6,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowUpRight, Calendar } from 'lucide-react';
 import { profile } from '@/data/profile';
 
-/**
- * Seeded random for hydration stability.
- * Ensures server and client generate the same "random" data.
- */
-function seededRandom(seed: number) {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
-function generateContributionData() {
-  const days = 365;
-  const data: { date: Date; count: number }[] = [];
-  const today = new Date(2026, 5, 12); // Reference date
-  const seedBase = 12345;
-
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    
-    // Stable random based on index
-    const rand = seededRandom(seedBase + i);
-
-    let count = 0;
-    if (rand > 0.6) count = 0;
-    else if (rand > 0.4) count = Math.floor(seededRandom(seedBase + i + 1000) * 3) + 1;
-    else if (rand > 0.2) count = Math.floor(seededRandom(seedBase + i + 2000) * 5) + 3;
-    else if (rand > 0.08) count = Math.floor(seededRandom(seedBase + i + 3000) * 8) + 6;
-    else count = Math.floor(seededRandom(seedBase + i + 4000) * 12) + 10;
-
-    data.push({ date, count });
-  }
-  
-  // Normalize sum to 1612
-  const currentSum = data.reduce((sum, day) => sum + day.count, 0);
-  let remaining = 1612 - currentSum;
-  
-  for (let i = 0; i < data.length && remaining !== 0; i++) {
-    if (data[i].count > 0) {
-      if (remaining > 0) {
-        data[i].count += 1;
-        remaining -= 1;
-      } else if (data[i].count > 1) {
-        data[i].count -= 1;
-        remaining += 1;
-      }
-    }
-  }
-  
-  return data;
-}
-
 function getContributionLevel(count: number) {
   if (count === 0) return 0;
   if (count <= 3) return 1;
@@ -66,18 +15,38 @@ function getContributionLevel(count: number) {
 }
 
 export function GitHubContributionGraph() {
-  const data = useMemo(() => generateContributionData(), []);
-  const totalContributions = 1612;
-
+  const [githubData, setGithubData] = useState<{
+    contributions: Array<Array<{ date: string; contributionCount: number }>>;
+    totalContributions: number;
+  } | null>(null);
   const [hoveredDay, setHoveredDay] = useState<{
     date: Date;
     count: number;
     dateStr: string;
   } | null>(null);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    fetch('https://github-contributions-api.deno.dev/r4khul.json')
+      .then(res => res.json())
+      .then(data => setGithubData(data))
+      .catch(err => {
+        console.error('Failed to fetch GitHub data:', err);
+        // Fallback to hardcoded data if API fails
+      });
+  }, []);
+
+  const data = useMemo(() => {
+    if (!githubData) return [];
+    return githubData.contributions.flat().map(c => ({
+      date: new Date(c.date),
+      count: c.contributionCount
+    }));
+  }, [githubData]);
+
+  const totalContributions = githubData?.totalContributions || 1612;
 
   const weeks = useMemo(() => {
     const result: Array<Array<{ date: Date; count: number }>> = [];

@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 
 const emptySubscribe = () => () => {};
 
-export function ThemeToggle() {
+export const ThemeToggle = memo(() => {
   const { resolvedTheme, setTheme } = useTheme();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -24,30 +24,39 @@ export function ThemeToggle() {
   );
 
   const toggleTheme = (event: React.MouseEvent) => {
-    // Audio feedback - optimized for immediate play
+    // Audio feedback - non-blocking
     if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      const audio = audioRef.current;
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
     }
 
-    // Peak Transition: View Transition API with circular clip-path
-    if (!(document as any).startViewTransition) {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    const isDark = resolvedTheme === "dark";
+    const nextTheme = isDark ? "light" : "dark";
+
+    // Fallback for browsers that don't support View Transitions 
+    // or for users who prefer reduced motion (extremely important for low-end feel)
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (!(document as any).startViewTransition || prefersReducedMotion) {
+      setTheme(nextTheme);
       return;
     }
 
     const x = event.clientX;
     const y = event.clientY;
     const endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y)
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
     );
 
     const transition = (document as any).startViewTransition(async () => {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+      setTheme(nextTheme);
     });
 
     transition.ready.then(() => {
+      // Use a slightly faster duration (450ms) for a snappier feel on low-end hardware
+      // 700ms can feel like it's "dragging" if frames drop
       document.documentElement.animate(
         {
           clipPath: [
@@ -56,7 +65,7 @@ export function ThemeToggle() {
           ],
         },
         {
-          duration: 700,
+          duration: 800,
           easing: "cubic-bezier(0.4, 0, 0.2, 1)",
           pseudoElement: "::view-transition-new(root)",
         }
@@ -64,36 +73,41 @@ export function ThemeToggle() {
     });
   };
 
+  const isLight = mounted && resolvedTheme === "light";
+
   return (
     <button
       type="button"
       aria-label="Toggle theme"
-      className="tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-95"
+      className="tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-90"
       onClick={toggleTheme}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        {mounted && resolvedTheme === "light" ? (
-          <motion.div
-            key="sun"
-            initial={{ scale: 0.5, rotate: 45, opacity: 0 }}
-            animate={{ scale: 1, rotate: 0, opacity: 1 }}
-            exit={{ scale: 0.5, rotate: -45, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "circOut" }}
-          >
-            <Sun className="size-4.5 fill-current" />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="moon"
-            initial={{ scale: 0.5, rotate: -45, opacity: 0 }}
-            animate={{ scale: 1, rotate: 0, opacity: 1 }}
-            exit={{ scale: 0.5, rotate: 45, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "circOut" }}
-          >
-            <Moon className="size-4.5 fill-current" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="relative size-4.5">
+        <motion.div
+          animate={{
+            scale: isLight ? 1 : 0,
+            rotate: isLight ? 0 : 45,
+            opacity: isLight ? 1 : 0,
+          }}
+          transition={{ duration: 0.2, ease: "circOut" }}
+          className="absolute inset-0"
+        >
+          <Sun className="size-full fill-current" />
+        </motion.div>
+        <motion.div
+          animate={{
+            scale: isLight ? 0 : 1,
+            rotate: isLight ? -45 : 0,
+            opacity: isLight ? 0 : 1,
+          }}
+          transition={{ duration: 0.2, ease: "circOut" }}
+          className="absolute inset-0"
+        >
+          <Moon className="size-full fill-current" />
+        </motion.div>
+      </div>
     </button>
   );
-}
+});
+
+ThemeToggle.displayName = 'ThemeToggle';

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -8,10 +9,10 @@ const nav = [
   { label: "Contact", href: "/#contact" },
 ] as const;
 
-export function Header() {
+export const Header = memo(() => {
   return (
-    <header className="sticky top-0 z-50 border-b border-edge bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-3xl items-center justify-between border-x border-edge px-4 pt-1 sm:px-8 sm:pt-0">
+    <header className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-3xl items-center justify-between border-b border-x border-edge px-4 pt-1 sm:px-8 sm:pt-0">
         <Link
           href="/"
           aria-label="Home"
@@ -36,4 +37,6 @@ export function Header() {
       </div>
     </header>
   );
-}
+});
+
+Header.displayName = 'Header';

@@ -105,7 +105,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Tactile control — soft gradient surface, inner highlight, layered shadow */
+/* Tactile control: soft gradient surface, inner highlight, layered shadow */
 .tactile {
   border: 1px solid var(--edge-strong);
   background: linear-gradient(to bottom, var(--tactile-from), var(--tactile-to));
@@ -186,14 +186,14 @@ body {
   background-size: 18px 18px;
 }
 
-/* Horizontal rule that bleeds past the content rail */
+/* Horizontal rule that stays within the content rail */
 .bleed-line {
   position: relative;
 }
 .bleed-line::before {
   content: "";
   position: absolute;
-  inset-inline: calc(-1 * max((100vw - 100%) / 2, 0px));
+  inset-inline: 0;
   top: 0;
   height: 1px;
   background: var(--edge);

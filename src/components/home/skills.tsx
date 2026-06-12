@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { skills } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
-export function SkillsSection() {
+export const SkillsSection = memo(() => {
   return (
     <Section id="skills" index="04" title="Stack">
       <div className="space-y-5">
@@ -28,4 +29,6 @@ export function SkillsSection() {
       </div>
     </Section>
   );
-}
+});
+
+SkillsSection.displayName = 'SkillsSection';

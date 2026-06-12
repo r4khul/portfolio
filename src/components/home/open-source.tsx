@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { ArrowUpRight, GitMerge, GitPullRequest } from "lucide-react";
 import { openSource } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
-export function OpenSourceSection() {
+export const OpenSourceSection = memo(() => {
   return (
     <Section id="open-source" index="05" title="Open Source">
       <div className="space-y-3">
@@ -55,4 +56,6 @@ export function OpenSourceSection() {
       </div>
     </Section>
   );
-}
+});
+
+OpenSourceSection.displayName = 'OpenSourceSection';
