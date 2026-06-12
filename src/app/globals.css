@@ -370,7 +370,7 @@ body {
 
 /* Theme toggle anchored below the nav list */
 .side-nav__toggle {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   padding-right: 1.5rem;
   pointer-events: auto;
 }

@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
+import { useAudioContext } from "@/lib/contexts/audio-context";
 
 const emptySubscribe = () => () => {};
 
@@ -26,6 +27,7 @@ export const ThemeToggle = memo(({
 } = {}) => {
   const { resolvedTheme, setTheme } = useTheme();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { isMuted } = useAudioContext();
 
   useEffect(() => {
     audioRef.current = new Audio("/sfx/switch.mp3");
@@ -40,7 +42,7 @@ export const ThemeToggle = memo(({
 
   const toggleTheme = async (event: React.MouseEvent) => {
     // Audio feedback - non-blocking
-    if (audioRef.current) {
+    if (audioRef.current && !isMuted) {
       const audio = audioRef.current;
       audio.currentTime = 0;
       audio.play().catch(() => {});
@@ -116,6 +118,7 @@ export const ThemeToggle = memo(({
     >
       <div className={iconClassName}>
         <motion.div
+          initial={{ scale: isLight ? 1 : 0, rotate: isLight ? 0 : 45, opacity: isLight ? 1 : 0 }}
           animate={{
             scale: isLight ? 1 : 0,
             rotate: isLight ? 0 : 45,
@@ -127,6 +130,7 @@ export const ThemeToggle = memo(({
           <Sun className="size-full fill-current" />
         </motion.div>
         <motion.div
+          initial={{ scale: isLight ? 0 : 1, rotate: isLight ? -45 : 0, opacity: isLight ? 0 : 1 }}
           animate={{
             scale: isLight ? 0 : 1,
             rotate: isLight ? -45 : 0,
@@ -141,5 +145,7 @@ export const ThemeToggle = memo(({
     </button>
   );
 });
+
+ThemeToggle.displayName = 'ThemeToggle';
 
 ThemeToggle.displayName = 'ThemeToggle';

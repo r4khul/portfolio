@@ -13,6 +13,7 @@ import {
   Mail,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { AudioToggle } from "./audio-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 const nav = [
@@ -44,7 +45,7 @@ export const SideNav = memo(() => {
         setActive(id);
       }
     },
-    [],
+    [playClick],
   );
 
   useEffect(() => {
@@ -138,6 +139,11 @@ export const SideNav = memo(() => {
       {/* Theme toggle */}
       <div className="side-nav__toggle">
         <ThemeToggle />
+      </div>
+
+      {/* Audio toggle */}
+      <div className="side-nav__toggle">
+        <AudioToggle />
       </div>
 
       {/* Rotated brand moniker */}

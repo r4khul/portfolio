@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Briefcase, FolderOpen, Wrench, GitMerge, BookOpen, Mail } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { AudioToggle } from "./audio-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 const nav = [
@@ -156,10 +157,16 @@ export function MobileNav() {
               <div className="font-mono text-[10px] tracking-widest text-faint opacity-50 select-none">
                 r4khul
               </div>
-              <ThemeToggle 
-                className="flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
-                iconClassName="relative size-5"
-              />
+              <div className="flex items-center gap-2">
+                <AudioToggle 
+                  className="flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
+                  iconClassName="relative size-5"
+                />
+                <ThemeToggle 
+                  className="flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
+                  iconClassName="relative size-5"
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}

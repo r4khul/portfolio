@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { useAudioContext } from "@/lib/contexts/audio-context";
 
 /**
  * Reusable hook for tactile audio feedback.
@@ -8,6 +9,7 @@ import { useCallback, useEffect, useRef } from "react";
  */
 export function useAudioFeedback() {
   const clickAudio = useRef<HTMLAudioElement | null>(null);
+  const { isMuted } = useAudioContext();
 
   useEffect(() => {
     // Only initialize on client-side
@@ -19,7 +21,7 @@ export function useAudioFeedback() {
   }, []);
 
   const playClick = useCallback(() => {
-    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) {
+    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches || isMuted) {
       return;
     }
 
@@ -30,7 +32,7 @@ export function useAudioFeedback() {
     audio.play().catch(() => {
       /* User hasn't interacted with DOM yet */
     });
-  }, []);
+  }, [isMuted]);
 
   return { playClick };
 }

@@ -10,6 +10,7 @@ import { profile } from "@/data/profile";
 import { Analytics } from "@vercel/analytics/next";
 import { JsonLd } from "@/components/site/json-ld";
 import { CalEmbed } from "@/components/site/cal-embed";
+import { AudioProvider } from "@/lib/contexts/audio-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -136,32 +137,34 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-svh flex-col">
-        <JsonLd />
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {/* Cal.com embed initializer — must live inside ThemeProvider */}
-          <CalEmbed />
+        <AudioProvider>
+          <JsonLd />
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            {/* Cal.com embed initializer — must live inside ThemeProvider */}
+            <CalEmbed />
 
-          {/* Left-gutter side navigation — only visible on xl+ */}
-          <SideNav />
+            {/* Left-gutter side navigation — only visible on xl+ */}
+            <SideNav />
 
-          {/* Mobile navigation drawer — only visible below xl */}
-          <MobileNav />
+            {/* Mobile navigation drawer — only visible below xl */}
+            <MobileNav />
 
-          {/* Back to top button */}
-          <BackToTop />
+            {/* Back to top button */}
+            <BackToTop />
 
-          {/* Main content rail */}
-          <div className="mx-auto w-full max-w-3xl flex-1 border-x border-edge">
-            {/* Stripe banner replaces the old header */}
-            <StripeBar />
-            {children}
-          </div>
+            {/* Main content rail */}
+            <div className="mx-auto w-full max-w-3xl flex-1 border-x border-edge">
+              {/* Stripe banner replaces the old header */}
+              <StripeBar />
+              {children}
+            </div>
 
-          <div className="mx-auto w-full max-w-3xl border-x border-edge">
-            <Footer />
-          </div>
-          <Analytics />
-        </ThemeProvider>
+            <div className="mx-auto w-full max-w-3xl border-x border-edge">
+              <Footer />
+            </div>
+            <Analytics />
+          </ThemeProvider>
+        </AudioProvider>
       </body>
     </html>
   );

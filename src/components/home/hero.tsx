@@ -30,6 +30,7 @@ export function Hero() {
             alt=""
             fill
             priority
+            sizes="100vw"
             className="object-cover object-[90%_center] sm:object-center"
             aria-hidden
           />
