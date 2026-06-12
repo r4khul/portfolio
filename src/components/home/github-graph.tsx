@@ -112,8 +112,32 @@ export function GitHubContributionGraph() {
     });
   }, []);
 
+  if (!githubData) {
+    return (
+      <div className="mt-8 relative animate-pulse">
+        <div className="tactile rounded-xl p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 overflow-hidden bg-surface/50">
+          <div className="flex items-center justify-between">
+            <div className="h-8 w-32 bg-edge-strong/30 rounded" />
+            <div className="h-4 w-20 bg-edge-strong/20 rounded" />
+          </div>
+          <div className="h-24 w-full bg-edge-strong/20 rounded" />
+          <div className="flex items-center justify-between pt-3 border-t border-edge-strong/50">
+            <div className="h-4 w-24 bg-edge-strong/20 rounded" />
+            <div className="h-4 w-32 bg-edge-strong/20 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-8 select-none relative" ref={containerRef}>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="mt-8 select-none relative" 
+      ref={containerRef}
+    >
       <div className="tactile rounded-xl p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 overflow-hidden relative">
         {/* HUD Hover Info - Anchored to Top Center */}
         <AnimatePresence>
@@ -243,6 +267,6 @@ export function GitHubContributionGraph() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

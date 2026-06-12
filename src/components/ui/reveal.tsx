@@ -18,15 +18,14 @@ export const Reveal = memo(({ children, delay = 0, className }: RevealProps) => 
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      viewport={{ once: true, margin: "-20px" }}
       transition={{ 
-        duration: 0.55, 
+        duration: 0.8, 
         delay, 
-        ease: [0.21, 0.47, 0.32, 0.98],
-        opacity: { duration: 0.4 },
-        y: { type: "spring", damping: 25, stiffness: 200 }
+        ease: [0.16, 1, 0.3, 1], // Custom cubic-bezier for a more premium, "smooth-stop" feel
+        opacity: { duration: 0.6 },
       }}
       style={{ willChange: "opacity, transform" }}
     >
