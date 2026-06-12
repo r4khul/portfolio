@@ -22,6 +22,13 @@
   --primary-to: #141417;
   --primary-highlight: rgba(255, 255, 255, 0.2);
   --primary-text: #fafafa;
+
+  /* Contribution Graph Levels */
+  --contrib-0: #f3f4f6;
+  --contrib-1: #d1e5f7;
+  --contrib-2: #a5d0f0;
+  --contrib-3: #87bbea;
+  --contrib-4: #5a9fd4;
 }
 
 .dark {
@@ -44,6 +51,9 @@
   --primary-to: #d4d4d8;
   --primary-highlight: rgba(255, 255, 255, 0.95);
   --primary-text: #111113;
+
+  /* Contribution Graph Dark Mode Overrides */
+  --contrib-0: #18181b;
 }
 
 @theme inline {
@@ -216,4 +226,13 @@ body {
 
 ::view-transition-new(root) {
   z-index: 2147483647;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

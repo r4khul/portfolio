@@ -11,6 +11,7 @@ import { profile, socials } from "@/data/profile";
 import { LocalTime } from "@/components/site/local-time";
 import { ResumeButton } from "@/components/ui/resume-button";
 import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
+import { GitHubContributionGraph } from "@/components/home/github-graph";
 
 export function Hero() {
   return (
@@ -134,6 +135,7 @@ export function Hero() {
             </div>
           </div>
           
+          <GitHubContributionGraph />
         </div>
       </div>
     </section>
