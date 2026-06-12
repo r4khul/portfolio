@@ -2,17 +2,21 @@
 
 import { motion } from "motion/react";
 import { FileUser } from "lucide-react";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 interface ResumeButtonProps {
   href: string;
 }
 
 export function ResumeButton({ href }: ResumeButtonProps) {
+  const { playClick } = useAudioFeedback();
+
   return (
     <motion.a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={playClick}
       className="group relative flex items-center justify-center overflow-hidden rounded-xl border border-white/40 bg-[#87bbea] px-4 py-2 text-white transition duration-300 hover:brightness-105"
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}

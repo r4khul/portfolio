@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 const emptySubscribe = () => () => {};
 

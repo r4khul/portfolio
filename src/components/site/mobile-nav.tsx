@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Briefcase, FolderOpen, Wrench, GitMerge, BookOpen, Mail } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 const nav = [
   { label: "About",       href: "/#about",       icon: User },
@@ -28,6 +29,7 @@ const Path = (props: ComponentProps<typeof motion.path>) => (
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const { playClick } = useAudioFeedback();
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -42,6 +44,7 @@ export function MobileNav() {
   }, [isOpen]);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    playClick();
     setIsOpen(false);
     const id = href.replace("/#", "");
     const el = document.getElementById(id);
@@ -58,7 +61,10 @@ export function MobileNav() {
     <div className="xl:hidden">
       {/* Menu Toggle Button (Morphing) */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          playClick();
+          setIsOpen(!isOpen);
+        }}
         className="fixed right-4 top-3 z-60 flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
         aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
       >

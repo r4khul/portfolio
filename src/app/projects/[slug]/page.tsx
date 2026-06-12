@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Pin, Play } from "lucide-react";
+import { ArrowUpRight, Pin, Play } from "lucide-react";
 import { FaGithub, FaGooglePlay } from "react-icons/fa";
 import { getProject, getProjects } from "@/lib/projects";
 import { profile } from "@/data/profile";
 import { MdxContent } from "@/components/mdx-content";
 import { GithubStats } from "@/components/project/github-stats";
 import { ProjectJsonLd } from "@/components/site/json-ld";
+import { ProjectActions } from "@/components/project/project-actions";
+import { BackButton } from "@/components/project/back-button";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -94,13 +96,7 @@ export default async function ProjectPage({ params }: Props) {
       </div>
 
       <div className="bleed-line px-4 py-8 sm:px-8">
-        <Link
-          href="/#projects"
-          className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />{" "}
-          all projects
-        </Link>
+        <BackButton href="/#projects" />
 
         <header className="mt-6">
           <p className="font-mono text-[11px] tracking-wide text-faint uppercase">
@@ -121,20 +117,7 @@ export default async function ProjectPage({ params }: Props) {
             {project.description}
           </p>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            {project.links.map((link) => (
-              <a
-                key={link.url}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="tactile inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[12.5px] font-medium group"
-              >
-                {getLinkIcon(link.label)}
-                <span>{link.label}</span>
-              </a>
-            ))}
-          </div>
+          <ProjectActions links={project.links.map(l => ({ ...l, icon: getLinkIcon(l.label) }))} />
 
           <ul className="mt-6 flex flex-wrap gap-1.5" aria-label="Tech stack">
             {project.stack.map((tech) => (

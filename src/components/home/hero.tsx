@@ -15,8 +15,11 @@ import { ResumeButton } from "@/components/ui/resume-button";
 import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
 import { GitHubContributionGraph } from "@/components/home/github-graph";
 import { Reveal } from "@/components/ui/reveal";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 export function Hero() {
+  const { playClick } = useAudioFeedback();
+
   return (
     <section aria-label="Intro">
       {/* Cover banner */}
@@ -114,6 +117,7 @@ export function Hero() {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={playClick}
                         className="tactile flex size-10 items-center justify-center rounded-lg text-faint transition hover:-translate-y-0.5 hover:text-foreground hover:shadow-sm"
                         aria-label={social.label}
                       >
@@ -132,6 +136,7 @@ export function Hero() {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <a
                   href={`mailto:${profile.email}`}
+                  onClick={playClick}
                   className="tactile flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-faint transition hover:-translate-y-0.5 hover:text-foreground"
                 >
                   <Mail className="size-4.5" />
@@ -147,6 +152,7 @@ export function Hero() {
                     layout: "month_view",
                     useSlotsViewOnSmallScreen: "true",
                   })}
+                  onClick={playClick}
                   className="tactile-primary flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 cursor-pointer transition hover:-translate-y-0.5 shadow-sm"
                 >
                   <Calendar className="size-4.5" />

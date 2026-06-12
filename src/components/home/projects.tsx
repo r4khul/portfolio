@@ -1,13 +1,20 @@
+"use client";
+
 import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Pin } from "lucide-react";
-import { getProjects } from "@/lib/projects";
+import type { Project } from "@/lib/projects";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
-export const ProjectsSection = memo(() => {
-  const projects = getProjects();
+interface ProjectsSectionProps {
+  projects: Project[];
+}
+
+export const ProjectsSection = memo(({ projects }: ProjectsSectionProps) => {
+  const { playClick } = useAudioFeedback();
 
   return (
     <Section id="projects" index="04" title="Projects">
@@ -16,6 +23,7 @@ export const ProjectsSection = memo(() => {
           <Reveal key={project.slug} delay={i * 0.06} className="bg-background">
             <Link
               href={`/projects/${project.slug}`}
+              onClick={playClick}
               className="group flex h-full flex-col transition-colors hover:bg-surface"
             >
               <div className="relative aspect-[5/2.4] overflow-hidden border-b border-edge">

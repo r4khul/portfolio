@@ -4,8 +4,11 @@ import { ArrowUpRight, Mail, Calendar } from "lucide-react";
 import { profile } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 export function ContactSection() {
+  const { playClick } = useAudioFeedback();
+
   return (
     <Section id="contact" index="07" title="Contact">
       <Reveal>
@@ -20,6 +23,7 @@ export function ContactSection() {
           <div className="mt-6 flex flex-wrap gap-3">
             <a
               href={`mailto:${profile.email}`}
+              onClick={playClick}
               className="tactile-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-medium"
             >
               <Mail className="size-3.5" />
@@ -33,6 +37,7 @@ export function ContactSection() {
                 layout: "month_view",
                 useSlotsViewOnSmallScreen: "true",
               })}
+              onClick={playClick}
               className="tactile inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-medium cursor-pointer"
             >
               <Calendar className="size-3.5" />

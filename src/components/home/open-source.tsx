@@ -1,10 +1,15 @@
+"use client";
+
 import { memo } from "react";
 import { ArrowUpRight, GitMerge, GitPullRequest } from "lucide-react";
 import { openSource } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 export const OpenSourceSection = memo(() => {
+  const { playClick } = useAudioFeedback();
+
   return (
     <Section id="open-source" index="05" title="Open Source">
       <div className="space-y-3">
@@ -17,6 +22,7 @@ export const OpenSourceSection = memo(() => {
                     href={contribution.repoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={playClick}
                     className="inline-flex items-center gap-1 hover:underline"
                   >
                     {contribution.repo}
@@ -37,6 +43,7 @@ export const OpenSourceSection = memo(() => {
                         href={pr.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={playClick}
                         className="tactile inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted"
                       >
                         {isReview ? (

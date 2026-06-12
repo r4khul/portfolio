@@ -1,10 +1,15 @@
+"use client";
+
 import { memo } from "react";
 import Image from "next/image";
 import { experience } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 export const ExperienceSection = memo(() => {
+  const { playClick } = useAudioFeedback();
+
   return (
     <Section id="experience" index="02" title="Experience">
       <div className="relative space-y-12">
@@ -29,6 +34,7 @@ export const ExperienceSection = memo(() => {
                       href={job.companyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={playClick}
                       className="hover:underline"
                     >
                       {job.company}

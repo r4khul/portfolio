@@ -13,6 +13,7 @@ import {
   Mail,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 const nav = [
   { label: "About",       href: "/#about",       icon: User },
@@ -29,9 +30,11 @@ const SECTION_IDS = nav.map((n) => n.href.replace("/#", ""));
 export const SideNav = memo(() => {
   const pathname = usePathname();
   const [active, setActive] = useState<string>("");
+  const { playClick } = useAudioFeedback();
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      playClick();
       const id = href.replace("/#", "");
       const el = document.getElementById(id);
       if (el) {
