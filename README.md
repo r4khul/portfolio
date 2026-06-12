@@ -1,6 +1,6 @@
 # Rakhul Prakash | Portfolio
 
-A high-performance, developer-first personal portfolio website built with extreme restraint and precise technical-blueprint styling. Inspired by chanhdai.com, manixh.dev, and ramx.in.
+A high-performance, developer-first personal portfolio website built with extreme restraint and precise technical-blueprint styling.
 
 ## Design System & Blueprint Aesthetic
 
