@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ComponentProps } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Briefcase, FolderOpen, Wrench, GitMerge, BookOpen, Mail } from "lucide-react";
@@ -16,7 +16,7 @@ const nav = [
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
 
-const Path = (props: any) => (
+const Path = (props: ComponentProps<typeof motion.path>) => (
   <motion.path
     fill="transparent"
     strokeWidth="2"
@@ -59,7 +59,7 @@ export function MobileNav() {
       {/* Menu Toggle Button (Morphing) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed right-4 top-3 z-60 flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition-all active:scale-95 hover:bg-background/50 hover:text-foreground"
+        className="fixed right-4 top-3 z-60 flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
         aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" className="text-foreground">
@@ -123,7 +123,7 @@ export function MobileNav() {
                     <Link
                       href={item.href}
                       onClick={(e) => handleLinkClick(e, item.href)}
-                      className="group flex items-center gap-4 text-4xl sm:text-5xl font-serif text-muted transition-all hover:text-foreground active:scale-95"
+                      className="group flex items-center gap-4 text-4xl sm:text-5xl font-serif text-muted transition hover:text-foreground active:scale-95"
                     >
                       <span className="flex size-12 sm:size-14 items-center justify-center rounded-full border border-edge bg-surface transition-colors group-hover:border-edge-strong">
                         <Icon className="size-5 sm:size-6 text-faint transition-colors group-hover:text-foreground" strokeWidth={1.5} />
@@ -151,7 +151,7 @@ export function MobileNav() {
                 r4khul
               </div>
               <ThemeToggle 
-                className="flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition-all active:scale-95 hover:bg-background/50 hover:text-foreground"
+                className="flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
                 iconClassName="relative size-5"
               />
             </motion.div>

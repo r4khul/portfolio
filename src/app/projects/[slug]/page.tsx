@@ -65,7 +65,7 @@ const getLinkIcon = (label: string) => {
     return <FaGooglePlay className="size-3.5 text-muted transition-colors group-hover:text-foreground" />;
   }
   if (normalized.includes("video") || normalized.includes("demo")) {
-    return <Play className="size-3.5 text-muted fill-muted/10 transition-all group-hover:text-foreground group-hover:fill-foreground/10" />;
+    return <Play className="size-3.5 text-muted fill-muted/10 transition group-hover:text-foreground group-hover:fill-foreground/10" />;
   }
   return <ArrowUpRight className="size-3 text-faint transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />;
 };

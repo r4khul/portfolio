@@ -16,15 +16,6 @@ import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
 import { GitHubContributionGraph } from "@/components/home/github-graph";
 
 export function Hero() {
-  const handleCalClick = (e: React.MouseEvent) => {
-    // On mobile, cal.com's modal may not fire reliably — open directly as fallback
-    const isMobile = window.matchMedia("(pointer: coarse)").matches;
-    if (isMobile || typeof window === "undefined" || !(window as any).Cal) {
-      e.preventDefault();
-      window.open("https://cal.com/r4khul/meet", "_blank", "noopener,noreferrer");
-    }
-  };
-
   return (
     <section aria-label="Intro">
       {/* Cover banner */}
@@ -109,7 +100,7 @@ export function Hero() {
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="tactile flex size-10 items-center justify-center rounded-lg text-faint transition-all hover:-translate-y-0.5 hover:text-foreground hover:shadow-sm"
+                      className="tactile flex size-10 items-center justify-center rounded-lg text-faint transition hover:-translate-y-0.5 hover:text-foreground hover:shadow-sm"
                       aria-label={social.label}
                     >
                       <Icon className="size-4.5" />
@@ -125,7 +116,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <a
                 href={`mailto:${profile.email}`}
-                className="tactile flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-faint transition-all hover:-translate-y-0.5 hover:text-foreground"
+                className="tactile flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-faint transition hover:-translate-y-0.5 hover:text-foreground"
               >
                 <Mail className="size-4.5" />
                 <span className="font-sans text-[14px] font-medium tracking-wide">
@@ -134,14 +125,13 @@ export function Hero() {
               </a>
               <button
                 type="button"
-                onClick={handleCalClick}
                 data-cal-namespace="meet"
                 data-cal-link="r4khul/meet"
                 data-cal-config={JSON.stringify({
                   layout: "month_view",
                   useSlotsViewOnSmallScreen: "true",
                 })}
-                className="tactile-primary flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 cursor-pointer transition-all hover:-translate-y-0.5 shadow-sm"
+                className="tactile-primary flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 cursor-pointer transition hover:-translate-y-0.5 shadow-sm"
               >
                 <Calendar className="size-4.5" />
                 <span className="font-sans text-[14px] font-medium tracking-wide">

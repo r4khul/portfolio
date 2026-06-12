@@ -5,7 +5,7 @@ import { getCalApi } from "@calcom/embed-react";
 
 export function CalEmbed() {
   useEffect(() => {
-    let calInstance: any = null;
+    let calInstance: ((...args: unknown[]) => void) | null = null;
 
     const applyThemeStyles = (isDark: boolean) => {
       if (isDark) {
@@ -39,7 +39,7 @@ export function CalEmbed() {
     })();
 
     // Monitor both html class and inline style changes in real-time
-    const observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(() => {
       // Temporarily disconnect observer to prevent infinite feedback loop during style updates
       observer.disconnect();
 

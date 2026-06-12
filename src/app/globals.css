@@ -218,6 +218,8 @@ body {
   animation: none;
   mix-blend-mode: normal;
   display: block;
+  isolation: isolate;
+  will-change: clip-path;
 }
 
 ::view-transition-old(root) {
@@ -226,6 +228,15 @@ body {
 
 ::view-transition-new(root) {
   z-index: 2147483647;
+}
+
+/* Global Transition Suppressor - Prevents stutter during theme switch */
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition: none !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
 }
 
 /* Hide scrollbar but keep scroll functionality */

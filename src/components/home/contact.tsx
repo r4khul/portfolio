@@ -6,15 +6,6 @@ import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 
 export function ContactSection() {
-  const handleCalClick = (e: React.MouseEvent) => {
-    // On mobile, cal.com's modal may not fire reliably — open directly as fallback
-    const isMobile = window.matchMedia("(pointer: coarse)").matches;
-    if (isMobile || typeof window === "undefined" || !(window as any).Cal) {
-      e.preventDefault();
-      window.open("https://cal.com/r4khul/meet", "_blank", "noopener,noreferrer");
-    }
-  };
-
   return (
     <Section id="contact" index="07" title="Contact">
       <Reveal>
@@ -36,7 +27,6 @@ export function ContactSection() {
             </a>
             <button
               type="button"
-              onClick={handleCalClick}
               data-cal-namespace="meet"
               data-cal-link="r4khul/meet"
               data-cal-config={JSON.stringify({

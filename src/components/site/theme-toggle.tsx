@@ -5,8 +5,16 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion } from "motion/react";
 import { useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 
 const emptySubscribe = () => () => {};
+
+interface ViewTransition {
+  ready: Promise<void>;
+  finished: Promise<void>;
+  updateCallbackDone: Promise<void>;
+  skipTransition: () => void;
+}
 
 export const ThemeToggle = memo(({
   className = "tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-90",
@@ -29,7 +37,7 @@ export const ThemeToggle = memo(({
     () => false,
   );
 
-  const toggleTheme = (event: React.MouseEvent) => {
+  const toggleTheme = async (event: React.MouseEvent) => {
     // Audio feedback - non-blocking
     if (audioRef.current) {
       const audio = audioRef.current;
@@ -41,10 +49,13 @@ export const ThemeToggle = memo(({
     const nextTheme = isDark ? "light" : "dark";
 
     // Fallback for browsers that don't support View Transitions 
-    // or for users who prefer reduced motion (extremely important for low-end feel)
+    // or for users who prefer reduced motion
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const documentWithTransition = document as Document & {
+      startViewTransition?: (callback: () => Promise<void> | void) => ViewTransition;
+    };
     
-    if (!(document as any).startViewTransition || prefersReducedMotion) {
+    if (!documentWithTransition.startViewTransition || prefersReducedMotion) {
       setTheme(nextTheme);
       return;
     }
@@ -56,14 +67,22 @@ export const ThemeToggle = memo(({
       Math.max(y, window.innerHeight - y)
     );
 
-    const transition = (document as any).startViewTransition(async () => {
-      setTheme(nextTheme);
+    // Disable transitions globally during the switch to prevent main-thread overloading
+    document.documentElement.classList.add("no-transitions");
+
+    const transition = documentWithTransition.startViewTransition(async () => {
+      // Use flushSync to ensure the theme change (DOM update) is finished
+      // before the browser takes the "new" snapshot
+      flushSync(() => {
+        setTheme(nextTheme);
+      });
     });
 
-    transition.ready.then(() => {
-      // Use a slightly faster duration (450ms) for a snappier feel on low-end hardware
-      // 700ms can feel like it's "dragging" if frames drop
-      document.documentElement.animate(
+    try {
+      await transition.ready;
+
+      // Snappy but smooth duration (500ms is peak for performance/aesthetics)
+      const animation = document.documentElement.animate(
         {
           clipPath: [
             `circle(0px at ${x}px ${y}px)`,
@@ -71,12 +90,18 @@ export const ThemeToggle = memo(({
           ],
         },
         {
-          duration: 800,
-          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+          duration: 500,
+          easing: "cubic-bezier(0.16, 1, 0.3, 1)", // QuintOut for smoother start-to-finish
           pseudoElement: "::view-transition-new(root)",
         }
       );
-    });
+
+      // Wait for animation to finish
+      await animation.finished;
+    } finally {
+      // Re-enable transitions
+      document.documentElement.classList.remove("no-transitions");
+    }
   };
 
   const isLight = mounted && resolvedTheme === "light";

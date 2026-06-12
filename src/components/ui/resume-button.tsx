@@ -13,7 +13,7 @@ export function ResumeButton({ href }: ResumeButtonProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex items-center justify-center overflow-hidden rounded-xl border border-white/40 bg-[#87bbea] px-4 py-2 text-white transition-all duration-300 hover:brightness-105"
+      className="group relative flex items-center justify-center overflow-hidden rounded-xl border border-white/40 bg-[#87bbea] px-4 py-2 text-white transition duration-300 hover:brightness-105"
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
       aria-label="View Resume"

@@ -13,7 +13,7 @@ export const ExperienceSection = memo(() => {
             <Reveal>
               <article className="relative pl-16">
                 {/* Logo Avatar */}
-                <div className="tactile absolute left-0 top-0 flex size-12 items-center justify-center overflow-hidden rounded-full shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
+                <div className="tactile absolute left-0 top-0 flex size-12 items-center justify-center overflow-hidden rounded-full shadow-sm transition duration-300 hover:scale-105 hover:shadow-md">
                   <Image
                     src={job.logo}
                     alt={`${job.company} logo`}

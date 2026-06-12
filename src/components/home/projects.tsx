@@ -44,7 +44,7 @@ export const ProjectsSection = memo(() => {
                     </span>
                   )}
                 </div>
-                <ArrowUpRight className="size-4 shrink-0 text-faint transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
+                <ArrowUpRight className="size-4 shrink-0 text-faint transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
               </div>
               <p className="mt-1 font-mono text-[10.5px] tracking-wide text-faint uppercase">
                 {project.type} · {project.status}

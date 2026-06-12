@@ -196,7 +196,7 @@ export function GitHubContributionGraph() {
                           onMouseLeave={() => setHoveredDay(null)}
                           onTouchEnd={() => setHoveredDay(null)}
                           style={{ backgroundColor: `var(--contrib-${level})` }}
-                          className="w-[9px] h-[9px] rounded-[1.5px] cursor-pointer shadow-[0_0.5px_1px_rgba(0,0,0,0.05)] transition-all hover:scale-130 hover:z-20"
+                          className="w-[9px] h-[9px] rounded-[1.5px] cursor-pointer shadow-[0_0.5px_1px_rgba(0,0,0,0.05)] transition-transform hover:scale-130 hover:z-20"
                         />
                       );
                     })}
@@ -215,7 +215,7 @@ export function GitHubContributionGraph() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-muted hover:text-foreground transition-colors group"
           >
-            <div className="relative w-4 h-4 overflow-hidden rounded-full border border-edge-strong/30 grayscale group-hover:grayscale-0 transition-all">
+            <div className="relative w-4 h-4 overflow-hidden rounded-full border border-edge-strong/30 grayscale group-hover:grayscale-0 transition">
               <Image
                 src={`https://github.com/${profile.handle}.png`}
                 alt={profile.handle}
@@ -224,7 +224,7 @@ export function GitHubContributionGraph() {
                 className="object-cover"
               />
             </div>
-            <span className="underline decoration-muted/30 underline-offset-4 group-hover:decoration-foreground/30 transition-all">@{profile.handle}</span>
+            <span className="underline decoration-muted/30 underline-offset-4 group-hover:decoration-foreground/30 transition">@{profile.handle}</span>
             <ArrowUpRight className="size-3 text-faint group-hover:text-foreground transition-colors" />
           </a>
 
