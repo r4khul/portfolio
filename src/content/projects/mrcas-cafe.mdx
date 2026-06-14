@@ -15,7 +15,7 @@ links:
 
 ## Problem
 
-Traditional campus store systems create friction during peak academic hours: long queues during breaks, manual order handling, inventory mismanagement, and zero real-time visibility into orders and stock. Students and faculty waste valuable time in lines while store staff struggle with demand spikes during lunch breaks and exam periods.
+Traditional campus store systems create friction during peak academic hours: **long queues during breaks**, manual order handling, inventory mismanagement, and **zero real-time visibility** into orders and stock. Students and faculty waste valuable time in lines while store staff struggle with demand spikes during lunch breaks and exam periods.
 
 The client needed a modern digital ordering platform built for a campus environment: real-time order management, seamless digital payments, efficient inventory handling, and multi-role access for customers and store administrators.
 
@@ -47,11 +47,11 @@ Built MRCAS Café as a complete digital campus store ecosystem using Flutter wit
 
 Lunch breaks caused sudden spikes in concurrent orders, multiple users ordering the same item simultaneously created synchronization issues and inventory inconsistencies.
 
-Solved with atomic Firestore transactions: every order validates and updates stock inside a transaction block so simultaneous requests can never oversell. Added a business-level stock-buffering strategy, only active sellable inventory is exposed while 10-15 hidden backup units are held internally, preventing sudden stock exhaustion during rush periods. Optimistic UI updates plus Firestore snapshot listeners and local caching keep the experience smooth under heavy load.
+Solved with **atomic Firestore transactions**: every order validates and updates stock inside a transaction block so simultaneous requests can **never oversell**. Added a business-level stock-buffering strategy, only active sellable inventory is exposed while 10-15 hidden backup units are held internally, preventing sudden stock exhaustion during rush periods. Optimistic UI updates plus Firestore snapshot listeners and local caching keep the experience smooth under heavy load.
 
 ### Race conditions in concurrent ordering
 
-Two users could grab the last unit of an item at nearly the same time, risking duplicate deductions or negative inventory. Every deduction now runs in a transaction that reads the latest stock, verifies availability at transaction time, deducts only on success, and automatically retries on concurrent modification, strong consistency even at peak concurrency.
+Two users could grab the last unit of an item at nearly the same time, risking **duplicate deductions or negative inventory**. Every deduction now runs in a transaction that reads the latest stock, verifies availability at transaction time, deducts only on success, and automatically retries on concurrent modification, strong consistency even at peak concurrency.
 
 ### Multi-method payments across platforms
 
@@ -66,9 +66,9 @@ Built a complete Razorpay payment service with secure transaction handling, mult
 
 ## Outcome
 
-- Live on the Play Store, serving a real campus daily
-- Atomic transactions + stock reservation eliminated overselling entirely
-- Lazy loading, optimistic UI, image caching & indexed queries keep it fast at high concurrency
+- **Live on the Play Store**, serving a real campus daily
+- Atomic transactions + stock reservation **eliminated overselling entirely**
+- Lazy loading, optimistic UI, image caching & indexed queries **keep it fast at high concurrency**
 
 ## What I learned
 

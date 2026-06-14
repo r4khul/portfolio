@@ -137,8 +137,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-svh flex-col">
+        <JsonLd />
         <AudioProvider>
-          <JsonLd />
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             {/* Cal.com embed initializer — must live inside ThemeProvider */}
             <CalEmbed />

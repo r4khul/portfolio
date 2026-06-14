@@ -7,6 +7,21 @@ import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
+// Parse markdown bold syntax (**text**) into React elements
+function parseBold(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return (
+    <span className="inline">
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </span>
+  );
+}
+
 export const ExperienceSection = memo(() => {
   const { playClick } = useAudioFeedback();
 
@@ -55,7 +70,7 @@ export const ExperienceSection = memo(() => {
                       className="flex gap-2.5 text-[13.5px] leading-relaxed text-muted"
                     >
                       <span aria-hidden className="mt-[7px] size-1 shrink-0 rounded-full bg-faint" />
-                      {point}
+                      {parseBold(point)}
                     </li>
                   ))}
                 </ul>

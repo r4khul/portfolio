@@ -9,9 +9,9 @@ export const profile = {
   cal: "https://cal.com/r4khul/",
   resume: "/r4khul_resume.pdf",
   about: [
-    "I'm Rakhul, a CS engineer who likes building things that people actually use.",
-    "My focus is mobile development with Flutter, from architecture and performance to edge cases and deployment. I've worked on startup products, open-source projects, and real client apps, where reliability matters more than demos.",
-    "I'm at my best when I can take ownership, learn fast, and turn messy problems into solid, shippable software.",
+    "I'm Rakhul, a CS engineer who likes **building things that people actually use**.",
+    "My focus is **mobile development with Flutter**, from architecture and performance to edge cases and deployment. I've worked on startup products, open-source projects, and real client apps, where **reliability matters more than demos**.",
+    "I'm at my best when I can **take ownership**, learn fast, and turn messy problems into **solid, shippable software**.",
   ],
 } as const;
 
@@ -39,12 +39,12 @@ export const experience: Experience[] = [
     summary:
       "Owned development of 2 fintech apps, performance, scalable architecture, and measurable impact across payments, onboarding, and release pipelines.",
     highlights: [
-      "Integrated 10+ data-intensive API endpoints with caching & virtualization strategies, reducing latency",
-      "Built CI/CD pipelines with Fastlane & GitHub Actions, cutting release cycles by 50%+",
+      "Integrated **10+ data-intensive API endpoints** with caching & virtualization strategies, reducing latency",
+      "Built CI/CD pipelines with Fastlane & GitHub Actions, **cutting release cycles by 50%+**",
       "Migrated payments from PayU to PhonePe Checkout SDK; shipped secure flows for gold/silver, mutual funds & SIPs",
-      "Revamped onboarding & KYC with third-party verification APIs, improving completion rates by 15–20%",
-      "Reduced app size by 20MB and achieved consistent 60FPS+ rendering",
-      "Resolved 45+ bugs, shipped 10+ features, and revamped legacy UI",
+      "Revamped onboarding & KYC with third-party verification APIs, **improving completion rates by 25%**",
+      "**Reduced app size by 20MB** and achieved **consistent 60FPS+ rendering**",
+      "**Resolved 45+ bugs**, shipped **10+ features**, and revamped legacy UI",
     ],
   },
 ];
@@ -77,7 +77,7 @@ export const skills: SkillGroup[] = [
   { label: "Tools & Workflow", items: ["Git", "GitHub", "Android Studio", "Postman"] },
   {
     label: "Editors & AI Tools",
-    items: ["VS Code", "Antigravity", "Cursor", "Claude Code", "OpenCode", "Gemini CLI"],
+    items: ["VS Code", "Antigravity", "Windsurf", "Cursor", "Claude Code", "OpenCode", "Gemini CLI"],
   },
 ];
 

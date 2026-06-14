@@ -17,13 +17,13 @@ links:
 
 ## Problem
 
-Modern Android apps are built with diverse frameworks: native, Flutter, React Native, Unity, KMP. But there's no simple, offline-first way to inspect the tech stack behind installed apps along with their runtime behavior and resource usage. Existing tools are developer-only, require root, or depend on online services.
+Modern Android apps are built with diverse frameworks: native, Flutter, React Native, Unity, KMP. But there's no **simple, offline-first way** to inspect the tech stack behind installed apps along with their **runtime behavior and resource usage**. Existing tools are developer-only, require root, or depend on online services.
 
 ## Constraints
 
-- Fully offline, no root access
-- Low overhead on system performance
-- Compatible with mid-range devices
+- **Fully offline**, no root access
+- **Low overhead** on system performance
+- Compatible with **mid-range devices**
 - Accurate framework detection despite limited OS-level visibility
 - Clean UI usable by developers and non-developers alike
 - Updates must not depend on Play Store availability
@@ -47,11 +47,11 @@ Android offers no reliable always-on mechanism without background restrictions o
 
 ### OOM crashes on 4GB devices
 
-Intensive scans crashed low-end devices. Fixed with image cache dimension capping via `ResizeImage`, batched processing limited to 2 concurrent tasks matching the native thread pool, and aggressive cache clearing on widget disposal.
+Intensive scans crashed low-end devices. Fixed with image cache dimension capping via `ResizeImage`, **batched processing limited to 2 concurrent tasks** matching the native thread pool, and **aggressive cache clearing** on widget disposal.
 
 ### Framework detection accuracy
 
-Obfuscation and diverse build configs break naive detection. Built multi-vector detection combining static, binary, and heuristic analysis over a continuously updated signature database, with confidence scoring and graceful fallback.
+Obfuscation and diverse build configs break naive detection. Built **multi-vector detection** combining static, binary, and heuristic analysis over a **continuously updated signature database**, with confidence scoring and graceful fallback.
 
 ## Architecture
 
@@ -62,9 +62,9 @@ Obfuscation and diverse build configs break naive detection. Built multi-vector 
 
 ## Stats
 
-- ~25,000+ lines across Flutter, Dart, and native Android
-- 95% detection accuracy across 10+ major frameworks
-- &lt;150MB peak memory, 2-3s scan for 100 apps
+- **~25,000+ lines** across Flutter, Dart, and native Android
+- **95% detection accuracy** across **10+ major frameworks**
+- **&lt;150MB peak memory**, **2-3s scan** for 100 apps
 - Shipped on Play Store + GitHub releases
 
 ## What I learned

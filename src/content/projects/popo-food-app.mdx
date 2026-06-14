@@ -15,15 +15,15 @@ links:
 
 ## Problem
 
-Corporate professionals face unique food-delivery challenges during work hours: limited options near office complexes, peak-hour delays, and no specialized features for workplace ordering. Consumer apps don't address floor/desk delivery, bulk ordering, or office-schedule integration.
+Corporate professionals face unique food-delivery challenges during work hours: **limited options near office complexes**, **peak-hour delays**, and no specialized features for workplace ordering. Consumer apps don't address floor/desk delivery, bulk ordering, or office-schedule integration.
 
 The client needed a specialized delivery solution for corporate environments with real-time order tracking, seamless payments, and delivery to specific office locations rather than just addresses.
 
 ## Constraints
 
-- Reliable on mid-range Android devices (minSdk 21)
-- Real-time order tracking with offline fallback
-- Secure PayU payment integration
+- Reliable on mid-range Android devices (**minSdk 21**)
+- **Real-time order tracking** with offline fallback
+- **Secure PayU payment integration**
 - Corporate-specific delivery locations (floor/desk)
 - Low data usage for office network environments
 - Fast checkout for busy professionals
@@ -45,7 +45,7 @@ Built POPO with Flutter, Clean Architecture, and BLoC state management for a sca
 
 ### Real-time tracking on unreliable office networks
 
-Office WiFi destabilizes during peak hours, breaking real-time order updates. Built a hybrid system: Supabase WebSocket subscriptions with intelligent fallback polling. The `RealtimeOrderService` manages five connection states: disconnected, connecting, connected, reconnecting, and pollingFallback. It switches transport automatically based on network conditions, with exponential backoff and local state caching so no data is lost during outages.
+Office WiFi destabilizes during peak hours, breaking real-time order updates. Built a **hybrid system**: Supabase WebSocket subscriptions with **intelligent fallback polling**. The `RealtimeOrderService` manages **five connection states**: disconnected, connecting, connected, reconnecting, and pollingFallback. It switches transport automatically based on network conditions, with exponential backoff and local state caching so no data is lost during outages.
 
 ### PayU gateway integration
 
@@ -60,9 +60,9 @@ PayU's SDK demands complex hash generation, multiple callback scenarios, and pre
 
 ## Stats
 
-- ~15,000+ lines across Flutter and native Android
-- 20+ RESTful endpoints with realtime subscriptions
-- 8+ optimized Supabase tables
+- **~15,000+ lines** across Flutter and native Android
+- **20+ RESTful endpoints** with realtime subscriptions
+- **8+ optimized Supabase tables**
 - Full PayU production deployment
 
 ## What I learned

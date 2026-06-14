@@ -17,7 +17,7 @@ links:
 
 ## Problem
 
-Personal finance apps typically require constant connectivity, fragment transaction data, and ignore regional language needs. The goal: a finance manager that works offline-first, supports Tamil alongside English, provides real-time analytics, and syncs seamlessly when connectivity returns.
+Personal finance apps typically require **constant connectivity**, fragment transaction data, and ignore **regional language needs**. The goal: a finance manager that works **offline-first**, supports **Tamil alongside English**, provides real-time analytics, and syncs seamlessly when connectivity returns.
 
 ## Constraints
 
@@ -45,7 +45,7 @@ Built Thrifty with Flutter and clean architecture: Drift ORM for type-safe local
 
 ### Offline-first sync with conflict resolution
 
-Users modify financial data offline; changes must merge cleanly when connectivity returns. Naive timestamp/last-write-wins approaches lost data. Final design: `editedLocally` flags with intelligent conflict resolution in the `TransactionRepository`: sync state management, graceful partial-failure handling, automatic sync triggers, timestamp-based conflict detection, and network-failure fallbacks.
+Users modify financial data offline; changes must **merge cleanly** when connectivity returns. Naive timestamp/last-write-wins approaches lost data. Final design: **`editedLocally` flags** with **intelligent conflict resolution** in the `TransactionRepository`: sync state management, graceful partial-failure handling, automatic sync triggers, timestamp-based conflict detection, and network-failure fallbacks.
 
 ### Real-time analytics over large datasets
 
@@ -60,8 +60,8 @@ Category aggregations and live chart updates strained UI performance. Built an a
 
 ## Stats
 
-- ~12,000+ lines · 20+ pinned dependencies
-- 69 tests · 80.5% code coverage
+- **~12,000+ lines** · **20+ pinned dependencies**
+- **69 tests** · **80.5% code coverage**
 - Full English/Tamil localization, 50+ strings
 - Android (API 21+) and iOS (12+)
 
