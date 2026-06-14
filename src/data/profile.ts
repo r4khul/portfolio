@@ -5,7 +5,7 @@ export const profile = {
   location: "Chennai, India",
   timezone: "Asia/Kolkata",
   email: "rakhul2005@gmail.com",
-  url: "https://r4khul.dev",
+  url: "https://rakhul.me",
   cal: "https://cal.com/r4khul/",
   resume: "/r4khul_resume.pdf",
   about: [
