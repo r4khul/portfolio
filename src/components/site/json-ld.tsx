@@ -1,5 +1,6 @@
 import { profile, experience, education } from "@/data/profile";
 import { Project } from "@/lib/projects";
+import { Blog } from "@/lib/blogs";
 
 export function JsonLd() {
   const personData = {
@@ -59,6 +60,28 @@ export function ProjectJsonLd({ project }: { project: Project }) {
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(projectData) }}
+    />
+  );
+}
+
+export function BlogPostJsonLd({ blog }: { blog: Blog }) {
+  const blogData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: blog.title,
+    description: blog.description,
+    author: {
+      "@type": "Person",
+      name: profile.name,
+    },
+    datePublished: blog.date,
+    url: `${profile.url}/blog/${blog.slug}`,
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(blogData) }}
     />
   );
 }

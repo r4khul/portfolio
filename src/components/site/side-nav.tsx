@@ -52,14 +52,15 @@ export const SideNav = memo(() => {
     if (pathname !== "/") {
       if (pathname.startsWith("/projects/")) {
         setActive("projects");
+      } else if (pathname.startsWith("/blog")) {
+        setActive("blogs");
       } else {
         setActive("");
       }
       return;
     }
 
-    // Use scroll position to detect active section — more reliable than
-    // IntersectionObserver with aggressive rootMargin for terminal sections.
+    // Use scroll position to detect active section
     const sectionEls = SECTION_IDS
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
@@ -73,18 +74,20 @@ export const SideNav = memo(() => {
       scheduled = false;
       const scrollY = window.scrollY + window.innerHeight * 0.3;
 
-      // Find the last section whose top is above the 30% viewport mark
       let current = sectionEls[0].id;
       for (const el of sectionEls) {
         const top = el.getBoundingClientRect().top + window.scrollY;
         if (top <= scrollY) current = el.id;
       }
 
-      // Near-bottom special case: if we're within 80px of the page bottom, 
-      // highlight the last section regardless
+      // Near-bottom special case: if we're within 10px of the page bottom,
+      // check if the Contact section is mostly in view to highlight it.
+      // This prevents "Blogs" from turning into "Contact" when scrolling to it.
       const nearBottom =
-         window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
-      if (nearBottom) current = sectionEls[sectionEls.length - 1].id;
+         window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10;
+      if (nearBottom) {
+        current = sectionEls[sectionEls.length - 1].id;
+      }
 
       setActive(current);
     };

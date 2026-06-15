@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-tweet/theme.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -32,28 +33,33 @@
 }
 
 .dark {
-  --background: #09090b;
-  --surface: #101013;
+  --background: #000000;
+  --surface: #0a0a0a;
   --foreground: #f4f4f5;
   --muted: #a1a1aa;
-  --faint: #5d5d66;
-  --edge: rgba(255, 255, 255, 0.09);
-  --edge-strong: rgba(255, 255, 255, 0.17);
-  --pattern: rgba(255, 255, 255, 0.055);
+  --faint: #52525b;
+  --edge: rgba(255, 255, 255, 0.08);
+  --edge-strong: rgba(255, 255, 255, 0.13);
+  --pattern: rgba(255, 255, 255, 0.04);
   --accent: #60a5fa;
-  --ring: rgba(255, 255, 255, 0.45);
-  --tactile-from: #202024;
-  --tactile-to: #121215;
-  --tactile-highlight: rgba(255, 255, 255, 0.08);
+  --ring: rgba(255, 255, 255, 0.35);
+  --tactile-from: #18181b;
+  --tactile-to: #080808;
+  --tactile-highlight: rgba(255, 255, 255, 0.06);
   --tactile-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
+    0 1px 2px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.55);
   --primary-from: #ffffff;
-  --primary-to: #d4d4d8;
+  --primary-to: #e4e4e7;
   --primary-highlight: rgba(255, 255, 255, 0.95);
-  --primary-text: #111113;
+  --primary-text: #000000;
 
   /* Contribution Graph Dark Mode Overrides */
-  --contrib-0: #18181b;
+  --contrib-0: #0a0a0c;
+
+  /* react-tweet True Dark Theme Overrides */
+  --tweet-bg-dark: #000000;
+  --tweet-border-dark: rgba(255, 255, 255, 0.1);
+  --tweet-color-dark: #f4f4f5;
 }
 
 @theme inline {
@@ -310,12 +316,18 @@ body {
 
 /* Idle — shrunk, faded, shifted right */
 .side-nav__item--idle {
-  opacity: 0.28;
+  opacity: 0.38;
   transform: scale(0.86) translateX(8px) translateZ(0);
 }
+:where(.dark) .side-nav__item--idle {
+  opacity: 0.52;
+}
 .side-nav__item--idle:hover {
-  opacity: 0.6;
+  opacity: 0.65;
   transform: scale(0.93) translateX(4px) translateZ(0);
+}
+:where(.dark) .side-nav__item--idle:hover {
+  opacity: 0.8;
 }
 
 /* Active — full size, full opacity */

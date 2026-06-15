@@ -6,9 +6,10 @@ import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 interface BackButtonProps {
   href: string;
+  label?: string;
 }
 
-export function BackButton({ href }: BackButtonProps) {
+export function BackButton({ href, label = "all projects" }: BackButtonProps) {
   const { playClick } = useAudioFeedback();
 
   return (
@@ -18,7 +19,7 @@ export function BackButton({ href }: BackButtonProps) {
       className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
     >
       <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />{" "}
-      all projects
+      {label}
     </Link>
   );
 }

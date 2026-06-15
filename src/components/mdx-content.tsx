@@ -1,6 +1,10 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import type { ComponentProps } from "react";
+import { TweetEmbed } from "@/components/mdx/tweet-embed";
+import { CommitCard } from "@/components/mdx/commit-card";
+import { ExtLink } from "@/components/mdx/ext-link";
 
 const components = {
   h2: (props: ComponentProps<"h2">) => (
@@ -67,6 +71,9 @@ const components = {
       {...props}
     />
   ),
+  TweetEmbed,
+  CommitCard,
+  ExtLink,
 };
 
 export function MdxContent({ source }: { source: string }) {
@@ -74,7 +81,7 @@ export function MdxContent({ source }: { source: string }) {
     <MDXRemote
       source={source}
       components={components}
-      options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+      options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug] } }}
     />
   );
 }

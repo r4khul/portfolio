@@ -1,4 +1,5 @@
 import { profile, socials } from "@/data/profile";
+import { TotalViewCounter } from "./total-view-counter";
 
 export function Footer() {
   return (
@@ -8,6 +9,7 @@ export function Footer() {
           <p className="font-mono text-[11px] text-faint">
             © {new Date().getFullYear()} {profile.name}
           </p>
+          <TotalViewCounter />
         </div>
         <nav aria-label="Social links" className="flex items-center gap-4">
           {socials.map((s) => (

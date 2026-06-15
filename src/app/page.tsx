@@ -7,9 +7,11 @@ import { OpenSourceSection } from "@/components/home/open-source";
 import { BlogsSection } from "@/components/home/blogs";
 import { ContactSection } from "@/components/home/contact";
 import { getProjects } from "@/lib/projects";
+import { getBlogs } from "@/lib/blogs";
 
 export default function Home() {
   const projects = getProjects();
+  const blogs = getBlogs();
 
   return (
     <main>
@@ -19,7 +21,7 @@ export default function Home() {
       <SkillsSection />
       <ProjectsSection projects={projects} />
       <OpenSourceSection />
-      <BlogsSection />
+      <BlogsSection blogs={blogs} />
       <ContactSection />
     </main>
   );
