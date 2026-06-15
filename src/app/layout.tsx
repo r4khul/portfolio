@@ -74,13 +74,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/images/site/pfp.png" },
-      { url: "/images/site/pfp.png", sizes: "32x32", type: "image/png" },
-      { url: "/images/site/pfp.png", sizes: "16x16", type: "image/png" },
+      { url: "/images/site/pfp.avif" },
+      { url: "/images/site/pfp.avif", sizes: "32x32", type: "image/avif" },
+      { url: "/images/site/pfp.avif", sizes: "16x16", type: "image/avif" },
     ],
-    shortcut: "/images/site/pfp.png",
+    shortcut: "/images/site/pfp.avif",
     apple: [
-      { url: "/images/site/pfp.png", sizes: "180x180", type: "image/png" },
+      { url: "/images/site/pfp.avif", sizes: "180x180", type: "image/avif" },
     ],
   },
   manifest: "/manifest.json",
@@ -94,7 +94,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${profile.url}/images/site/pfp-banner.png`,
+        url: `${profile.url}/images/site/pfp-banner.avif`,
         width: 1200,
         height: 630,
         alt: `${profile.name} | Mobile Engineer`,
@@ -107,7 +107,7 @@ export const metadata: Metadata = {
     description:
       "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software.",
     creator: "@r4khul",
-    images: [`${profile.url}/images/site/pfp-banner.png`]
+    images: [`${profile.url}/images/site/pfp-banner.avif`]
   },
   robots: {
     index: true,
@@ -134,6 +134,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-svh flex-col">

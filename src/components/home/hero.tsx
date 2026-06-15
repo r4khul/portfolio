@@ -26,11 +26,11 @@ export function Hero() {
       <Reveal>
         <div className="relative h-40 overflow-hidden sm:h-52">
           <Image
-            src="/images/site/pfp-banner.png"
+            src="/images/site/pfp-banner.avif"
             alt=""
             fill
             priority
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 768px"
             className="object-cover object-[90%_center] sm:object-center"
             aria-hidden
           />
@@ -47,7 +47,7 @@ export function Hero() {
                 <div className="relative z-10 -mt-12 shrink-0 sm:-mt-16">
                   <div className="size-24 overflow-hidden rounded-full border-4 border-background bg-background sm:size-32 shadow-sm">
                     <Image
-                      src="/images/site/pfp.png"
+                      src="/images/site/pfp.avif"
                       alt="Rakhul Prakash S B"
                       width={128}
                       height={128}

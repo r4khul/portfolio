@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Calendar, ArrowUpRight, PenTool } from "lucide-react";
 import type { Blog } from "@/lib/blogs";
 import { getReadingTime } from "@/lib/reading-time";
@@ -103,11 +104,12 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
               <div className="relative md:w-[28%] shrink-0">
                 <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg border border-edge bg-surface md:aspect-[16/10]">
                   {blog.cover ? (
-                    <img
+                    <Image
                       src={blog.cover}
                       alt={`${blog.title} cover`}
+                      fill
+                      sizes="(min-width: 768px) 215px, 100vw"
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
                     />
                   ) : (
                     <div className="dotgrid size-full opacity-30" />

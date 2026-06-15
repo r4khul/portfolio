@@ -28,7 +28,7 @@ export function JsonLd() {
       "Firebase",
       "React.js",
     ],
-    image: `${profile.url}/images/site/pfp.png`,
+    image: `${profile.url}/images/site/pfp.avif`,
     description: profile.about.join(" "),
   };
 
