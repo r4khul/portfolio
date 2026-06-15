@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
-    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com scripts.simpleanalyticscdn.com *.cal.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: github.com avatars.githubusercontent.com *.twimg.com pbs.twimg.com abs.twimg.com; font-src 'self' data:; connect-src 'self' github-contributions-api.deno.dev; frame-src 'self' *.cal.com; media-src 'self' video.twimg.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
+    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com scripts.simpleanalyticscdn.com *.cal.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: github.com avatars.githubusercontent.com *.twimg.com pbs.twimg.com abs.twimg.com; font-src 'self' data:; connect-src 'self' github-contributions-api.deno.dev api.github.com; frame-src 'self' *.cal.com; media-src 'self' video.twimg.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
   },
   {
     key: "X-DNS-Prefetch-Control",
