@@ -3,8 +3,7 @@
 My personal portfolio site. Clean, fast, and built with modern tools.
 
 <div style="display: flex; gap: 1rem; align-items: stretch;">
-  <img src="docs/screenshot-web.png" alt="Web View" style="width: 65%; height: 420px; object-fit: cover;" />
-  <img src="docs/screenshot-mobile.png" alt="Mobile View" style="width: 25%; height: 420px; object-fit: cover;" />
+  <img src="docs/screenshot.jpeg">
 </div>
 
 ## What's in here
