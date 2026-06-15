@@ -1,0 +1,274 @@
+---
+title: "Why was Flutter even a thing?"
+slug: "why-was-flutter-even-a-thing"
+description: "a conversation that every mobile developer has had at least once."
+date: "2025-06-14"
+category: "The Boring Flutter"
+number: 1
+tags: ["flutter", "cross-platform", "mobile", "react-native", "rant"]
+cover: "/images/blogs/the-boring-flutter/the-boring-flutter-banner.webp"
+---
+
+## Prequel
+
+why was flutter even a thing?
+
+this question struck me because <ExtLink href="https://reactnative.dev/">react native</ExtLink> hit its stable release almost three years before <ExtLink href="https://flutter.dev/">flutter</ExtLink> got its stable version. and yet, how did flutter compete in this space? what was with flutter that was better than react native? this was a genuine question i had to work on.
+
+at many places, you will read that flutter is more performant than react native, alongside other blatant excuses. but is that even the real thing? 
+
+i went deep into what problem flutter was actually trying to solve and why was it even a thing.
+
+## Chapter 1 - The Pain
+
+up until 2014, if you wanted to ship a high quality mobile app for android and ios, you had to write for two completely different platforms separately. you wrote java for android. then you started over from scratch and wrote objective-c for ios. it meant **maintaining two codebases, running two separate teams**, and dealing with *duplicate bugs that somehow behaved differently on each platform*.
+
+obviously, developers wanted a shortcut. web development was huge at the time, so the obvious idea was to take standard html, css, and js, wrap it in a native shell, and ship it to both app stores.
+
+that gave us tools like <ExtLink href="https://cordova.apache.org/">cordova</ExtLink> and <ExtLink href="https://ionicframework.com/">ionic</ExtLink>. the pitch was simple. take your web app, drop it inside a <ExtLink href="https://developer.mozilla.org/en-US/docs/Glossary/WebView">webview</ExtLink>, and you are done. one codebase. 
+
+<details className="group my-2.5 rounded-md border border-edge bg-surface px-3 py-2 text-[12.5px] font-mono text-muted">
+  <summary className="cursor-pointer font-semibold text-foreground select-none flex items-center gap-1 list-none [&::-webkit-details-marker]:hidden">
+    <span className="inline-block text-accent/80 transition-transform duration-200 group-open:rotate-90">▸</span> what about xamarin?
+  </summary>
+  <div className="mt-1 pl-3.5 text-[12px] leading-relaxed text-faint">
+    yes, <ExtLink href="https://dotnet.microsoft.com/en-us/apps/xamarin">xamarin</ExtLink> took a different approach by compiling c# to native views instead of webviews. but it still struggled with massive binary bloat, slow startup, and constant binding issues for native libraries. also, these weren't the only things; there existed multiple copies and webview wrappers like <ExtLink href="https://framework7.io/">framework7</ExtLink>, <ExtLink href="https://onsen.io/">onsen ui</ExtLink>, sencha touch etc.
+  </div>
+</details>
+
+and honestly, people built real things with this. early <ExtLink href="https://www.youtube.com/watch?v=Ga7xKYQ41XU&t=797s">notion used cordova</ExtLink>, and it worked. it solved the dual codebase problem.
+
+<div className="my-10 rounded-2xl border border-edge bg-surface p-6 font-sans">
+  <svg viewBox="0 0 600 220" className="w-full" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="20" width="200" height="180" rx="16" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="120" y="48" textAnchor="middle" className="fill-foreground text-[11px] font-mono uppercase tracking-wide">your app</text>
+    <rect x="40" y="64" width="160" height="116" rx="10" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1" strokeDasharray="4 4"/>
+    <text x="120" y="100" textAnchor="middle" className="fill-muted text-[11px] font-mono">html / css / js</text>
+    <text x="120" y="118" textAnchor="middle" className="fill-faint text-[10px] font-mono uppercase tracking-wide">running inside</text>
+    <text x="120" y="140" textAnchor="middle" className="fill-muted text-[12px] font-mono font-semibold">a webview</text>
+    <line x1="220" y1="110" x2="290" y2="110" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+    <polygon points="290,104 302,110 290,116" fill="currentColor" className="text-faint"/>
+    <text x="260" y="98" textAnchor="middle" className="fill-faint text-[10px] font-mono uppercase">scroll, tap,</text>
+    <text x="246" y="130" textAnchor="middle" className="fill-faint text-[10px] font-mono uppercase">animate</text>
+    <rect x="310" y="20" width="270" height="180" rx="16" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="445" y="48" textAnchor="middle" className="fill-foreground text-[11px] font-mono uppercase tracking-wide">what the phone feels</text>
+    <text x="445" y="100" textAnchor="middle" className="fill-muted text-[13px] font-mono">a slightly</text>
+    <text x="445" y="124" textAnchor="middle" className="fill-muted text-[13px] font-mono">laggy browser</text>
+    <text x="445" y="148" textAnchor="middle" className="fill-muted text-[13px] font-mono">pretending to be</text>
+    <text x="445" y="172" textAnchor="middle" className="fill-foreground text-[13px] font-mono font-semibold">an app</text>
+  </svg>
+  <span className="mt-3 block text-center font-mono text-[10px] tracking-wide text-faint uppercase">
+    the webview shell, before anyone touches it
+  </span>
+</div>
+
+but a <ExtLink href="https://developer.mozilla.org/en-US/docs/Glossary/WebView">webview</ExtLink> is <span className="underline decoration-dotted decoration-foreground/30 underline-offset-4">literally just a browser tab pretending to be an app</span>. scrolling always felt a bit off. *animations were clunky. gestures had weird delays.* users could feel it was **not a real native app**, even if they did not know the technical reasons why. plus, debugging rendering issues inside a wrapped browser engine was a nightmare for the developers.
+
+so the problem was not really solved. it was just hidden until you actually tried to use the app.
+
+## Chapter 2 - The Rise of React Native
+
+then <ExtLink href="https://meta.com/">facebook</ExtLink> released <ExtLink href="https://reactnative.dev/">react native</ExtLink> in 2015. for the first time, cross platform development actually made sense.
+
+instead of rendering web elements inside a browser dom, react native **mapped your javascript code directly to real native views**. a `<text>` tag became a native text renderer. a `<button>` became a real os button. it *looked and felt native because it literally was using native components under the hood*.
+
+if you already knew react for the web, the transition was incredibly smooth. same jsx, same hooks, same component structure, just targeting native ui. it really felt like the ultimate solution to the mobile development problem.
+
+## Chapter 3 - The Fall of React Native (not really)
+
+but there was a **massive bottleneck in the architecture**. your javascript code ran on one thread, and the native ui ran on another. the only way they communicated was through a bridge.
+
+every single tap, scroll, and animation frame had to be serialized into json, sent across this bridge, and deserialized on the other side. every single time.
+
+<div className="my-10 rounded-2xl border border-edge bg-surface p-6 font-sans">
+  <svg viewBox="0 0 600 200" className="w-full" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="40" width="160" height="120" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="100" y="75" textAnchor="middle" className="fill-foreground text-[11px] font-mono uppercase tracking-wide">js thread</text>
+    <text x="100" y="105" textAnchor="middle" className="fill-muted text-[11px] font-mono">your react</text>
+    <text x="100" y="125" textAnchor="middle" className="fill-muted text-[11px] font-mono">component code</text>
+    <rect x="420" y="40" width="160" height="120" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="500" y="75" textAnchor="middle" className="fill-foreground text-[11px] font-mono uppercase tracking-wide">ui thread</text>
+    <text x="500" y="105" textAnchor="middle" className="fill-muted text-[11px] font-mono">actual native</text>
+    <text x="500" y="125" textAnchor="middle" className="fill-muted text-[11px] font-mono">views on screen</text>
+    <rect x="220" y="30" width="160" height="140" rx="12" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1.5" strokeDasharray="5 5"/>
+    <text x="300" y="20" textAnchor="middle" className="fill-faint text-[10px] font-mono uppercase tracking-wide">the bridge</text>
+    <text x="300" y="80" textAnchor="middle" className="fill-faint text-[10px] font-mono">serialize</text>
+    <text x="300" y="100" textAnchor="middle" className="fill-faint text-[10px] font-mono">→ json →</text>
+    <text x="300" y="120" textAnchor="middle" className="fill-faint text-[10px] font-mono">deserialize</text>
+    <text x="300" y="145" textAnchor="middle" className="fill-foreground text-[11px] font-mono font-semibold">for every tap,</text>
+    <text x="300" y="163" textAnchor="middle" className="fill-foreground text-[11px] font-mono font-semibold">scroll, frame</text>
+    <line x1="180" y1="100" x2="220" y2="100" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+    <line x1="380" y1="100" x2="420" y2="100" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+    <polygon points="412,94 424,100 412,106" fill="currentColor" className="text-faint"/>
+  </svg>
+  <span className="mt-3 block text-center font-mono text-[10px] tracking-wide text-faint uppercase">
+    two threads, one narrow bridge, everything crosses it
+  </span>
+</div>
+
+for simple screens, it was totally fine. but the second you introduced complex gestures or heavy lists, performance tanked. frames dropped hard. the bridge was a **fundamental limit in the design**.
+
+app sizes also got massive because all native modules were bundled by default. and whenever you needed a feature the framework missed, you had to dive into android studio or xcode, write custom native code, and wire it through the bridge manually. 
+
+then there was the platform drift issue. you would build a screen that looked perfect on ios, but android would render the spacing differently or apply unexpected os level styles. "write once, run anywhere" often turned into *writing once and debugging everywhere*.
+
+## Chapter 4 - The Rise of Flutter
+
+this is where google entered the space.
+
+most people think flutter started in 2018 when it went stable, but the real beginning was back in 2014 under a project called sky. a small team at google decided to try a completely different approach to the problem.
+
+<CommitCard hash="00882d626a478a3ce391b736234a768b762c853a" message="open the sky" url="https://github.com/flutter/flutter/commit/00882d626a478a3ce391b736234a768b762c853a" context="adam barth's first commit back in 2014. back then it was just an internal project named sky (engine)." />
+
+flutter **completely skipped the os widgets**. it used its own **rendering engine**, <ExtLink href="https://skia.org/">skia</ExtLink> originally, now <ExtLink href="https://docs.flutter.dev/perf/impeller">impeller</ExtLink>, and painted every single pixel directly onto a blank canvas. *it did not ask android or ios for permission to draw a button. it just drew the button itself.*
+
+this is why we call flutter not just a framework but also a engine. it is basically a <span className="underline decoration-dotted decoration-foreground/30 underline-offset-4">game engine built for apps</span>.
+
+<div className="my-10 rounded-2xl border border-edge bg-surface p-6 font-sans">
+  <svg viewBox="0 0 600 230" className="w-full" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="20" width="560" height="44" rx="10" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="300" y="47" textAnchor="middle" className="fill-foreground text-[12px] font-mono font-semibold tracking-wide">your dart code</text>
+    <line x1="300" y1="64" x2="300" y2="84" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+    <polygon points="294,76 300,88 306,76" fill="currentColor" className="text-faint"/>
+    <rect x="20" y="92" width="560" height="44" rx="10" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="300" y="119" textAnchor="middle" className="fill-foreground text-[12px] font-mono font-semibold tracking-wide">flutter engine - skia / impeller renderer</text>
+    <line x1="300" y1="136" x2="300" y2="156" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+    <polygon points="294,148 300,160 306,148" fill="currentColor" className="text-faint"/>
+    <rect x="20" y="164" width="560" height="44" rx="10" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <text x="300" y="191" textAnchor="middle" className="fill-muted text-[12px] font-mono">raw canvas - every pixel, drawn by flutter itself</text>
+  </svg>
+  <span className="mt-3 block text-center font-mono text-[10px] tracking-wide text-faint uppercase">
+    no os widgets in this chain, flutter owns every layer
+  </span>
+</div>
+
+because there is no bridge and no cross thread serialization, flutter hits a smooth 60fps effortlessly. animations are smooth and gestures feel instant.
+
+this is what people really mean when they talk about performance. the goal was not just to be cross platform. the goal was to own the entire pipeline. the framework controls the language, the toolchain, and every single pixel on the screen.
+
+## Chapter 5 - The Re-rise of React Native
+
+a lot of developers still judge react native based on its 2018 bridge architecture. but that version is completely outdated now.
+
+meta completely rebuilt react native from scratch. by 2024, the new architecture became the standard for new projects.
+
+**the bridge is gone**. it was replaced by <ExtLink href="https://reactnative.dev/architecture/overview">jsi (javascript interface)</ExtLink>, which allows your js code to hold direct references to native objects in the same memory space. no more json serialization.
+
+they also introduced <ExtLink href="https://reactnative.dev/architecture/overview">fabric</ExtLink>, a new renderer that sits closer to the metal and handles synchronous layouts without choking on heavy ui. <ExtLink href="https://reactnative.dev/architecture/overview">turbomodules</ExtLink> fixed the bloat issue by lazy loading native code only when you actually use it.
+
+<div className="my-10 rounded-2xl border border-edge bg-surface p-6 font-sans">
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="rounded-xl border border-edge bg-background p-4">
+      <span className="font-mono text-[10px] tracking-wide text-faint uppercase">old architecture, 2018</span>
+      <svg viewBox="0 0 260 150" className="mt-3 w-full" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="15" width="100" height="40" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+        <text x="60" y="39" textAnchor="middle" className="fill-muted text-[10px] font-mono">js thread</text>
+        <rect x="150" y="15" width="100" height="40" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+        <text x="200" y="39" textAnchor="middle" className="fill-muted text-[10px] font-mono">ui thread</text>
+        <line x1="110" y1="35" x2="150" y2="35" stroke="currentColor" className="text-faint" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <text x="130" y="24" textAnchor="middle" className="fill-faint text-[9px] font-mono">bridge</text>
+        <rect x="10" y="75" width="240" height="40" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+        <text x="130" y="99" textAnchor="middle" className="fill-muted text-[10px] font-mono">all native modules bundled in</text>
+      </svg>
+    </div>
+    <div className="rounded-xl border border-edge bg-background p-4">
+      <span className="font-mono text-[10px] tracking-wide text-faint uppercase">new architecture, 2024+</span>
+      <svg viewBox="0 0 260 150" className="mt-3 w-full" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="15" width="100" height="40" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+        <text x="60" y="33" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">js thread</text>
+        <text x="60" y="46" textAnchor="middle" className="fill-faint text-[8px] font-mono">hermes bytecode</text>
+        <rect x="150" y="15" width="100" height="40" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+        <text x="200" y="33" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">ui thread</text>
+        <text x="200" y="46" textAnchor="middle" className="fill-faint text-[8px] font-mono">fabric renderer</text>
+        <line x1="110" y1="35" x2="150" y2="35" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+        <text x="130" y="24" textAnchor="middle" className="fill-foreground text-[9px] font-mono font-semibold">jsi</text>
+        <rect x="10" y="75" width="240" height="40" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+        <text x="130" y="99" textAnchor="middle" className="fill-muted text-[10px] font-mono">turbomodules, loaded only when used</text>
+      </svg>
+    </div>
+  </div>
+  <span className="mt-3 block text-center font-mono text-[10px] tracking-wide text-faint uppercase">
+    same names, completely different machine underneath
+  </span>
+</div>
+
+then you add <ExtLink href="https://reactnative.dev/docs/hermes">hermes</ExtLink>, meta's custom javascript engine built specifically for react native. it compiles js into **bytecode ahead of time**, which drastically improves cold start times.
+
+react native today is incredibly solid. the performance gap with flutter is practically invisible for most standard apps. and tools like <ExtLink href="https://docs.expo.dev">expo</ExtLink> have made the developer experience incredible. with <ExtLink href="https://docs.expo.dev/eas/">expo eas</ExtLink> handling your builds and ota updates, solo devs and small teams can ship extremely fast.
+
+## Pre-Climax - Flutter vs React Native
+
+let's look at the reality of choosing between them today.
+
+**React Native, the goods**
+
+the react ecosystem is massive. if your team already knows web development, picking up react native is straightforward. 
+
+the biggest advantage is that it **uses real native widgets**. when apple pushes an ios update with new ui behaviors, react native apps inherit those changes automatically. you do not need to rewrite any code.
+
+this is the reason why react native easily adopted to liquid glass coz it was really using native, while flutter couldnt. it needed a new write or a override with the existing cupertino app system.
+
+<TweetEmbed id="1932194950403232110" />
+
+but that native coupling is also a huge headache on android. android has dozens of custom oem skins like samsung's one ui or xiaomi's miui. react native inherits all those random styling overrides from the os, which means you sometimes get weird ui bugs that you have no direct control over.
+
+**Flutter, the goods**
+
+flutter took the exact opposite route. it never touches native widgets. it paints everything itself.
+
+with the new impeller engine, performance is incredibly predictable. flutter also compiles your dart code straight into arm machine code. there is no interpreter in the middle. this is why flutter apps run smoothly even on *cheap, low ram android phones*.
+
+<div className="my-10 rounded-2xl border border-edge bg-surface p-6 font-sans">
+  <svg viewBox="0 0 600 220" className="w-full" xmlns="http://www.w3.org/2000/svg">
+    <text x="150" y="28" textAnchor="middle" className="fill-foreground text-[11px] font-mono uppercase tracking-wide">react native</text>
+    <rect x="40" y="44" width="80" height="140" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <rect x="55" y="60" width="50" height="14" rx="3" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1.5"/>
+    <rect x="55" y="82" width="50" height="14" rx="7" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1.5"/>
+    <text x="80" y="160" textAnchor="middle" className="fill-faint text-[9px] font-mono">pixel</text>
+    <rect x="180" y="44" width="80" height="140" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <rect x="190" y="62" width="60" height="12" rx="6" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1.5"/>
+    <rect x="190" y="84" width="60" height="16" rx="2" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1.5"/>
+    <text x="220" y="160" textAnchor="middle" className="fill-faint text-[9px] font-mono">realme</text>
+    <text x="150" y="208" textAnchor="middle" className="fill-faint text-[10px] font-mono">slightly different, every time</text>
+    <line x1="300" y1="20" x2="300" y2="210" stroke="currentColor" className="text-edge" strokeWidth="1" strokeDasharray="3 5"/>
+    <text x="450" y="28" textAnchor="middle" className="fill-foreground text-[11px] font-mono uppercase tracking-wide">flutter</text>
+    <rect x="370" y="44" width="80" height="140" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <rect x="385" y="64" width="50" height="13" rx="4" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+    <rect x="385" y="86" width="50" height="13" rx="4" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+    <text x="410" y="160" textAnchor="middle" className="fill-faint text-[9px] font-mono">pixel</text>
+    <rect x="510" y="44" width="80" height="140" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+    <rect x="525" y="64" width="50" height="13" rx="4" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+    <rect x="525" y="86" width="50" height="13" rx="4" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+    <text x="550" y="160" textAnchor="middle" className="fill-faint text-[9px] font-mono">realme</text>
+    <text x="450" y="208" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">identical, every time</text>
+  </svg>
+  <span className="mt-3 block text-center font-mono text-[10px] tracking-wide text-faint uppercase">
+    os widgets drift, a self-painted canvas doesn't
+  </span>
+</div>
+
+because flutter controls the canvas, you get <span className="underline decoration-dotted decoration-foreground/30 underline-offset-4">absolute ui consistency</span>. your app will look exactly the same on a flagship pixel and a budget phone. no os overrides. no unexpected styling changes.
+
+this reliability is exactly why heavy fintech apps usually pick flutter. when you have complex dashboards, charts, and intense state management requirements, flutter's rendering holds up under pressure. react native requires a lot more manual optimization to handle that level of interaction.
+
+<ExtLink href="https://dart.dev/">dart</ExtLink> is also a great language. with sound null safety and clean syntax, any developer coming from java or kotlin will feel at home within a few days.
+
+## Post-Climax - So Which One?
+
+both frameworks are excellent pieces of engineering. the choice comes down to your project needs.
+
+**Pick React Native if:** your team already knows react. you are building an ios heavy app where matching apple's native feel is crucial. you want to leverage expo for rapid deployment and ota updates. 
+
+**Pick Flutter if:** you are building a complex, heavy app that needs to scale. you have highly custom ui designs and need absolute pixel perfect consistency across every single device. you are targeting multiple platforms beyond just mobile. or if you have a major android user base.
+
+the biggest differentiator is that flutter owns the entire rendering pipeline from top to bottom, you are not waiting on the os to draw your ui for you.
+
+## Post-Credits
+
+that is basically the real story behind flutter.
+
+flutter was built to own the full chain. **rely on nothing, paint everything**. 
+
+this is post number 1 of the boring flutter. next time, we will dive deep into flutter internals.
+
+stay tuned.
