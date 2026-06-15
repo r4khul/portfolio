@@ -75,7 +75,7 @@ export function BlogPostJsonLd({ blog }: { blog: Blog }) {
       name: profile.name,
     },
     datePublished: blog.date,
-    url: `${profile.url}/blog/${blog.slug}`,
+    url: `${profile.url}/blogs/${blog.slug}`,
   };
 
   return (

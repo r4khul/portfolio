@@ -80,6 +80,21 @@ export const ProjectsSection = memo(({ projects }: ProjectsSectionProps) => {
           </Reveal>
         ))}
       </div>
+
+      {projects.length > 4 && (
+        <Reveal delay={0.2}>
+          <div className="mt-6 flex justify-end">
+            <Link
+              href="/projects"
+              onClick={playClick}
+              className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
+            >
+              all projects
+              <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </div>
+        </Reveal>
+      )}
     </Section>
   );
 });

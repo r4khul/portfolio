@@ -7,9 +7,9 @@ import { profile } from "@/data/profile";
 import { MdxContent } from "@/components/mdx-content";
 import { BackButton } from "@/components/project/back-button";
 import GithubSlugger from "github-slugger";
-import { BlogToc } from "@/components/blog/blog-toc";
+import { BlogToc } from "@/components/blogs/blog-toc";
 import { BlogPostJsonLd } from "@/components/site/json-ld";
-import { ViewCounter } from "@/components/blog/view-counter";
+import { ViewCounter } from "@/components/blogs/view-counter";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: blog.title,
     description: blog.description,
     alternates: {
-      canonical: `/blog/${slug}`,
+      canonical: `/blogs/${slug}`,
     },
     openGraph: {
       title: blog.title,
       description: blog.description,
       type: "article",
-      url: `${profile.url}/blog/${slug}`,
+      url: `${profile.url}/blogs/${slug}`,
       publishedTime: blog.date,
       authors: [profile.name],
       images: blog.cover
@@ -93,7 +93,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <div className="bleed-line px-4 py-8 sm:px-8">
         <div className="flex items-center justify-between">
-          <BackButton href="/blog" label="all posts" />
+          <BackButton href="/blogs" label="all posts" />
           <ViewCounter slug={slug} trackView={true} variant="chip" />
         </div>
 

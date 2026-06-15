@@ -54,10 +54,7 @@ export async function POST(
     if (isNewView) {
       // It's a verified unique view. Cache it locally and increment safely.
       localDuplicateCache.add(duplicateKey);
-      const [views] = await Promise.all([
-        redis.incr(`pageviews:blog:${slug}`),
-        redis.incr('pageviews:total'),
-      ]);
+      const views = await redis.incr(`pageviews:blog:${slug}`);
       return NextResponse.json({ views });
     } else {
       // It's a duplicate view across instances. Cache it locally for next time.
@@ -88,7 +85,14 @@ export async function GET(
     }
 
     const views = await redis.get<number>(`pageviews:blog:${slug}`);
-    return NextResponse.json({ views: views || 0 });
+    return NextResponse.json(
+      { views: views || 0 },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
+        },
+      }
+    );
   } catch (error) {
     console.error('Failed to get views:', error);
     return NextResponse.json({ views: 0 }, { status: 500 });

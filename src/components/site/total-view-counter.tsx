@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-export function TotalViewCounter() {
+export function TotalViewCounter({ trackView = false }: { trackView?: boolean }) {
   const [views, setViews] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchViews = async () => {
       try {
-        const res = await fetch("/api/views");
+        const res = await fetch("/api/views", {
+          method: trackView ? "POST" : "GET",
+        });
         const data = await res.json();
         if (typeof data.views === "number") {
           setViews(data.views);
@@ -19,7 +21,7 @@ export function TotalViewCounter() {
     };
 
     fetchViews();
-  }, []);
+  }, [trackView]);
 
   if (views === null) return null;
 

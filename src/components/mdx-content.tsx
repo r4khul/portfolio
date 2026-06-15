@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 import { TweetEmbed } from "@/components/mdx/tweet-embed";
 import { CommitCard } from "@/components/mdx/commit-card";
 import { ExtLink } from "@/components/mdx/ext-link";
+import { ImageZoom } from "@/components/mdx/image-zoom";
 
 const components = {
   h2: (props: ComponentProps<"h2">) => (
@@ -17,13 +18,7 @@ const components = {
     <h3 className="mt-8 mb-3 text-[15px] font-semibold tracking-tight" {...props} />
   ),
   img: (props: ComponentProps<"img">) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className="my-6 w-full rounded-lg border border-edge"
-      loading="lazy"
-      alt={props.alt ?? ""}
-      {...props}
-    />
+    <ImageZoom src={props.src ?? ""} alt={props.alt} />
   ),
   p: (props: ComponentProps<"p">) => (
     <p className="my-4 text-[14.5px] leading-relaxed text-muted" {...props} />
@@ -74,6 +69,7 @@ const components = {
   TweetEmbed,
   CommitCard,
   ExtLink,
+  ImageZoom,
 };
 
 export function MdxContent({ source }: { source: string }) {

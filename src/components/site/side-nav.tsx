@@ -52,7 +52,7 @@ export const SideNav = memo(() => {
     if (pathname !== "/") {
       if (pathname.startsWith("/projects/")) {
         setActive("projects");
-      } else if (pathname.startsWith("/blog")) {
+      } else if (pathname.startsWith("/blogs")) {
         setActive("blogs");
       } else {
         setActive("");

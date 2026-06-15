@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   const blogs = getBlogs().map((blog) => ({
-    url: `${profile.url}/blog/${blog.slug}`,
+    url: `${profile.url}/blogs/${blog.slug}`,
     lastModified: new Date(blog.date),
     changeFrequency: "weekly" as const,
     priority: 0.7,
@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${profile.url}/blog`,
+      url: `${profile.url}/blogs`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.9,

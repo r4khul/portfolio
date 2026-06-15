@@ -4,14 +4,14 @@ import { Calendar, ArrowUpRight } from "lucide-react";
 import { getBlogs, getReadingTime } from "@/lib/blogs";
 import { profile } from "@/data/profile";
 import { BackButton } from "@/components/project/back-button";
-import { ViewCounter } from "@/components/blog/view-counter";
+import { ViewCounter } from "@/components/blogs/view-counter";
 
 export const metadata: Metadata = {
   title: "Blog",
   description:
     "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
   alternates: {
-    canonical: "/blog",
+    canonical: "/blogs",
   },
   openGraph: {
     title: `Blog — ${profile.name}`,
@@ -59,7 +59,7 @@ export default function BlogPage() {
             {blogs.map((blog) => (
               <Link
                 key={blog.slug}
-                href={`/blog/${blog.slug}`}
+                href={`/blogs/${blog.slug}`}
                 className="group flex flex-col gap-5 bg-background p-4 transition-colors hover:bg-surface md:flex-row md:items-stretch md:justify-between sm:p-5"
               >
                 {/* Content Column (72%) */}

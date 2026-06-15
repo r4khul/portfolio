@@ -9,7 +9,7 @@ import { getReadingTime } from "@/lib/reading-time";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
-import { ViewCounter } from "@/components/blog/view-counter";
+import { ViewCounter } from "@/components/blogs/view-counter";
 
 interface BlogsSectionProps {
   blogs: Blog[];
@@ -49,7 +49,7 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
         {latest.map((blog, i) => (
           <Reveal key={blog.slug} delay={i * 0.06} className="bg-background">
             <Link
-              href={`/blog/${blog.slug}`}
+              href={`/blogs/${blog.slug}`}
               onClick={playClick}
               className="group flex flex-col gap-5 p-4 transition-colors hover:bg-surface md:flex-row md:items-stretch md:justify-between sm:p-5"
             >
@@ -66,15 +66,17 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 flex items-center gap-1.5 font-mono text-[10px] tracking-wide text-faint uppercase">
-                    <Calendar className="size-3" />
-                    {new Date(blog.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                    {blog.category && ` · ${blog.category}`}
-                    <span className="px-0.5 opacity-55">·</span>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] tracking-wide text-faint uppercase">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="size-3 shrink-0" />
+                      {new Date(blog.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                      {blog.category && <span>· {blog.category}</span>}
+                    </span>
+                    <span className="opacity-55">·</span>
                     <span>{getReadingTime(blog.content)}</span>
                   </p>
                   <p className="mt-2 text-[13px] leading-relaxed text-muted line-clamp-2 sm:line-clamp-3">
@@ -133,7 +135,7 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
         <Reveal delay={0.2}>
           <div className="mt-6 flex justify-end">
             <Link
-              href="/blog"
+              href="/blogs"
               onClick={playClick}
               className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
             >

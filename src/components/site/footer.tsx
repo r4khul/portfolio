@@ -9,7 +9,7 @@ export function Footer() {
           <p className="font-mono text-[11px] text-faint">
             © {new Date().getFullYear()} {profile.name}
           </p>
-          <TotalViewCounter />
+          <TotalViewCounter trackView={true} />
         </div>
         <nav aria-label="Social links" className="flex items-center gap-4">
           {socials.map((s) => (
