@@ -62,8 +62,8 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
-
-  // Experimental features for peak performance
+  
+  // Optimize for Vercel Edge where possible
   experimental: {
     optimizePackageImports: [
       "lucide-react",
@@ -71,7 +71,12 @@ const nextConfig: NextConfig = {
       "motion",
       "@calcom/embed-react",
     ],
+    // Optimize CSS
+    optimizeCss: true,
   },
+  
+  // Turbopack config (empty to silence warning)
+  turbopack: {},
 };
 
 export default nextConfig;

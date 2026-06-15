@@ -63,9 +63,6 @@ export function ImageZoom({ src, alt, children }: ImageZoomProps) {
 
         {/* Zoom Button - Enhanced for discoverability */}
         <div className="absolute right-3 bottom-3 flex items-center gap-2 pointer-events-none">
-          <span className="rounded-full bg-background/90 px-2 py-1 font-mono text-[10px] font-medium text-foreground shadow-sm backdrop-blur-md opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            Tap to expand
-          </span>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -122,7 +119,7 @@ export function ImageZoom({ src, alt, children }: ImageZoomProps) {
             >
               <div className="flex flex-col items-center justify-center">
                 {/* Scrollable container for very large diagrams on mobile */}
-                <div className="max-h-[85vh] w-full overflow-auto rounded-2xl shadow-2xl [&>img]:mx-auto [&>img]:max-h-[82vh] [&>img]:w-auto [&>img]:max-w-full [&>img]:object-contain [&>div]:mx-auto [&>div]:w-full [&>div]:scale-[1.05] sm:[&>div]:scale-110 [&>svg]:mx-auto [&>svg]:max-h-[82vh] [&>svg]:w-full">
+                <div className="scrollbar-none max-h-[85vh] w-full overflow-auto rounded-2xl shadow-2xl [&>img]:mx-auto [&>img]:max-h-[82vh] [&>img]:w-auto [&>img]:max-w-full [&>img]:object-contain [&>div]:mx-auto [&>div]:w-full [&>div]:scale-[1.05] sm:[&>div]:scale-110 [&>svg]:mx-auto [&>svg]:max-h-[82vh] [&>svg]:w-full">
                   {content}
                 </div>
                 
