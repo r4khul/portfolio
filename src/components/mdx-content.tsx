@@ -18,7 +18,10 @@ const components = {
     <h3 className="mt-8 mb-3 text-[15px] font-semibold tracking-tight" {...props} />
   ),
   img: (props: ComponentProps<"img">) => (
-    <ImageZoom src={props.src ?? ""} alt={props.alt} />
+    <ImageZoom 
+      src={typeof props.src === 'string' ? props.src : props.src instanceof Blob ? URL.createObjectURL(props.src) : ""} 
+      alt={props.alt} 
+    />
   ),
   p: (props: ComponentProps<"p">) => (
     <p className="my-4 text-[14.5px] leading-relaxed text-muted" {...props} />
