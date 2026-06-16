@@ -18,6 +18,14 @@ export const metadata: Metadata = {
     description:
       "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
     url: `${profile.url}/blog`,
+    images: [
+      {
+        url: "/images/site/main-banner.avif",
+        width: 1200,
+        height: 630,
+        alt: `Blog — ${profile.name}`,
+      },
+    ],
   },
 };
 

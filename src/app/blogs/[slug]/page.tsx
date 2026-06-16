@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: blog.cover
         ? [
             {
-              url: `${profile.url}${blog.cover}`,
+              url: blog.cover,
               width: 1200,
               height: 630,
               alt: blog.title,

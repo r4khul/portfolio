@@ -94,7 +94,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${profile.url}/images/site/main-banner.avif`,
+        url: "/images/site/main-banner.avif",
         width: 1200,
         height: 630,
         alt: `${profile.name} | Mobile Engineer`,
@@ -107,7 +107,7 @@ export const metadata: Metadata = {
     description:
       "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software.",
     creator: "@r4khul",
-    images: [`${profile.url}/images/site/main-banner.avif`]
+    images: ["/images/site/main-banner.avif"]
   },
   robots: {
     index: true,

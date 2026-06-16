@@ -18,6 +18,14 @@ export const metadata: Metadata = {
     description:
       "A collection of tools, apps, and experiments I've built, focusing on mobile engineering and performance.",
     url: `${profile.url}/projects`,
+    images: [
+      {
+        url: "/images/site/main-banner.avif",
+        width: 1200,
+        height: 630,
+        alt: `Projects — ${profile.name}`,
+      },
+    ],
   },
 };
 
