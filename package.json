@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "node scripts/patch-react-tweet.js"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

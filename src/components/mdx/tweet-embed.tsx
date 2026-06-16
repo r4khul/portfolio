@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
 import { EmbeddedTweet, TweetNotFound, TweetSkeleton } from "react-tweet";
 import { getTweet as _getTweet } from "react-tweet/api";
+import { TweetClickWrapper } from "./tweet-click-wrapper";
 
 const getTweet = unstable_cache(
   async (id: string) => _getTweet(id),
@@ -31,16 +32,14 @@ async function TweetContent({ id }: { id: string }) {
   }
 }
 
-type Props = { id: string };
-
-export function TweetEmbed({ id }: Props) {
+export function TweetEmbed({ id }: { id: string }) {
   return (
     <div className="my-8 flex justify-center [&_.react-tweet-theme]:!max-w-full [&_.react-tweet-theme]:!w-full">
-      <div className="w-full max-w-[550px]">
+      <TweetClickWrapper id={id}>
         <Suspense fallback={<TweetSkeleton />}>
           <TweetContent id={id} />
         </Suspense>
-      </div>
+      </TweetClickWrapper>
     </div>
   );
 }
