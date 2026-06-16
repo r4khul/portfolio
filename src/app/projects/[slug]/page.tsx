@@ -55,6 +55,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: project.description,
       images: project.cover ? [project.cover] : [],
     },
+    other: project.cover ? {
+      "image": project.cover,
+      "og:image": project.cover,
+      "og:image:width": "1200",
+      "og:image:height": "630",
+      "og:image:alt": project.title,
+      "twitter:image": project.cover,
+    } : {},
   };
 }
 

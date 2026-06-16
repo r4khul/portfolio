@@ -53,6 +53,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: blog.title,
       description: blog.description,
     },
+    other: blog.cover ? {
+      "image": blog.cover,
+      "og:image": blog.cover,
+      "og:image:width": "1200",
+      "og:image:height": "630",
+      "og:image:alt": blog.title,
+      "twitter:image": blog.cover,
+    } : {},
   };
 }
 

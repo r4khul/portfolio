@@ -109,6 +109,14 @@ export const metadata: Metadata = {
     creator: "@r4khul",
     images: ["/images/site/main-banner.avif"]
   },
+  other: {
+    "image": "/images/site/main-banner.avif",
+    "og:image": "/images/site/main-banner.avif",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": `${profile.name} | Mobile Engineer`,
+    "twitter:image": "/images/site/main-banner.avif",
+  },
   robots: {
     index: true,
     follow: true,

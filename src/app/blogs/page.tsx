@@ -27,6 +27,14 @@ export const metadata: Metadata = {
       },
     ],
   },
+  other: {
+    "image": "/images/site/main-banner.avif",
+    "og:image": "/images/site/main-banner.avif",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": `Blog — ${profile.name}`,
+    "twitter:image": "/images/site/main-banner.avif",
+  },
 };
 
 export default function BlogPage() {
