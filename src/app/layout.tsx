@@ -110,12 +110,9 @@ export const metadata: Metadata = {
     images: ["/images/site/main-banner.avif"]
   },
   other: {
-    "image": "/images/site/main-banner.avif",
-    "og:image": "/images/site/main-banner.avif",
-    "og:image:width": "1200",
-    "og:image:height": "630",
-    "og:image:alt": `${profile.name} | Mobile Engineer`,
-    "twitter:image": "/images/site/main-banner.avif",
+    "color-scheme": "dark light",
+    "apple-mobile-web-app-title": profile.name,
+    "application-name": profile.name,
   },
   robots: {
     index: true,

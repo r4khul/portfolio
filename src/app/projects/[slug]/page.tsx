@@ -47,22 +47,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: project.description,
       type: "article",
       url: `${profile.url}/projects/${slug}`,
-      images,
+      siteName: profile.name,
+      locale: "en_US",
+      images: images.length > 0 ? images : [
+        {
+          url: "/images/site/main-banner.avif",
+          width: 1200,
+          height: 630,
+          alt: project.title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: project.title,
       description: project.description,
-      images: project.cover ? [project.cover] : [],
+      creator: "@r4khul",
+      images: project.cover ? [project.cover] : ["/images/site/main-banner.avif"],
     },
-    other: project.cover ? {
-      "image": project.cover,
-      "og:image": project.cover,
-      "og:image:width": "1200",
-      "og:image:height": "630",
-      "og:image:alt": project.title,
-      "twitter:image": project.cover,
-    } : {},
   };
 }
 

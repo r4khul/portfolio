@@ -35,8 +35,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: blog.description,
       type: "article",
       url: `${profile.url}/blogs/${slug}`,
+      siteName: profile.name,
+      locale: "en_US",
       publishedTime: blog.date,
+      modifiedTime: blog.date,
       authors: [profile.name],
+      section: blog.category,
+      tags: blog.tags || [],
       images: blog.cover
         ? [
             {
@@ -46,21 +51,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
               alt: blog.title,
             },
           ]
-        : [],
+        : [
+            {
+              url: "/images/site/main-banner.avif",
+              width: 1200,
+              height: 630,
+              alt: blog.title,
+            },
+          ],
     },
     twitter: {
       card: "summary_large_image",
       title: blog.title,
       description: blog.description,
+      creator: "@r4khul",
+      images: blog.cover ? [blog.cover] : ["/images/site/main-banner.avif"],
     },
-    other: blog.cover ? {
-      "image": blog.cover,
-      "og:image": blog.cover,
-      "og:image:width": "1200",
-      "og:image:height": "630",
-      "og:image:alt": blog.title,
-      "twitter:image": blog.cover,
-    } : {},
   };
 }
 

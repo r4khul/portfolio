@@ -17,7 +17,10 @@ export const metadata: Metadata = {
     title: `Blog — ${profile.name}`,
     description:
       "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
-    url: `${profile.url}/blog`,
+    url: `${profile.url}/blogs`,
+    siteName: profile.name,
+    locale: "en_US",
+    type: "website",
     images: [
       {
         url: "/images/site/main-banner.avif",
@@ -27,13 +30,13 @@ export const metadata: Metadata = {
       },
     ],
   },
-  other: {
-    "image": "/images/site/main-banner.avif",
-    "og:image": "/images/site/main-banner.avif",
-    "og:image:width": "1200",
-    "og:image:height": "630",
-    "og:image:alt": `Blog — ${profile.name}`,
-    "twitter:image": "/images/site/main-banner.avif",
+  twitter: {
+    card: "summary_large_image",
+    title: `Blog — ${profile.name}`,
+    description:
+      "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
+    creator: "@r4khul",
+    images: ["/images/site/main-banner.avif"]
   },
 };
 

@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     description:
       "A collection of tools, apps, and experiments I've built, focusing on mobile engineering and performance.",
     url: `${profile.url}/projects`,
+    siteName: profile.name,
+    locale: "en_US",
+    type: "website",
     images: [
       {
         url: "/images/site/main-banner.avif",
@@ -27,13 +30,12 @@ export const metadata: Metadata = {
       },
     ],
   },
-  other: {
-    "image": "/images/site/main-banner.avif",
-    "og:image": "/images/site/main-banner.avif",
-    "og:image:width": "1200",
-    "og:image:height": "630",
-    "og:image:alt": `Projects — ${profile.name}`,
-    "twitter:image": "/images/site/main-banner.avif",
+  twitter: {
+    card: "summary_large_image",
+    title: `Projects — ${profile.name}`,
+    description: "A collection of tools, apps, and experiments I've built, focusing on mobile engineering and performance.",
+    creator: "@r4khul",
+    images: ["/images/site/main-banner.avif"],
   },
 };
 

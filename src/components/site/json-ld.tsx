@@ -70,6 +70,7 @@ export function BlogPostJsonLd({ blog }: { blog: Blog }) {
     "@type": "BlogPosting",
     headline: blog.title,
     description: blog.description,
+    image: blog.cover ? `${profile.url}${blog.cover}` : `${profile.url}/images/site/main-banner.avif`,
     author: {
       "@type": "Person",
       name: profile.name,
