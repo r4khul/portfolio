@@ -1,5 +1,6 @@
 import { profile, experience, education } from "@/data/profile";
 import { Project } from "@/lib/projects";
+import { Toy } from "@/lib/toys";
 import { Blog } from "@/lib/blogs";
 
 export function JsonLd() {
@@ -60,6 +61,34 @@ export function ProjectJsonLd({ project }: { project: Project }) {
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(projectData) }}
+    />
+  );
+}
+
+export function ToyJsonLd({ toy }: { toy: Toy }) {
+  const toyData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: toy.title,
+    description: toy.description,
+    applicationCategory: "UtilityApplication",
+    browserRequirements: "Requires a modern web browser with JavaScript enabled",
+    author: {
+      "@type": "Person",
+      name: profile.name,
+      url: profile.url,
+    },
+    image: toy.cover ? `${profile.url}${toy.cover}` : undefined,
+    url: `${profile.url}/projects/toys/${toy.slug}`,
+    sameAs: toy.links
+      .filter((l) => l.url.startsWith("http"))
+      .map((l) => l.url),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(toyData) }}
     />
   );
 }

@@ -8,6 +8,7 @@ import { profile } from "@/data/profile";
 import { MdxContent } from "@/components/mdx-content";
 import { ProjectActions } from "@/components/project/project-actions";
 import { BackButton } from "@/components/project/back-button";
+import { ToyJsonLd } from "@/components/site/json-ld";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -22,32 +23,50 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const toy = getToy(slug);
   if (!toy) return {};
 
-  const images = toy.cover
-    ? [{ url: toy.cover, width: 1200, height: 630, alt: toy.title }]
-    : [];
+  const ogImage = toy.cover
+    ? { url: toy.cover, width: 1200, height: 630, alt: toy.title }
+    : { url: "/images/site/main-banner.avif", width: 1200, height: 630, alt: toy.title };
+
+  const liveLink = toy.links.find((l) =>
+    l.label.toLowerCase().includes("live") ||
+    l.label.toLowerCase().includes("site")
+  );
 
   return {
     title: toy.title,
     description: toy.description,
+    authors: [{ name: profile.name, url: profile.url }],
+    keywords: [
+      toy.title,
+      ...toy.stack,
+      "toy project",
+      "side project",
+      profile.name,
+      "rakhul",
+    ],
     alternates: {
       canonical: `/projects/toys/${slug}`,
     },
     openGraph: {
-      title: toy.title,
+      title: `${toy.title} — ${profile.name}`,
       description: toy.description,
       type: "article",
       url: `${profile.url}/projects/toys/${slug}`,
       siteName: profile.name,
       locale: "en_US",
-      images: images.length > 0 ? images : [{ url: "/images/site/main-banner.avif", width: 1200, height: 630, alt: toy.title }],
+      authors: [profile.name],
+      images: [ogImage],
     },
     twitter: {
       card: "summary_large_image",
-      title: toy.title,
+      title: `${toy.title} — ${profile.name}`,
       description: toy.description,
       creator: "@r4khul",
-      images: toy.cover ? [toy.cover] : ["/images/site/main-banner.avif"],
+      images: [ogImage.url],
     },
+    ...(liveLink && {
+      metadataBase: new URL(profile.url),
+    }),
   };
 }
 
@@ -69,6 +88,7 @@ export default async function ToyPage({ params }: Props) {
 
   return (
     <main>
+      <ToyJsonLd toy={toy} />
       <div className="relative h-[141px] overflow-hidden sm:h-[246px]">
         {toy.cover ? (
           <Image
