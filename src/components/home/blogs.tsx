@@ -21,7 +21,21 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
 
   if (blogs.length === 0) {
     return (
-      <Section id="blogs" index="06" title="Blogs">
+      <Section
+        id="blogs"
+        index="06"
+        title="Blogs"
+        action={
+          <Link
+            href="/blogs"
+            onClick={playClick}
+            className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
+          >
+            all posts
+            <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        }
+      >
         <Reveal>
           <div className="relative overflow-hidden rounded-lg border border-edge bg-surface p-8 sm:p-10">
             <div className="dotgrid absolute inset-0 opacity-[0.25]" aria-hidden />
@@ -44,7 +58,21 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
   }
 
   return (
-    <Section id="blogs" index="06" title="Blogs">
+    <Section
+      id="blogs"
+      index="06"
+      title="Blogs"
+      action={
+        <Link
+          href="/blogs"
+          onClick={playClick}
+          className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
+        >
+          all posts
+          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </Link>
+      }
+    >
       <div className="grid gap-px overflow-hidden rounded-lg border border-edge bg-edge">
         {latest.map((blog, i) => (
           <Reveal key={blog.slug} delay={i * 0.06} className="bg-background">
@@ -131,20 +159,6 @@ export const BlogsSection = memo(({ blogs }: BlogsSectionProps) => {
         ))}
       </div>
 
-      {blogs.length > 3 && (
-        <Reveal delay={0.2}>
-          <div className="mt-6 flex justify-end">
-            <Link
-              href="/blogs"
-              onClick={playClick}
-              className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
-            >
-              all posts
-              <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Link>
-          </div>
-        </Reveal>
-      )}
     </Section>
   );
 });

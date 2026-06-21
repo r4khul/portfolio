@@ -17,7 +17,21 @@ export const ProjectsSection = memo(({ projects }: ProjectsSectionProps) => {
   const { playClick } = useAudioFeedback();
 
   return (
-    <Section id="projects" index="04" title="Projects">
+    <Section
+      id="projects"
+      index="04"
+      title="Projects"
+      action={
+        <Link
+          href="/projects"
+          onClick={playClick}
+          className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
+        >
+          all projects
+          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </Link>
+      }
+    >
       <div className="grid gap-px overflow-hidden rounded-lg border border-edge bg-edge sm:grid-cols-2">
         {projects.map((project, i) => (
           <Reveal key={project.slug} delay={i * 0.06} className="bg-background">
@@ -81,20 +95,6 @@ export const ProjectsSection = memo(({ projects }: ProjectsSectionProps) => {
         ))}
       </div>
 
-      {projects.length > 4 && (
-        <Reveal delay={0.2}>
-          <div className="mt-6 flex justify-end">
-            <Link
-              href="/projects"
-              onClick={playClick}
-              className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
-            >
-              all projects
-              <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Link>
-          </div>
-        </Reveal>
-      )}
     </Section>
   );
 });
