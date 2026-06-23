@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "react-tweet/theme.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -33,33 +32,28 @@
 }
 
 .dark {
-  --background: #000000;
-  --surface: #0a0a0a;
+  --background: #09090b;
+  --surface: #101013;
   --foreground: #f4f4f5;
   --muted: #a1a1aa;
-  --faint: #52525b;
-  --edge: rgba(255, 255, 255, 0.08);
-  --edge-strong: rgba(255, 255, 255, 0.13);
-  --pattern: rgba(255, 255, 255, 0.04);
+  --faint: #5d5d66;
+  --edge: rgba(255, 255, 255, 0.09);
+  --edge-strong: rgba(255, 255, 255, 0.17);
+  --pattern: rgba(255, 255, 255, 0.055);
   --accent: #60a5fa;
-  --ring: rgba(255, 255, 255, 0.35);
-  --tactile-from: #18181b;
-  --tactile-to: #080808;
-  --tactile-highlight: rgba(255, 255, 255, 0.06);
+  --ring: rgba(255, 255, 255, 0.45);
+  --tactile-from: #202024;
+  --tactile-to: #121215;
+  --tactile-highlight: rgba(255, 255, 255, 0.08);
   --tactile-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.55);
+    0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
   --primary-from: #ffffff;
-  --primary-to: #e4e4e7;
+  --primary-to: #d4d4d8;
   --primary-highlight: rgba(255, 255, 255, 0.95);
-  --primary-text: #000000;
+  --primary-text: #111113;
 
   /* Contribution Graph Dark Mode Overrides */
-  --contrib-0: #0a0a0c;
-
-  /* react-tweet True Dark Theme Overrides */
-  --tweet-bg-dark: #000000;
-  --tweet-border-dark: rgba(255, 255, 255, 0.1);
-  --tweet-color-dark: #f4f4f5;
+  --contrib-0: #18181b;
 }
 
 @theme inline {
@@ -316,18 +310,12 @@ body {
 
 /* Idle — shrunk, faded, shifted right */
 .side-nav__item--idle {
-  opacity: 0.38;
+  opacity: 0.28;
   transform: scale(0.86) translateX(8px) translateZ(0);
 }
-:where(.dark) .side-nav__item--idle {
-  opacity: 0.52;
-}
 .side-nav__item--idle:hover {
-  opacity: 0.65;
+  opacity: 0.6;
   transform: scale(0.93) translateX(4px) translateZ(0);
-}
-:where(.dark) .side-nav__item--idle:hover {
-  opacity: 0.8;
 }
 
 /* Active — full size, full opacity */
@@ -403,6 +391,46 @@ body {
   user-select: none;
   pointer-events: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SYNTAX HIGHLIGHTING — rehype-highlight / highlight.js tokens
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* light mode — github palette */
+pre .hljs-comment,
+pre .hljs-quote         { color: #6a737d; font-style: italic; }
+pre .hljs-keyword,
+pre .hljs-selector-tag  { color: #d73a49; }
+pre .hljs-number,
+pre .hljs-regexp        { color: #005cc5; }
+pre .hljs-string,
+pre .hljs-doctag        { color: #032f62; }
+pre .hljs-title,
+pre .hljs-section,
+pre .hljs-built_in      { color: #6f42c1; }
+pre .hljs-type,
+pre .hljs-class         { color: #005cc5; }
+pre .hljs-literal,
+pre .hljs-symbol        { color: #005cc5; }
+pre .hljs-meta          { color: #e36209; }
+
+/* dark mode — github-dark-dimmed palette */
+:where(.dark) pre .hljs-comment,
+:where(.dark) pre .hljs-quote         { color: #768390; font-style: italic; }
+:where(.dark) pre .hljs-keyword,
+:where(.dark) pre .hljs-selector-tag  { color: #f47067; }
+:where(.dark) pre .hljs-number,
+:where(.dark) pre .hljs-regexp        { color: #6bc46d; }
+:where(.dark) pre .hljs-string,
+:where(.dark) pre .hljs-doctag        { color: #96d0ff; }
+:where(.dark) pre .hljs-title,
+:where(.dark) pre .hljs-section,
+:where(.dark) pre .hljs-built_in      { color: #dcbdfb; }
+:where(.dark) pre .hljs-type,
+:where(.dark) pre .hljs-class         { color: #6bc46d; }
+:where(.dark) pre .hljs-literal,
+:where(.dark) pre .hljs-symbol        { color: #6bc46d; }
+:where(.dark) pre .hljs-meta          { color: #f69d50; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    STRIPE BAR — Decorative diagonal hatch banner (replaces header)

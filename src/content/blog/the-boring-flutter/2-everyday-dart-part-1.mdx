@@ -1,0 +1,802 @@
+---
+title: "Everyday Dart: Part 1"
+slug: "everyday-dart-part-1"
+description: "the dart you actually need. variables, null safety, conditionals, loops, collections, full OOP, mixins, and functional ops."
+date: "2025-06-23"
+category: "The Boring Flutter"
+number: 2
+tags: ["dart", "flutter", "oop", "collections", "mixins", "functional"]
+cover: "/images/blogs/the-boring-flutter/the-boring-flutter-banner.avif"
+---
+
+## Prequel
+
+you already know *why* flutter exists.
+
+now you need to know the language it runs on.
+
+dart is not a hard language. but most tutorials either treat it like a complete beginner thing or throw the whole spec at you. this post does neither.
+
+this is the dart you will write every single day. the things that come up constantly, the patterns that just make sense, the stuff that clicks the moment you open a flutter project.
+
+we cover variables, types, null safety, functions, conditionals, loops, collections, the full OOP picture, mixins, and functional operations. part one.
+
+---
+
+## Chapter 1 - Variables and the Type System
+
+dart is **statically typed**. the compiler knows the type of every variable before the app even runs. this catches whole categories of bugs at compile time instead of at runtime.
+
+### var, final, and const
+
+```dart
+var name = 'rakhul';     // type inferred as String, can be reassigned
+final age = 24;          // inferred as int, set once at runtime
+const pi = 3.14159;      // compile-time constant, fixed before the app starts
+```
+
+three keywords, three different meanings:
+
+- **`var`** — reassignable. type is locked after the first assignment
+- **`final`** — set once, at runtime. you can't reassign it after that
+- **`const`** — set at compile time. the value has to be known before the app runs
+
+**interview note:** `final` vs `const` is a common question. the key difference is timing. `final` is decided at runtime, `const` is decided at compile time.
+
+a `const` widget in flutter means "this widget will never change." dart can skip rebuilding it entirely. use `const` everywhere you can in widget trees.
+
+### explicit types
+
+```dart
+String username = 'rakhul';
+int score = 100;
+double ratio = 0.75;
+bool isLoggedIn = true;
+```
+
+writing the type out and using `var` are the same thing. use whatever reads cleaner.
+
+### null safety
+
+dart has **sound null safety**. nothing can be null unless you say so with a `?`.
+
+```dart
+String name = 'rakhul';   // can never be null
+String? nickname;         // can be null
+```
+
+before null safety, you could call a method on null and crash at runtime. now the compiler just refuses to compile that code. it stops the most common mobile crash before it ever happens.
+
+### null operators
+
+```dart
+String? city;
+
+String result = city ?? 'unknown';  // use 'unknown' if city is null
+city ??= 'chennai';                 // only assign if city is still null
+int? length = city?.length;         // .length only runs if city is not null
+```
+
+`?.` is called the **null-aware access operator**. if the left side is null, the whole expression becomes null instead of crashing. you will use this constantly.
+
+### the bang operator
+
+```dart
+String? value = getValue();
+print(value!);  // telling dart: trust me, this is not null
+```
+
+`!` is a promise to the compiler. if you're wrong and the value is null, the app crashes at runtime. use it only when you are 100% sure.
+
+---
+
+## Chapter 2 - Functions
+
+functions are first-class in dart. you can store them in variables, pass them into other functions, and return them.
+
+### basic function
+
+```dart
+int add(int a, int b) {
+  return a + b;
+}
+```
+
+### arrow syntax
+
+when the function body is a single expression, you can shorten it:
+
+```dart
+int add(int a, int b) => a + b;
+```
+
+that `=>` is everywhere in flutter. getters, callbacks, `build` methods. get comfortable with it.
+
+### named parameters
+
+```dart
+void greet({required String name, int times = 1}) {
+  for (var i = 0; i < times; i++) print('hello, $name');
+}
+
+greet(name: 'rakhul');
+greet(name: 'rakhul', times: 3);
+```
+
+wrapping parameters in `{ }` makes them named. `required` means the caller must pass it. a default value makes it optional. almost every flutter widget constructor is built this way.
+
+### functions as values
+
+```dart
+int operate(int a, int b, int Function(int, int) op) {
+  return op(a, b);
+}
+
+operate(5, 3, (a, b) => a + b);  // 8
+operate(5, 3, (a, b) => a * b);  // 15
+```
+
+`int Function(int, int)` is the type of a function that takes two ints and returns one. when you write `onPressed: () => doSomething()` in flutter, you are doing exactly this, passing a function as a value.
+
+---
+
+## Chapter 3 - Conditionals
+
+### if / else
+
+```dart
+int score = 85;
+
+if (score >= 90) {
+  print('A');
+} else if (score >= 80) {
+  print('B');
+} else {
+  print('C or below');
+}
+```
+
+nothing special here. works exactly like every other language.
+
+### ternary operator
+
+when you need a value based on a condition, the ternary is cleaner than a full if/else:
+
+```dart
+var score = 87;
+var grade = score >= 90 ? 'A' : 'B';  // 'B'
+```
+
+`condition ? valueIfTrue : valueIfFalse`. one line, one value. use it for simple yes/no decisions.
+
+### switch statement
+
+```dart
+var day = 'monday';
+
+switch (day) {
+  case 'saturday':
+  case 'sunday':
+    print('weekend');
+    break;
+  case 'monday':
+    print('back to work');
+    break;
+  default:
+    print('weekday');
+}
+```
+
+use `switch` when you are checking one variable against multiple values. each `case` needs a `break` or the code falls through to the next case. `default` catches everything else.
+
+### switch expression (dart 3)
+
+dart 3 added a cleaner version of switch that gives back a value directly:
+
+```dart
+var score = 87;
+
+var grade = switch (score) {
+  >= 90 => 'A',
+  >= 80 => 'B',
+  >= 70 => 'C',
+  _ => 'F',
+};
+```
+
+`_` is the catch-all, same role as `default`. no `break` needed. the whole thing is one expression that produces a value. much cleaner than the statement version when you just want to map one thing to another.
+
+**interview note:** the difference between switch statement and switch expression is that the expression version returns a value and has no fall-through. the compiler also checks that all cases are covered when used with sealed classes.
+
+---
+
+## Chapter 4 - Loops
+
+### classic for loop
+
+```dart
+for (var i = 0; i < 5; i++) {
+  print(i);  // 0, 1, 2, 3, 4
+}
+```
+
+three parts: setup, condition, step. runs as long as the condition is true.
+
+### for-in loop
+
+when you just want to go through every item in a collection, `for-in` is cleaner:
+
+```dart
+var fruits = ['apple', 'mango', 'banana'];
+
+for (var fruit in fruits) {
+  print(fruit);
+}
+```
+
+`for-in` works on any `Iterable`. lists, sets, maps, whatever. you don't need an index counter.
+
+### forEach
+
+`forEach` is the functional style of doing the same thing:
+
+```dart
+var fruits = ['apple', 'mango', 'banana'];
+
+fruits.forEach((fruit) => print(fruit));
+```
+
+same result, different style. `forEach` takes a function and calls it for each item.
+
+**when to use which:** `for-in` vs `forEach` comes up in interviews. the real difference is control flow. inside `for-in`, you can use `break` to stop early or `continue` to skip an item. inside `forEach`, you cannot. if you need early exit, use `for-in`.
+
+```dart
+var numbers = [1, 2, 3, 4, 5];
+
+for (var n in numbers) {
+  if (n == 3) break;      // stops the loop
+  if (n == 2) continue;   // skips this iteration
+  print(n);               // prints 1
+}
+```
+
+### while loop
+
+runs as long as a condition is true. checks the condition **before** each run:
+
+```dart
+var count = 0;
+
+while (count < 3) {
+  print(count);  // 0, 1, 2
+  count++;
+}
+```
+
+use `while` when you don't know ahead of time how many times you need to loop.
+
+### do-while loop
+
+checks the condition **after** each run, so it always runs at least once:
+
+```dart
+var count = 0;
+
+do {
+  print(count);  // 0, 1, 2
+  count++;
+} while (count < 3);
+```
+
+the practical difference: if `count` started at 10, `while` would never run but `do-while` would run once. use `do-while` when the first run should always happen regardless of the condition.
+
+---
+
+## Chapter 5 - Collections
+
+dart has three main collection types: **`List`**, **`Set`**, and **`Map`**.
+
+### List
+
+ordered, index-based, allows duplicates.
+
+```dart
+List<String> fruits = ['apple', 'mango', 'banana'];
+
+fruits.add('grape');
+fruits.remove('mango');
+fruits[0];                // 'apple'
+fruits.length;            // 3
+fruits.contains('banana'); // true
+```
+
+think of `List` as an array with a cleaner API.
+
+### spread operator
+
+you can insert all items from one list into another using `...`:
+
+```dart
+var base = ['react', 'vue'];
+var all = ['angular', ...base, 'svelte'];
+// ['angular', 'react', 'vue', 'svelte']
+
+List<String>? maybe;
+var safe = [...?maybe, 'flutter'];  // ...? only spreads if not null
+```
+
+### collection if and collection for
+
+dart lets you put `if` and `for` directly inside a list literal:
+
+```dart
+bool isLoggedIn = true;
+
+var items = [
+  'home',
+  if (isLoggedIn) 'profile',
+  'settings',
+];
+// ['home', 'profile', 'settings']
+
+var doubled = [for (var i in [1, 2, 3]) i * 2];
+// [2, 4, 6]
+```
+
+this is one of the best things in dart. in flutter, you build widget trees like this:
+
+```dart
+Column(
+  children: [
+    Text('always here'),
+    if (user != null) UserCard(user: user!),
+    for (var item in items) ListTile(title: Text(item)),
+  ],
+)
+```
+
+no helper functions, no extra variables. it just works inline.
+
+### Set
+
+unordered, no duplicates.
+
+```dart
+Set<String> tags = {'dart', 'flutter', 'mobile'};
+tags.add('dart');  // no effect, already exists
+tags.length;       // 3
+```
+
+use `Set` when you only care about whether something is in the collection, not where it is.
+
+### Map
+
+key-value pairs.
+
+```dart
+Map<String, int> scores = {
+  'rakhul': 95,
+  'anon': 80,
+};
+
+scores['rakhul'];              // 95
+scores['new'] = 100;           // add entry
+scores.remove('anon');         // remove entry
+scores.containsKey('rakhul');  // true
+scores.entries;                // Iterable of MapEntry
+```
+
+maps are the backbone of most flutter apps. api responses, state objects, config, all of it.
+
+---
+
+## Chapter 6 - OOP Fundamentals
+
+dart is fully object-oriented. everything is an object, including numbers and functions.
+
+### class and constructor
+
+```dart
+class Person {
+  String name;
+  int age;
+
+  Person(this.name, this.age);
+}
+
+var p = Person('rakhul', 24);
+print(p.name);  // rakhul
+```
+
+`this.name` in the constructor is dart saying "take this parameter and assign it to the field with the same name." this is the standard way to write dart constructors.
+
+### named constructors
+
+dart does not support method overloading. instead, you create named constructors:
+
+```dart
+class Point {
+  double x, y;
+
+  Point(this.x, this.y);
+
+  Point.origin() : x = 0, y = 0;
+
+  Point.fromMap(Map<String, double> map)
+      : x = map['x'] ?? 0,
+        y = map['y'] ?? 0;
+}
+
+var origin = Point.origin();
+var p = Point.fromMap({'x': 3.0, 'y': 4.0});
+```
+
+the `: x = 0, y = 0` part after `()` is called an **initializer list**. it runs before the constructor body. you will see `SomeClass.from()`, `SomeClass.empty()`, `SomeClass.of(context)` all over flutter, all of them are named constructors.
+
+### getters and setters
+
+```dart
+class Circle {
+  double radius;
+
+  Circle(this.radius);
+
+  double get area => 3.14159 * radius * radius;
+
+  set diameter(double d) => radius = d / 2;
+}
+
+var c = Circle(5);
+print(c.area);    // 78.53975, accessed like a property
+c.diameter = 20;  // calls the setter, sets radius to 10
+```
+
+a getter looks like a field from the outside. no parentheses needed when calling it.
+
+### private fields
+
+```dart
+class BankAccount {
+  double _balance = 0;  // _ prefix makes it private to this file
+
+  double get balance => _balance;
+
+  void deposit(double amount) {
+    if (amount > 0) _balance += amount;
+  }
+}
+```
+
+in dart, `_` makes a member private to its **library**, which means the file. not just the class, the whole file. anything outside that file cannot access `_balance`.
+
+---
+
+## Chapter 7 - Inheritance
+
+inheritance is the "is-a" relationship. a `Dog` is an `Animal`. a `Button` is a `Widget`.
+
+```dart
+class Animal {
+  String name;
+  Animal(this.name);
+  void speak() => print('$name makes a sound');
+}
+
+class Dog extends Animal {
+  Dog(String name) : super(name);
+
+  @override
+  void speak() => print('$name barks');
+}
+
+var d = Dog('Bruno');
+d.speak();  // Bruno barks
+```
+
+`extends` gives the child class everything the parent has. `@override` marks that you are replacing a parent method. `super(name)` calls the parent constructor.
+
+### is and as
+
+```dart
+Animal a = Dog('Rex');
+
+if (a is Dog) {
+  a.speak();  // inside this block, dart already knows a is a Dog
+}
+
+var d = a as Dog;  // hard cast, crashes at runtime if it's the wrong type
+```
+
+`is` checks the type and automatically narrows it inside the block. you don't need to cast manually. `as` is a forced cast, only use it when you are sure of the type.
+
+---
+
+## Chapter 8 - Abstract Classes and Interfaces
+
+### abstract class
+
+an abstract class cannot be created directly. it only exists to be extended.
+
+```dart
+abstract class Shape {
+  double get area;  // subclasses must provide this
+  void draw();      // subclasses must provide this
+
+  void describe() => print('area: ${area.toStringAsFixed(2)}');
+}
+
+class Rectangle extends Shape {
+  double width, height;
+  Rectangle(this.width, this.height);
+
+  @override
+  double get area => width * height;
+
+  @override
+  void draw() => print('rect ${width}x${height}');
+}
+```
+
+`Shape` says *what* must exist. `Rectangle` says *how* it works. `describe()` is a real method that every shape gets for free without reimplementing it.
+
+`Widget`, `State`, `RenderObject` in flutter are all abstract classes. you extend them, you don't create them directly.
+
+### implements
+
+dart has no `interface` keyword. any class can be used as an interface:
+
+```dart
+class Logger {
+  void log(String message) => print(message);
+}
+
+class DatabaseLogger implements Logger {
+  @override
+  void log(String message) => print('[DB] $message');
+}
+```
+
+`implements` is a promise. you are saying "i will have every public member of this class." you get no shared code from it. you write everything yourself. it is a pure contract.
+
+### extends vs implements
+
+| | `extends` | `implements` |
+|---|---|---|
+| get parent's code | yes | no |
+| must write everything yourself | no | yes |
+| how many | one | multiple |
+| use for | is-a + shared code | pure contract |
+
+**interview note:** `extends` is for sharing code and behavior. `implements` is for enforcing a contract. you can also combine them: `class Car extends Vehicle implements Serializable`.
+
+---
+
+## Chapter 9 - Mixins
+
+a **mixin** is a chunk of methods you can add to a class without making it a parent. think of it as a plugin you attach.
+
+```dart
+mixin Flyable {
+  void fly() => print('$runtimeType is flying');
+}
+
+mixin Swimmable {
+  void swim() => print('$runtimeType is swimming');
+}
+
+class Duck extends Animal with Flyable, Swimmable {
+  Duck() : super('duck');
+}
+
+var d = Duck();
+d.fly();    // Duck is flying
+d.swim();   // Duck is swimming
+d.speak();  // duck makes a sound
+```
+
+`with` applies the mixin. you can apply multiple. `Duck` is not a `Flyable`, it just *has* the `fly` method. this is how dart avoids the diamond problem that comes with multiple inheritance.
+
+### restricting with `on`
+
+```dart
+mixin Logger on Widget {
+  void log(String msg) => print('[${runtimeType}] $msg');
+}
+```
+
+`on Widget` means this mixin can only be used on classes that extend `Widget`. inside the mixin you can now safely use widget-specific things.
+
+### mixins vs abstract classes
+
+| | abstract class | mixin |
+|---|---|---|
+| can be instantiated | no | no |
+| can have state | yes | yes |
+| applied via | `extends`, one only | `with`, multiple allowed |
+| use for | is-a + shared behavior | plug-in behavior |
+
+**interview note:** `TickerProviderStateMixin` and `AutomaticKeepAliveClientMixin` in flutter are mixins. they add specific capabilities to a state class without requiring inheritance.
+
+---
+
+## Chapter 10 - Functional Operations
+
+dart's `Iterable` API lets you process collections without writing loops for everything.
+
+### forEach
+
+calls a function for each element. no return value:
+
+```dart
+var fruits = ['apple', 'mango', 'banana'];
+fruits.forEach((f) => print(f));
+```
+
+### map - transform every element
+
+creates a new collection by running a function on each item:
+
+```dart
+var scores = [85, 92, 78, 95];
+var grades = scores.map((s) => s >= 90 ? 'A' : 'B').toList();
+// ['B', 'A', 'B', 'A']
+```
+
+`map` is lazy. it returns an `Iterable` that only runs when you call `.toList()` or iterate over it.
+
+### where - filter elements
+
+keeps only the items that pass the test:
+
+```dart
+var scores = [85, 92, 78, 95];
+var passing = scores.where((s) => s >= 90).toList();
+// [92, 95]
+```
+
+`where` is dart's filter. it does not change the original list.
+
+### reduce - collapse to one value
+
+folds the whole list into a single value:
+
+```dart
+var scores = [85, 92, 78, 95];
+var total = scores.reduce((sum, s) => sum + s);
+// 350
+```
+
+`reduce` needs at least one element in the list or it throws. the first call uses the first element as the starting accumulator.
+
+### fold - reduce with a starting value
+
+safer version of reduce. you provide the starting value yourself:
+
+```dart
+var scores = [85, 92, 78, 95];
+var total = scores.fold<int>(0, (sum, s) => sum + s);
+// 350, works even on an empty list
+```
+
+**interview note:** `reduce` vs `fold` is a common one. `reduce` uses the first element as the starting accumulator. `fold` lets you set the starting value, so it works on empty lists too.
+
+### any and every
+
+```dart
+var scores = [85, 92, 78, 95];
+
+scores.any((s) => s > 90);    // true, at least one is above 90
+scores.every((s) => s > 70);  // true, all are above 70
+```
+
+### firstWhere
+
+find the first item that matches:
+
+```dart
+scores.firstWhere((s) => s > 90);
+// 92
+
+scores.firstWhere((s) => s > 99, orElse: () => 0);
+// 0, orElse runs when nothing matches instead of throwing
+```
+
+### chaining
+
+all these operations return `Iterable`, so you can chain them:
+
+```dart
+var result = [1, 2, 3, 4, 5, 6]
+    .where((n) => n.isEven)
+    .map((n) => n * n)
+    .toList();
+
+// [4, 16, 36]
+```
+
+nothing runs until `.toList()` or another terminal method is called. each step builds up a lazy chain.
+
+---
+
+## Chapter 11 - Shorthands and Cascades
+
+### string interpolation
+
+```dart
+var name = 'rakhul';
+var score = 95;
+
+print('hello, $name');         // hello, rakhul
+print('score: ${score * 2}');  // score: 190
+```
+
+`$variable` for a direct reference. `${expression}` when you need to compute something.
+
+### cascade operator
+
+`..` lets you call multiple methods on the same object without repeating it:
+
+```dart
+// without cascade
+var list = [];
+list.add(1);
+list.add(2);
+list.add(3);
+
+// with cascade
+var list = []
+  ..add(1)
+  ..add(2)
+  ..add(3);
+```
+
+each `..` call returns the original object, not the result of the method. you will see this with `Paint` and `StringBuffer` in flutter.
+
+### null-aware cascade
+
+```dart
+StringBuffer? buffer;
+buffer?..write('hello')..write(' world');
+// does nothing if buffer is null
+```
+
+`?..` is the null-safe version. the whole chain is skipped if the object is null.
+
+### records
+
+dart 3 added **records**, which let you return multiple values without creating a class:
+
+```dart
+(String, int) getUser() => ('rakhul', 24);
+
+var (name, age) = getUser();
+print('$name is $age');  // rakhul is 24
+```
+
+before records, you had to either make a wrapper class or return a list and cast everything. records solve that cleanly.
+
+### typedef
+
+```dart
+typedef OnMessage = void Function(String message);
+
+void runWithCallback(OnMessage cb) {
+  cb('done');
+}
+```
+
+`typedef` gives a name to a function signature. without it, complex function types like `void Function(String, int, bool)` get hard to read fast.
+
+---
+
+## Post-Credits
+
+that's the dart you actually need.
+
+variables, null safety, functions, conditionals, loops, collections, OOP, mixins, functional operations, shorthands, cascades. all of it in one place.
+
+if you understand what's here, you are not learning dart anymore. **you are writing it.**
+
+next up: async dart. futures, streams, and how dart handles time without blocking anything.
+
+stay tuned.
