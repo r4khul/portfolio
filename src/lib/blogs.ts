@@ -48,6 +48,23 @@ export function getBlog(slug: string): Blog | undefined {
   return getBlogs().find((b) => b.slug === slug);
 }
 
+export function getSeriesNeighbors(slug: string): { prev?: Blog; next?: Blog } {
+  const blog = getBlog(slug);
+  if (!blog?.category || typeof blog.number !== "number") return {};
+
+  const series = getBlogs()
+    .filter((b) => b.category === blog.category && typeof b.number === "number")
+    .sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+
+  const index = series.findIndex((b) => b.slug === slug);
+  if (index === -1) return {};
+
+  return {
+    prev: series[index - 1],
+    next: series[index + 1],
+  };
+}
+
 export function getBlogCategories(): string[] {
   const blogs = getBlogs();
   return [...new Set(blogs.map((b) => b.category))];

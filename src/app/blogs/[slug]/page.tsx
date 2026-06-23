@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Calendar } from "lucide-react";
-import { getBlog, getBlogs, getReadingTime } from "@/lib/blogs";
+import { getBlog, getBlogs, getReadingTime, getSeriesNeighbors } from "@/lib/blogs";
 import { profile } from "@/data/profile";
 import { MdxContent } from "@/components/mdx-content";
 import { BackButton } from "@/components/project/back-button";
@@ -10,6 +10,7 @@ import GithubSlugger from "github-slugger";
 import { BlogToc } from "@/components/blogs/blog-toc";
 import { BlogPostJsonLd } from "@/components/site/json-ld";
 import { ViewCounter } from "@/components/blogs/view-counter";
+import { SeriesNavigation } from "@/components/blogs/series-navigation";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -75,6 +76,8 @@ export default async function BlogPostPage({ params }: Props) {
   const blog = getBlog(slug);
   if (!blog) notFound();
 
+  const { prev, next } = getSeriesNeighbors(slug);
+
   const slugger = new GithubSlugger();
   const headings = Array.from(blog.content.matchAll(/^##\s+(.*)$/gm)).map(match => {
     const rawTitle = match[1].trim();
@@ -107,21 +110,20 @@ export default async function BlogPostPage({ params }: Props) {
 
       <div className="bleed-line px-4 py-8 sm:px-8">
         <div className="flex items-center justify-between">
-          <BackButton href="/blogs" label="all posts" />
+          <div className="flex items-center gap-2">
+            <BackButton href="/blogs" label="all posts" />
+            {typeof blog.number === "number" && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-edge bg-surface px-2 py-0.5 font-mono text-[10px] text-muted">
+                <span className="text-faint uppercase">{blog.category}</span>
+                <span className="text-edge-strong">·</span>
+                <span className="font-medium text-foreground">#{blog.number}</span>
+              </span>
+            )}
+          </div>
           <ViewCounter slug={slug} trackView={true} variant="chip" />
         </div>
 
         <header className="mt-6">
-          <div className="flex items-center gap-2">
-            {typeof blog.number === "number" && (
-              <span className="inline-flex items-center rounded-full border border-edge bg-surface px-2 py-0.5 font-mono text-[10px] font-medium text-muted">
-                #{blog.number}
-              </span>
-            )}
-            <span className="font-mono text-[11px] tracking-wide text-faint uppercase">
-              {blog.category}
-            </span>
-          </div>
           <h1 className="mt-3 font-serif text-[32px] leading-none tracking-tight sm:text-[40px]">
             {blog.title}
           </h1>
@@ -154,6 +156,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <article className="bleed-line px-4 py-10 sm:px-8">
         <MdxContent source={blog.content} />
+        <SeriesNavigation prev={prev} next={next} />
       </article>
     </main>
   );
