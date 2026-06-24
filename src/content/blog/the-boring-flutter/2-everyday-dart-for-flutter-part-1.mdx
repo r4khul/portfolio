@@ -1,6 +1,6 @@
 ---
-title: "Everyday Dart: Part 1"
-slug: "everyday-dart-part-1"
+title: "Everyday Dart For Flutter: Part 1"
+slug: "everyday-dart-for-flutter-part-1"
 description: "the dart you actually need. variables, null safety, conditionals, loops, collections, full OOP, mixins, and functional ops."
 date: "2025-06-23"
 category: "The Boring Flutter"
@@ -734,7 +734,13 @@ d.swim();   // Duck is swimming
 d.speak();  // duck makes a sound
 ```
 
-`with` applies the mixin. multiple mixins are fine. `Duck` is not a `Flyable`, it just has the `fly` behavior bolted on. dart avoids the diamond problem this way.
+`with` applies the mixin. multiple mixins are fine. `Duck` is not a `Flyable`, it just has the `fly` behavior bolted on.
+
+before mixins, you might ask: why not just `extend` both `Flyable` and `Swimmable` as classes? the answer is dart doesn't allow it. **dart has no multiple inheritance.** you can only `extend` one class. and this is a deliberate choice to avoid the **diamond problem**.
+
+the diamond problem is what happens when two parent classes both define the same method, and a child inherits from both. which version does the child get? the compiler genuinely doesn't know. the name refers to the shape of the inheritance diagram — A at the top, B and C both inherit from A, D inherits from both B and C — a diamond. if B and C both override a method from A, D is stuck in an ambiguous situation.
+
+dart sidesteps this entirely by disallowing extending more than one class. but you still need shared behavior across unrelated class trees — that's exactly what mixins give you. a mixin isn't a parent. it's applied behavior. and when two mixins conflict on the same method name, dart has a defined rule: last one in the `with` clause wins.
 
 ### mixin conflict: what if two mixins have the same method?
 

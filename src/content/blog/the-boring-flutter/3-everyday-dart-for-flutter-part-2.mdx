@@ -1,0 +1,766 @@
+---
+title: "Everyday Dart For Flutter: Part 2"
+slug: "everyday-dart-for-flutter-part-2"
+description: "async dart, the full picture. futures, streams, async/await, isolates, sealed classes, and exhaustive switch."
+date: "2025-06-24"
+category: "The Boring Flutter"
+number: 3
+tags: ["dart", "flutter", "async", "futures", "streams", "isolates", "sealed-classes"]
+cover: "/images/blogs/the-boring-flutter/the-boring-flutter-banner.avif"
+---
+
+## Prequel
+
+in the last post, we wrote dart. classes, collections, mixins, all the synchronous stuff.
+
+but most of what you build with flutter isn't synchronous. you wait on network responses. you listen to a stream of location updates. you parse a 2MB JSON without freezing the screen. that's what this post covers.
+
+and honestly, this is the part where dart starts pulling ahead of most languages.
+
+---
+
+## Chapter 1 - Why Does Asynchronous Programming Exist
+
+let's start with the actual problem.
+
+your dart program runs on a single thread. that thread runs what dart calls the **event loop**. it picks up a task, runs it to completion, then picks up the next one. one at a time. this is not a bug, it's by design.
+
+now imagine that thread makes a network call. the network takes 300ms to respond. if the thread just sits there waiting, nothing else can happen during those 300ms. in a flutter app, that means the UI freezes. no animations. no taps. nothing. the app looks dead.
+
+this is the **thread-blocking problem**.
+
+the insight that fixes it: most waiting isn't CPU work. reading from a file, waiting for a response, reading from a socket; during all of this, your CPU is just idle, watching for data to arrive. the thread doesn't need to sit there. it can register "wake me up when the data is ready" and go do other things.
+
+that's exactly what asynchronous programming does. you hand off the "wait" part to the operating system and free your thread to keep processing other events. when the data arrives, the event loop gets notified and resumes the waiting task.
+
+dart's async model is built around this. you don't get multiple threads by default. you get one thread that never blocks, and a runtime that handles all the waiting for you.
+
+### the event loop in plain terms
+
+think of it like a to-do list that the dart runtime processes in a tight loop.
+
+```dart
+while (true) {
+  if (microtaskQueue.isNotEmpty) {
+    runNextMicrotask();
+    continue;
+  }
+  
+  if (eventQueue.isNotEmpty) {
+    runNextEvent();
+  }
+}
+```
+
+in reality, dart handles two separate queues:
+
+* **the event queue**: for everything coming from the outside. user taps, file I/O, timers, network responses, drawing events.
+* **the microtask queue**: for internal framework tasks that need to run asynchronously, but *immediately*. 
+
+the priority is absolute: **microtasks run first**. the event loop will drain the entire microtask queue before it touches even a single task from the event queue. if you keep scheduling microtasks, you will starve the event queue and freeze the app.
+
+when you do something async, like fetching from the network, you kick off the operation and immediately return. you're not blocking the loop. when the response comes back, a new task gets added to the list: "run the callback with the response." the loop picks it up and runs it.
+
+<ImageZoom alt="the dart event loop: one thread, never blocked">
+  <div className="bg-surface p-6 font-sans">
+    <svg viewBox="0 0 640 280" className="w-full" xmlns="http://www.w3.org/2000/svg">
+      <text x="100" y="36" textAnchor="middle" className="fill-faint text-[9px] font-mono uppercase tracking-wider">microtask queue</text>
+      <rect x="20" y="45" width="160" height="80" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <rect x="32" y="56" width="136" height="22" rx="4" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1"/>
+      <text x="100" y="70" textAnchor="middle" className="fill-foreground text-[9px] font-mono font-semibold">Future callback</text>
+      <rect x="32" y="88" width="136" height="22" rx="4" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="100" y="102" textAnchor="middle" className="fill-muted text-[9px] font-mono">scheduleMicrotask</text>
+
+      <text x="100" y="146" textAnchor="middle" className="fill-faint text-[9px] font-mono uppercase tracking-wider">event queue</text>
+      <rect x="20" y="155" width="160" height="100" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <rect x="32" y="166" width="136" height="22" rx="4" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+      <text x="100" y="180" textAnchor="middle" className="fill-foreground text-[9px] font-mono font-semibold">http callback</text>
+      <rect x="32" y="194" width="136" height="22" rx="4" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="100" y="208" textAnchor="middle" className="fill-muted text-[9px] font-mono">tap handler</text>
+      <rect x="32" y="222" width="136" height="22" rx="4" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="100" y="236" textAnchor="middle" className="fill-muted text-[9px] font-mono">render frame</text>
+
+      <path d="M 180 85 L 210 85 L 210 116 L 238 116" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+      <polygon points="230,110 240,116 230,122" fill="currentColor" className="text-faint"/>
+      <text x="210" y="78" textAnchor="middle" className="fill-faint text-[8px] font-mono">runs first</text>
+
+      <path d="M 180 205 L 210 205 L 210 158 L 238 158" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+      <polygon points="230,152 240,158 230,164" fill="currentColor" className="text-faint"/>
+      <text x="210" y="217" textAnchor="middle" className="fill-faint text-[8px] font-mono">if microtask</text>
+      <text x="210" y="230" textAnchor="middle" className="fill-faint text-[8px] font-mono">queue empty</text>
+
+      <rect x="240" y="65" width="180" height="160" rx="12" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="330" y="85" textAnchor="middle" className="fill-foreground text-[11px] font-mono font-semibold uppercase tracking-wider">event loop</text>
+      <rect x="252" y="98" width="156" height="28" rx="5" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1"/>
+      <text x="330" y="115" textAnchor="middle" className="fill-muted text-[9px] font-mono">Drain Microtasks</text>
+      <rect x="252" y="134" width="156" height="28" rx="5" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1"/>
+      <text x="330" y="151" textAnchor="middle" className="fill-muted text-[9px] font-mono">Run One Event</text>
+      <rect x="252" y="170" width="156" height="28" rx="5" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1"/>
+      <text x="330" y="187" textAnchor="middle" className="fill-muted text-[9px] font-mono">Repeat Loop</text>
+
+      <line x1="420" y1="145" x2="478" y2="145" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+      <polygon points="470,139 480,145 470,151" fill="currentColor" className="text-faint"/>
+      <text x="450" y="137" textAnchor="middle" className="fill-faint text-[9px] font-mono">runs</text>
+
+      <rect x="480" y="95" width="140" height="100" rx="12" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="550" y="118" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">YOUR CODE</text>
+      <text x="550" y="138" textAnchor="middle" className="fill-muted text-[9px] font-mono">runs to completion</text>
+      <text x="550" y="152" textAnchor="middle" className="fill-muted text-[9px] font-mono">single thread</text>
+      <text x="550" y="166" textAnchor="middle" className="fill-muted text-[9px] font-mono">never blocks</text>
+
+      <path d="M 550 195 Q 550 250 440 250 Q 315 250 330 227" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1.5" strokeDasharray="4 4"/>
+      <polygon points="324,235 330,225 336,235" fill="currentColor" className="text-faint"/>
+      <text x="440" y="266" textAnchor="middle" className="fill-faint text-[9px] font-mono">hits await → yields control back</text>
+    </svg>
+  </div>
+</ImageZoom>
+
+`async` functions in dart don't run on a new thread. they're still on the same thread. they just yield back to the event loop at every `await`, and the loop moves on to the next task in the queue. when the awaited thing finishes, a new task is added: "resume this function." the loop picks it up.
+
+no mutexes. no locks. there's only one thread touching your state at any point.
+
+---
+
+## Chapter 2 - Future
+
+a `Future<T>` represents a value that doesn't exist yet. it's a promise: "i'll give you a `T` at some point."
+
+```dart
+Future<String> fetchUsername() {
+  return Future.delayed(
+    Duration(seconds: 1),
+    () => 'rakhul',
+  );
+}
+```
+
+`Future.delayed` simulates a delay. after one second, it completes with `'rakhul'`. the function returns immediately with a `Future<String>`. the string isn't there yet, but the object representing "it will be" is.
+
+### the three states of a Future
+
+a `Future` is always in one of three states:
+
+- **pending**: the operation hasn't finished
+- **completed with a value**: success, the data is here
+- **completed with an error**: something went wrong
+
+once a future completes, it never changes state. it's done. you can't un-complete it or reset it.
+
+### consuming a Future with then / catchError
+
+the old way, before `async/await` became idiomatic:
+
+```dart
+fetchUsername()
+    .then((name) => print('got: $name'))
+    .catchError((e) => print('error: $e'))
+    .whenComplete(() => print('always runs'));
+```
+
+`then` runs when the future completes successfully. `catchError` runs when it throws. `whenComplete` runs regardless. this works, but once you chain more than two or three of these, the code becomes a pyramid and is hard to follow.
+
+### async / await
+
+`async` and `await` are syntactic sugar over the same `then`/`catchError` machinery. same execution model, much cleaner to read.
+
+```dart
+Future<void> loadUser() async {
+  try {
+    String name = await fetchUsername();
+    print('got: $name');
+  } catch (e) {
+    print('error: $e');
+  }
+}
+```
+
+`await` suspends the function until the future completes, then gives you the result directly. the function returns a `Future<void>` because it's marked `async`. calling `loadUser()` returns immediately; the awaiting happens inside the function, not at the call site.
+
+**the important thing:** `await` doesn't block the thread. while `loadUser` is waiting for `fetchUsername`, the event loop keeps running. other tasks, other UI events, all of it continues. `await` just pauses this particular async function.
+
+**interview note:** this is the most common async question. "does `await` block the thread?" the answer is no. `await` suspends the current `async` function and hands control back to the event loop until the future completes. the thread stays alive and responsive the whole time.
+
+<ImageZoom alt="what actually happens when your code hits await">
+  <div className="bg-surface p-6 font-sans">
+    <svg viewBox="0 0 620 300" className="w-full" xmlns="http://www.w3.org/2000/svg">
+      <text x="310" y="18" textAnchor="middle" className="fill-faint text-[10px] font-mono uppercase tracking-wide">timeline →</text>
+      <rect x="20" y="30" width="594" height="1" fill="currentColor" className="text-edge"/>
+      <rect x="20" y="50" width="120" height="36" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="80" y="72" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">main()</text>
+      <line x1="140" y1="68" x2="182" y2="68" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+      <polygon points="172,62 184,68 172,74" fill="currentColor" className="text-faint"/>
+      <rect x="184" y="50" width="130" height="36" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="249" y="67" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">loadUser()</text>
+      <text x="249" y="80" textAnchor="middle" className="fill-faint text-[9px] font-mono">calls fetchUsername()</text>
+      <line x1="314" y1="68" x2="342" y2="68" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+      <polygon points="332,62 344,68 332,74" fill="currentColor" className="text-faint"/>
+      <rect x="344" y="44" width="200" height="56" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="444" y="60" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">await hit</text>
+      <text x="444" y="74" textAnchor="middle" className="fill-faint text-[9px] font-mono">loadUser suspends</text>
+      <text x="444" y="88" textAnchor="middle" className="fill-faint text-[9px] font-mono">returns Future to main</text>
+      <line x1="310" y1="100" x2="310" y2="120" stroke="currentColor" className="text-faint" strokeWidth="1" strokeDasharray="3 3"/>
+      <rect x="20" y="120" width="594" height="1" fill="currentColor" className="text-edge" strokeDasharray="4 4"/>
+      <text x="310" y="138" textAnchor="middle" className="fill-faint text-[9px] font-mono uppercase tracking-wide">event loop is free; other tasks run here</text>
+      <rect x="63" y="148" width="136" height="28" rx="6" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="131" y="166" textAnchor="middle" className="fill-muted text-[9px] font-mono">render frame</text>
+      <rect x="242" y="148" width="136" height="28" rx="6" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="310" y="166" textAnchor="middle" className="fill-muted text-[9px] font-mono">tap event</text>
+      <rect x="421" y="148" width="136" height="28" rx="6" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="489" y="166" textAnchor="middle" className="fill-muted text-[9px] font-mono">animation tick</text>
+      <rect x="20" y="196" width="594" height="1" fill="currentColor" className="text-edge" strokeDasharray="4 4"/>
+      <text x="310" y="214" textAnchor="middle" className="fill-faint text-[9px] font-mono uppercase tracking-wide">fetchUsername completes → loop queues resumption</text>
+      <rect x="184" y="224" width="232" height="36" rx="8" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+      <text x="300" y="241" textAnchor="middle" className="fill-foreground text-[10px] font-mono font-semibold">loadUser() resumes</text>
+      <text x="300" y="254" textAnchor="middle" className="fill-faint text-[9px] font-mono">name = 'rakhul', continues</text>
+      <line x1="416" y1="242" x2="428" y2="242" stroke="currentColor" className="text-faint" strokeWidth="1.5"/>
+      <polygon points="418,236 430,242 418,248" fill="currentColor" className="text-faint"/>
+      <rect x="430" y="224" width="184" height="36" rx="8" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="522" y="245" textAnchor="middle" className="fill-muted text-[10px] font-mono">print('got: rakhul')</text>
+    </svg>
+  </div>
+</ImageZoom>
+
+the key thing to see in that diagram: while `loadUser` is suspended waiting for the network, the event loop isn't sitting idle. it's rendering frames, handling taps, ticking animations. the UI stays fully alive. when `fetchUsername` eventually completes, the runtime schedules `loadUser` to resume; the loop picks it up on its next turn and the function continues right where it left off, with `name` set to the result.
+
+### the return type rule
+
+any function marked `async` must return a `Future`. dart wraps the return value automatically:
+
+```dart
+Future<int> compute() async {
+  return 42;  // dart wraps this in Future<int>
+}
+
+Future<void> doWork() async {
+  // no return value needed, but still a Future
+}
+```
+
+you cannot use `await` outside of an `async` function. the compiler won't allow it.
+
+### sequential vs concurrent futures
+
+`await` runs operations one after another:
+
+```dart
+Future<void> sequential() async {
+  var a = await fetchA();  // waits for A to complete
+  var b = await fetchB();  // then starts B
+  print('$a, $b');
+}
+```
+
+if `fetchA` takes 1s and `fetchB` takes 1s, this takes 2 seconds total. they don't overlap.
+
+if you don't need A before you start B, run them concurrently with `Future.wait`:
+
+```dart
+Future<void> concurrent() async {
+  var results = await Future.wait([fetchA(), fetchB()]);
+  print('${results[0]}, ${results[1]}');
+}
+```
+
+`Future.wait` takes a list of futures, starts all of them, and waits until all complete. now both requests are in-flight at the same time. if each takes 1s, the whole thing takes 1s. **this is one of the most practically useful patterns in flutter**, especially when you're initializing a screen that needs multiple API calls.
+
+**interview note:** `Future.wait` fails fast. if any one future in the list throws, the whole `wait` throws immediately. the other futures keep running in the background, but you won't get their results. if you need all to complete regardless of errors, run them individually inside try/catch blocks.
+
+### Future.value and Future.error
+
+sometimes you need to return a future from a function but already have the answer:
+
+```dart
+Future<int> cachedScore() {
+  if (_cache != null) return Future.value(_cache!);
+  return fetchFromServer();
+}
+```
+
+`Future.value` wraps a synchronous value in a completed future. `Future.error` does the same for an exception:
+
+```dart
+Future<String> validate(String input) {
+  if (input.isEmpty) return Future.error('cannot be empty');
+  return Future.value(input);
+}
+```
+
+---
+
+## Chapter 3 - async / await Nuances
+
+### you can await anywhere in an expression
+
+`await` isn't just for assignment lines. it works anywhere an expression is expected:
+
+```dart
+print(await fetchUsername());
+var upper = (await fetchUsername()).toUpperCase();
+```
+
+### multiple awaits in a function
+
+each `await` in a function is a potential yield point. the function can be "interrupted" at each one to let other events run:
+
+```dart
+Future<void> process() async {
+  var user = await fetchUser();      // yield point 1
+  var posts = await fetchPosts(user.id);  // yield point 2
+  display(user, posts);
+}
+```
+
+between each yield point, other things can happen in the event loop. this is fine for reads. but if you're modifying shared state, be aware that the state can change between awaits. in single-threaded dart, this isn't usually a problem, but it's worth knowing.
+
+### async errors bubble correctly
+
+```dart
+Future<void> risky() async {
+  throw Exception('something broke');
+}
+
+Future<void> caller() async {
+  try {
+    await risky();
+  } catch (e) {
+    print('caught: $e');
+  }
+}
+```
+
+errors in async functions propagate via the future they return. `await` unwraps them back into thrown exceptions, so normal `try/catch` works exactly as you'd expect.
+
+**if you don't await a future, you don't catch its errors.** this is a real bug source:
+
+```dart
+void bad() {
+  risky();  // fire and forget; any error here is uncaught
+}
+```
+
+dart will print an "unhandled exception" in the console, but your app won't crash loudly. the error just gets swallowed. always `await`, or explicitly handle the future.
+
+---
+
+## Chapter 4 - Stream
+
+a `Future<T>` gives you one value, once. a `Stream<T>` gives you **a sequence of values over time**.
+
+think of it this way: future is a single text message. stream is a live chat conversation. values keep arriving until the stream is done or closed.
+
+### real examples of streams
+
+- user location updates as they move
+- socket messages from a server
+- file being read chunk by chunk
+- a search box emitting a value each time the user types
+
+### creating a stream
+
+the simplest way is `Stream.fromIterable` for synchronous data, but real streams usually come from `StreamController` or dart's async generator syntax:
+
+```dart
+Stream<int> countTo(int n) async* {
+  for (var i = 1; i <= n; i++) {
+    await Future.delayed(Duration(seconds: 1));
+    yield i;
+  }
+}
+```
+
+`async*` makes the function an async generator. `yield` emits a value into the stream. the caller receives each value as it arrives. `yield*` delegates to another iterable or stream entirely.
+
+### listening to a stream
+
+```dart
+countTo(5).listen(
+  (value) => print('got: $value'),
+  onError: (e) => print('error: $e'),
+  onDone: () => print('stream done'),
+);
+```
+
+`.listen()` subscribes to the stream. it returns a `StreamSubscription` object.
+
+### StreamSubscription
+
+the subscription is your handle to the stream. don't ignore it:
+
+```dart
+StreamSubscription<int> sub = countTo(5).listen((v) => print(v));
+
+sub.pause();    // temporarily stop receiving events
+sub.resume();   // start again
+sub.cancel();   // unsubscribe, stop everything
+```
+
+**in flutter, this is critical.** if you subscribe to a stream in `initState` and don't cancel in `dispose`, the subscription keeps listening even after the widget is gone. this is a classic memory leak. the stream will try to call back into a dead widget.
+
+always cancel subscriptions in `dispose`.
+
+### await for: async iteration
+
+if you'd rather not use callbacks, you can loop over a stream with `await for`:
+
+```dart
+Future<void> readCounts() async {
+  await for (final value in countTo(5)) {
+    print('value: $value');
+  }
+  print('all done');
+}
+```
+
+this pauses the `async` function at each iteration, waiting for the next event. when the stream closes, the loop ends and execution continues. if you break early, the stream subscription is automatically cancelled.
+
+### single-subscription vs broadcast streams
+
+this is the most important thing to know about streams in dart:
+
+**single-subscription streams**: the default. only one listener allowed at a time. if you try to listen twice, it throws. most streams from I/O, HTTP responses, and async generators are single-subscription.
+
+**broadcast streams**: allows multiple listeners simultaneously. any listener can subscribe at any time. if you listen after some events have already been emitted, you don't get the ones you missed.
+
+```dart
+var controller = StreamController<int>.broadcast();
+
+controller.stream.listen((v) => print('A: $v'));
+controller.stream.listen((v) => print('B: $v'));
+
+controller.add(1);  // both A and B print
+controller.add(2);
+```
+
+**interview note:** if you try to add a second listener to a single-subscription stream, you get a `StateError: Stream has already been listened to`. this catches a lot of people off guard. if you need multiple listeners, use a broadcast stream or use `asBroadcastStream()` to convert.
+
+### StreamController
+
+`StreamController` is how you create your own streams:
+
+```dart
+var controller = StreamController<String>();
+
+controller.sink.add('first message');
+controller.sink.add('second message');
+controller.sink.addError(Exception('oops'));
+controller.sink.close();  // signals the stream is done
+
+controller.stream.listen(
+  (msg) => print(msg),
+  onError: (e) => print('error: $e'),
+  onDone: () => print('stream closed'),
+);
+```
+
+the `sink` is the input side; you push events in. the `stream` is the output side; listeners read from it. always close the controller when you're done to avoid leaks.
+
+---
+
+## Chapter 5 - Sealed Classes and Exhaustive Switch
+
+dart 3 changed how you model state, and this feature alone is worth the upgrade.
+
+### the problem it solves
+
+imagine you're modeling the result of an API call. it can be loading, success with data, or an error. the classic approach is three separate booleans or a nullable field:
+
+```dart
+bool isLoading = false;
+String? data;
+String? error;
+```
+
+the problem: nothing stops you from having both `data` and `error` set at the same time, or being in a state where none of them make sense. the type system isn't helping you. the compiler has no idea what state is "valid."
+
+**sealed classes** fix this by making the compiler track every possible state.
+
+### sealed class
+
+```dart
+sealed class ApiResult {}
+
+class Loading extends ApiResult {}
+
+class Success extends ApiResult {
+  final String data;
+  Success(this.data);
+}
+
+class Failure extends ApiResult {
+  final String error;
+  Failure(this.error);
+}
+```
+
+`sealed` means: all subclasses must be in the **same file** as the parent. the compiler knows every possible subclass because it can see the whole file. nothing external can extend it. the set is closed.
+
+this is the "closed world" guarantee. dart knows `ApiResult` can only ever be `Loading`, `Success`, or `Failure`. nothing else.
+
+### exhaustive switch
+
+because the compiler knows all subtypes, it can check that your switch covers every case:
+
+```dart
+ApiResult result = fetchData();
+
+switch (result) {
+  case Loading():
+    showSpinner();
+  case Success(data: var d):
+    showData(d);
+  case Failure(error: var e):
+    showError(e);
+}
+```
+
+if you forget any case, dart gives a **compile error**: "the type `ApiResult` is not exhaustively matched." not a runtime crash. not a missing else. a compile error.
+
+**this is the killer feature.** now if you add a new state to `ApiResult`, say `Empty`, every switch in your entire codebase that handles `ApiResult` will immediately fail to compile until you handle the new case. refactoring becomes safe. you can't accidentally forget to handle a new state somewhere.
+
+### pattern matching in switch cases
+
+dart 3's switch supports destructuring inline:
+
+```dart
+switch (result) {
+  case Success(data: var d):
+    print(d);  // d is typed as String, not dynamic
+  case Failure(error: var e):
+    print(e);
+  case Loading():
+    break;
+}
+```
+
+`case Success(data: var d)` extracts the `data` field directly in the case pattern. you get a properly typed local variable without any casting. this is called **pattern matching**.
+
+you can also use it to match on values:
+
+```dart
+switch (score) {
+  case >= 90:
+    print('A');
+  case >= 80:
+    print('B');
+  case _:
+    print('C or below');
+}
+```
+
+### switch expression with sealed classes
+
+switch can also be an expression, not just a statement. this is clean for producing values:
+
+```dart
+String message = switch (result) {
+  Loading() => 'please wait...',
+  Success(data: var d) => d,
+  Failure(error: var e) => 'failed: $e',
+};
+```
+
+if you forget any case in a switch expression over a sealed type, the compiler rejects it. exhaustiveness isn't optional.
+
+**interview note:** sealed classes with exhaustive switch is the dart 3 answer to union types. it's how you represent "this thing is exactly one of these possibilities" in a way the compiler enforces. the entire point is to make invalid state unrepresentable. before this, you'd use abstract classes and hope you handled every subtype somewhere. now the compiler guarantees it.
+
+### when to use sealed classes
+
+use sealed classes whenever you have a fixed set of states or outcomes:
+
+- loading / success / error (API results)
+- authentication states: logged in, logged out, loading
+- form validation results: valid, invalid with a reason
+- payment status: pending, approved, declined, refunded
+
+anywhere you'd otherwise write `if (isLoading) ... else if (error != null) ... else ...`, a sealed class is cleaner and safer.
+
+---
+
+## Chapter 6 - Isolates
+
+everything we've covered so far runs on one thread. the event loop handles async well for I/O: network, file, database, because the thread is mostly idle, waiting.
+
+but some tasks aren't I/O. they're **CPU-intensive**: parsing a large JSON payload, processing an image, running a physics simulation. for these, `await` doesn't help. the thread isn't waiting for I/O; it's actively crunching. and while it's crunching, the event loop is blocked. the UI stutters.
+
+this is where isolates come in.
+
+### what is an isolate
+
+an **isolate** is dart's unit of concurrency. it's a completely separate execution environment with its own memory, its own event loop, and its own thread.
+
+unlike threads in Java or C++, isolates **do not share memory**. two isolates cannot read each other's variables. there is no shared state. this is not a limitation; it's the design. no shared state means no race conditions. no data races. no need for locks, mutexes, or synchronized blocks.
+
+the only way isolates communicate is by **passing messages**. you send a message to an isolate, it does work, it sends a message back. the messages are copied across, not shared.
+
+<ImageZoom alt="two isolates: completely separate heaps, connected only by ports">
+  <div className="bg-surface p-6 font-sans">
+    <svg viewBox="0 0 620 230" className="w-full" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="30" width="240" height="170" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="140" y="54" textAnchor="middle" className="fill-foreground text-[11px] font-mono font-semibold uppercase tracking-wide">main isolate</text>
+      <rect x="36" y="66" width="208" height="50" rx="8" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="140" y="86" textAnchor="middle" className="fill-muted text-[10px] font-mono">heap memory</text>
+      <text x="140" y="102" textAnchor="middle" className="fill-faint text-[9px] font-mono">var x = 10  /  List users</text>
+      <rect x="36" y="128" width="208" height="28" rx="6" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="140" y="146" textAnchor="middle" className="fill-muted text-[10px] font-mono">event loop</text>
+      <rect x="80" y="168" width="120" height="24" rx="5" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1"/>
+      <text x="140" y="184" textAnchor="middle" className="fill-faint text-[9px] font-mono">ReceivePort</text>
+      <rect x="360" y="30" width="240" height="170" rx="14" fill="none" stroke="currentColor" className="text-edge" strokeWidth="1.5"/>
+      <text x="480" y="54" textAnchor="middle" className="fill-foreground text-[11px] font-mono font-semibold uppercase tracking-wide">worker isolate</text>
+      <rect x="376" y="66" width="208" height="50" rx="8" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="480" y="86" textAnchor="middle" className="fill-muted text-[10px] font-mono">heap memory</text>
+      <text x="480" y="102" textAnchor="middle" className="fill-faint text-[9px] font-mono">completely separate; no sharing</text>
+      <rect x="376" y="128" width="208" height="28" rx="6" fill="none" stroke="currentColor" className="text-muted" strokeWidth="1" strokeDasharray="3 3"/>
+      <text x="480" y="146" textAnchor="middle" className="fill-muted text-[10px] font-mono">event loop</text>
+      <rect x="420" y="168" width="120" height="24" rx="5" fill="none" stroke="currentColor" className="text-faint" strokeWidth="1"/>
+      <text x="480" y="184" textAnchor="middle" className="fill-faint text-[9px] font-mono">ReceivePort</text>
+      <line x1="200" y1="180" x2="360" y2="180" stroke="currentColor" className="text-foreground" strokeWidth="1.5"/>
+      <polygon points="352,174 364,180 352,186" fill="currentColor" className="text-foreground"/>
+      <text x="310" y="168" textAnchor="middle" className="fill-foreground text-[9px] font-mono font-semibold">message (copy)</text>
+      <line x1="360" y1="196" x2="200" y2="196" stroke="currentColor" className="text-foreground" strokeWidth="1.5" strokeDasharray="4 3"/>
+      <polygon points="208,190 196,196 208,202" fill="currentColor" className="text-foreground"/>
+      <text x="310" y="210" textAnchor="middle" className="fill-foreground text-[9px] font-mono font-semibold">result (copy)</text>
+    </svg>
+  </div>
+</ImageZoom>
+
+### spawning an isolate
+
+```dart
+import 'dart:isolate';
+
+void heavyWork(SendPort sendPort) {
+  var result = 0;
+  for (var i = 0; i < 1000000000; i++) result += i;
+  sendPort.send(result);
+}
+
+Future<void> runIsolate() async {
+  var receivePort = ReceivePort();
+
+  await Isolate.spawn(heavyWork, receivePort.sendPort);
+
+  var result = await receivePort.first;
+  print('result: $result');
+  receivePort.close();
+}
+```
+
+`ReceivePort` is how the main isolate listens for messages. you pass the `SendPort` (its write end) to the spawned isolate. the spawned isolate does its work, sends back the result, and the main isolate receives it.
+
+the UI never stalls. `heavyWork` runs on a completely separate thread.
+
+### Isolate.run: the simpler version
+
+spawning a full isolate with ports is verbose for simple cases. dart 2.19 added `Isolate.run` as a clean shorthand:
+
+```dart
+Future<void> processData() async {
+  var result = await Isolate.run(() {
+    var sum = 0;
+    for (var i = 0; i < 1000000000; i++) sum += i;
+    return sum;
+  });
+
+  print('sum: $result');
+}
+```
+
+`Isolate.run` spawns a new isolate, runs the function in it, returns the result, and cleans up. it's the idiomatic way to do one-off heavy computation without blocking the UI thread.
+
+**the constraint:** the closure you pass to `Isolate.run` cannot close over any mutable state from the enclosing scope. it needs to be self-contained. dart enforces this; if you try to pass state that can't be sent across isolate boundaries, you'll get an error.
+
+### compute: in flutter specifically
+
+flutter's `compute` function (from `flutter/foundation.dart`) is even simpler. it's a thin wrapper around `Isolate.run` designed for flutter's common use case of running a pure function in a background isolate:
+
+```dart
+import 'package:flutter/foundation.dart';
+
+int sumAll(List<int> numbers) {
+  return numbers.fold(0, (a, b) => a + b);
+}
+
+var result = await compute(sumAll, [1, 2, 3, 4, 5]);
+```
+
+`compute` takes a **top-level or static function** and a single argument. the function runs in a background isolate. the argument is sent to it. the return value comes back. `compute` is the right tool when you're doing CPU work in a flutter app and don't need bidirectional communication.
+
+### message passing
+
+for isolates that need ongoing communication, not just send-and-receive-once, you use ports directly:
+
+```dart
+void workerIsolate(SendPort mainSend) async {
+  var workerReceive = ReceivePort();
+  mainSend.send(workerReceive.sendPort);  // give main our send port
+
+  await for (final message in workerReceive) {
+    if (message == 'stop') {
+      workerReceive.close();
+      break;
+    }
+    mainSend.send('processed: $message');
+  }
+}
+
+Future<void> twoWayExample() async {
+  var mainReceive = ReceivePort();
+  await Isolate.spawn(workerIsolate, mainReceive.sendPort);
+
+  SendPort workerSend = await mainReceive.first;
+
+  workerSend.send('hello');
+  print(await mainReceive.first);  // processed: hello
+
+  workerSend.send('stop');
+  mainReceive.close();
+}
+```
+
+this is the full pattern for a long-lived worker isolate. the main isolate and the worker each have their own `ReceivePort` and exchange the `SendPort` to establish bidirectional communication.
+
+### what can you send between isolates
+
+not everything can be passed across isolate boundaries. dart only allows **sendable** types:
+
+- primitives: `null`, `bool`, `int`, `double`, `String`
+- `List`, `Map`, `Set` of sendable types
+- `TransferableTypedData` for raw byte buffers
+- `SendPort` itself
+- objects that implement `Sendable` (dart 3.7+)
+
+custom class instances are generally **copied** using a deep clone when sent. if the object is very large, this copying cost is real. for very large data, `TransferableTypedData` can transfer without copying.
+
+**interview note:** the most common isolate question is "when do you use isolates vs async/await." the clean answer: `async/await` for I/O (network, file, database); the thread isn't doing work, just waiting. isolates for CPU work: you're actually computing something and need a separate thread so the UI doesn't stall. using `await` on heavy computation still blocks the main thread; you need an isolate for that.
+
+### isolates are expensive to spawn
+
+each isolate is a full runtime environment. spawning one has meaningful overhead: setting up memory, an event loop, all of it. you don't spawn an isolate for each small task. for CPU-heavy tasks that run infrequently, `Isolate.run` or `compute` is fine. for sustained high-frequency work, maintain a long-lived worker isolate and pass messages to it.
+
+---
+
+## Chapter 7 - Putting It Together
+
+pick the right tool based on what you're actually dealing with.
+
+**`Future`**: one value, arriving later. network call, database read, file open. you `await` it. the thread keeps running while it waits.
+
+**`Stream`**: multiple values arriving over time. location updates, socket messages, typed search. you subscribe and handle each one as it comes.
+
+**sealed class + switch**: a fixed set of states. loading, success, error. the compiler stops you from forgetting a case. invalid states become literally unrepresentable.
+
+**`Isolate`**: CPU work. parsing, encoding, image processing. everything above stays on one thread. isolates give you a real separate thread when you actually need to crunch.
+
+they layer naturally. a common flutter screen does this: an `Isolate` parses a heavy JSON payload and sends back a result. that result is wrapped in a sealed `ApiResult`. the UI listens to a `Stream<ApiResult>` and switches on it: loading shows a spinner, success shows the data, failure shows an error. each piece is doing exactly one job.
+
+---
+
+## Post-Credits
+
+most languages bolt async on top of an existing model and you can feel the seams. dart was designed around it from the start. the event loop, the single thread, the lack of shared state between isolates; none of that is accidental. it's what makes async dart predictable. you know exactly where your state can be touched and when.
+
+if the event loop diagram, the await suspension, and the isolate memory model all clicked, you're past the surface. **you can read a dart codebase now and know what's actually happening.**
+
+next up: the flutter rendering pipeline. how your widget code becomes pixels on screen.
+
+stay tuned.
