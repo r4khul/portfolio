@@ -11,6 +11,7 @@ import { BlogToc } from "@/components/blogs/blog-toc";
 import { BlogPostJsonLd } from "@/components/site/json-ld";
 import { ViewCounter } from "@/components/blogs/view-counter";
 import { SeriesNavigation } from "@/components/blogs/series-navigation";
+import { ShareButton } from "@/components/blogs/share-button";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -112,18 +113,20 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BackButton href="/blogs" label="all posts" />
-            {typeof blog.number === "number" && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-edge bg-surface px-2 py-0.5 font-mono text-[10px] text-muted">
-                <span className="text-faint uppercase">{blog.category}</span>
-                <span className="text-edge-strong">·</span>
-                <span className="font-medium text-foreground">#{blog.number}</span>
-              </span>
-            )}
           </div>
           <ViewCounter slug={slug} trackView={true} variant="chip" />
         </div>
 
         <header className="mt-6">
+          {typeof blog.number === "number" && (
+            <div className="flex">
+              <span className="inline-flex items-center gap-1 rounded-full border border-edge bg-surface px-2 py-0.5 font-mono text-[10px] text-muted">
+                <span className="text-faint uppercase">{blog.category}</span>
+                <span className="text-edge-strong">·</span>
+                <span className="font-medium text-foreground">#{blog.number}</span>
+              </span>
+            </div>
+          )}
           <h1 className="mt-3 font-serif text-[32px] leading-none tracking-tight sm:text-[40px]">
             {blog.title}
           </h1>
@@ -151,6 +154,9 @@ export default async function BlogPostPage({ params }: Props) {
               ))}
             </ul>
           )}
+          <div className="mt-5">
+            <ShareButton title={blog.title} />
+          </div>
         </header>
       </div>
 
