@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/site/main-banner.avif",
+        url: "/images/site/main-banner.png",
         width: 1200,
         height: 630,
         alt: `Blog — ${profile.name}`,
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     description:
       "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
     creator: "@r4khul",
-    images: ["/images/site/main-banner.avif"]
+    images: ["/images/site/main-banner.png"]
   },
 };
 

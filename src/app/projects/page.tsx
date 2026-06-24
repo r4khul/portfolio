@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/site/main-banner.avif",
+        url: "/images/site/main-banner.png",
         width: 1200,
         height: 630,
         alt: `Projects — ${profile.name}`,
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: `Projects — ${profile.name}`,
     description: "A collection of tools, apps, and experiments I've built, focusing on mobile engineering and performance.",
     creator: "@r4khul",
-    images: ["/images/site/main-banner.avif"],
+    images: ["/images/site/main-banner.png"],
   },
 };
 

@@ -29,7 +29,7 @@ export function JsonLd() {
       "Firebase",
       "React.js",
     ],
-    image: `${profile.url}/images/site/pfp.avif`,
+    image: `${profile.url}/images/site/pfp.png`,
     description: profile.about.join(" "),
   };
 
@@ -99,7 +99,7 @@ export function BlogPostJsonLd({ blog }: { blog: Blog }) {
     "@type": "BlogPosting",
     headline: blog.title,
     description: blog.description,
-    image: blog.cover ? `${profile.url}${blog.cover}` : `${profile.url}/images/site/main-banner.avif`,
+    image: blog.cover ? `${profile.url}${blog.cover}` : `${profile.url}/images/site/main-banner.png`,
     author: {
       "@type": "Person",
       name: profile.name,

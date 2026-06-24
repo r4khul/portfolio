@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const ogImage = toy.cover
     ? { url: toy.cover, width: 1200, height: 630, alt: toy.title }
-    : { url: "/images/site/main-banner.avif", width: 1200, height: 630, alt: toy.title };
+    : { url: "/images/site/main-banner.png", width: 1200, height: 630, alt: toy.title };
 
   const liveLink = toy.links.find((l) =>
     l.label.toLowerCase().includes("live") ||

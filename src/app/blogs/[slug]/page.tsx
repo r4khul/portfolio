@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           ]
         : [
             {
-              url: "/images/site/main-banner.avif",
+              url: "/images/site/main-banner.png",
               width: 1200,
               height: 630,
               alt: blog.title,
@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: blog.title,
       description: blog.description,
       creator: "@r4khul",
-      images: blog.cover ? [blog.cover] : ["/images/site/main-banner.avif"],
+      images: blog.cover ? [blog.cover] : ["/images/site/main-banner.png"],
     },
   };
 }

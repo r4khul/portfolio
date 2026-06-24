@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "en_US",
       images: images.length > 0 ? images : [
         {
-          url: "/images/site/main-banner.avif",
+          url: "/images/site/main-banner.png",
           width: 1200,
           height: 630,
           alt: project.title,
@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: project.title,
       description: project.description,
       creator: "@r4khul",
-      images: project.cover ? [project.cover] : ["/images/site/main-banner.avif"],
+      images: project.cover ? [project.cover] : ["/images/site/main-banner.png"],
     },
   };
 }
