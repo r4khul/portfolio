@@ -641,6 +641,51 @@ the letters are always copies. the sender keeps the original. the receiver gets 
 
 that picture is the whole idea. `ReceivePort` is the letterbox. `SendPort` is the address. messages are the letters. everything else is just the plumbing.
 
+### the template 
+
+here is the same idea as a skeleton. 
+
+```text
+// one-off worker: main asks, worker answers
+
+main:
+  letterbox = create ReceivePort()
+  address = letterbox.sendPort
+  spawn worker(address)
+  result = wait for letter in letterbox
+  print result
+
+worker(address):
+  result = do heavy work
+  post result to address
+```
+
+```text
+// long-lived worker: back-and-forth conversation
+
+main:
+  mainLetterbox = create ReceivePort()
+  spawn worker(mainLetterbox.sendPort)
+
+  workerAddress = wait for first letter in mainLetterbox
+  post "task" to workerAddress
+
+  result = wait for next letter in mainLetterbox
+  print result
+
+worker(mainAddress):
+  workerLetterbox = create ReceivePort()
+  post workerLetterbox.sendPort to mainAddress
+
+  loop:
+    task = wait for letter in workerLetterbox
+    if task == "stop": break
+    result = process(task)
+    post result to mainAddress
+```
+
+the first pattern is what you see in the real code next. the second pattern is what you use when the worker needs to stay alive and keep talking.
+
 ### spawning an isolate
 
 ```dart
