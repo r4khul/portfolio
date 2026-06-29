@@ -623,6 +623,24 @@ the only way isolates communicate is by **passing messages**. you send a message
   </div>
 </ImageZoom>
 
+### a mental model: letterboxes
+
+before the syntax, it helps to picture the pieces.
+
+imagine each isolate is its own house. they never visit each other. they never share a fridge or a bookshelf. if one house wants to talk to another, the only way is to send a letter.
+
+a `ReceivePort` is the letterbox on the front gate. it just sits there and waits for letters to drop in.
+
+`ReceivePort.sendPort` is the address written on that letterbox. if you want someone else to send you a letter, you give them the address. you do not give them the whole letterbox, just the address.
+
+when you spawn a worker isolate, you hand it the address of your main isolate's letterbox. the worker does its work, then posts a letter back to that address. the main isolate checks its letterbox and reads the result.
+
+for two-way communication, each house gets its own letterbox. the worker sets up its own letterbox, then posts its address back to the main isolate. now the main isolate has the worker's address, and the worker already has the main isolate's address. they can keep sending letters back and forth.
+
+the letters are always copies. the sender keeps the original. the receiver gets a duplicate. nothing is shared, so no one can accidentally scribble over someone else's notebook.
+
+that picture is the whole idea. `ReceivePort` is the letterbox. `SendPort` is the address. messages are the letters. everything else is just the plumbing.
+
 ### spawning an isolate
 
 ```dart
