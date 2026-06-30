@@ -68,7 +68,7 @@ function PostSlide({ blog }: { blog: Blog }) {
   return (
     <Link
       href={`/blogs/${blog.slug}`}
-      className="group/post flex-none w-[185px] sm:w-[210px] rounded-lg border border-edge bg-background p-3 transition-colors hover:bg-surface"
+      className="group/post flex-none w-[75%] sm:w-[210px] rounded-lg border border-edge bg-background p-3 transition-colors hover:bg-surface"
       style={{ scrollSnapAlign: "start" }}
     >
       {typeof blog.number === "number" && (
@@ -101,7 +101,12 @@ function CategoryCard({ category, priority = false }: { category: CategoryGroup;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") => {
-    scrollRef.current?.scrollBy({ left: dir === "right" ? 215 : -215, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    const amount = el.firstElementChild
+      ? (el.firstElementChild as HTMLElement).offsetWidth + 12
+      : 220;
+    el.scrollBy({ left: dir === "right" ? amount : -amount, behavior: "smooth" });
   };
 
   return (
