@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { getCategorySlug } from "./blog-utils";
 
 const BLOGS_DIR = path.join(process.cwd(), "src", "content", "blog");
 
@@ -68,6 +69,12 @@ export function getSeriesNeighbors(slug: string): { prev?: Blog; next?: Blog } {
 export function getBlogCategories(): string[] {
   const blogs = getBlogs();
   return [...new Set(blogs.map((b) => b.category))];
+}
+
+export { getCategorySlug } from "./blog-utils";
+
+export function getBlogsByCategorySlug(slug: string): Blog[] {
+  return getBlogs().filter((b) => getCategorySlug(b.category) === slug);
 }
 
 export { getReadingTime } from "./reading-time";
