@@ -18,6 +18,7 @@ export function ViewCounter({ slug, trackView = false, variant = "inline", showI
         const res = await fetch(`/api/views/${slug}`, {
           method: trackView ? "POST" : "GET",
         });
+        if (!res.ok) return;
         const data = await res.json();
         if (typeof data.views === "number") {
           setViews(data.views);

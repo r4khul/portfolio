@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ArrowUpRight, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import type { Blog } from "@/lib/blogs";
 import { getCategorySlug } from "@/lib/blog-utils";
 import { getReadingTime } from "@/lib/reading-time";
@@ -18,6 +18,30 @@ type CategoryGroup = {
   description: string;
   blogs: Blog[];
 };
+
+function CategoryTotalViews({ slugs }: { slugs: string[] }) {
+  const [total, setTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    Promise.all(
+      slugs.map((slug) =>
+        fetch(`/api/views/${slug}`)
+          .then((r) => (r.ok ? r.json() : { views: 0 }))
+          .then((d) => (typeof d.views === "number" ? d.views : 0))
+          .catch(() => 0)
+      )
+    ).then((counts) => setTotal(counts.reduce((a, b) => a + b, 0)));
+  }, [slugs]);
+
+  if (total === null) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 font-mono text-[10px] text-faint">
+      <Eye className="size-3 shrink-0" />
+      {total.toLocaleString()}
+    </span>
+  );
+}
 
 export function buildCategories(blogs: Blog[]): CategoryGroup[] {
   const map = new Map<string, CategoryGroup>();
@@ -72,7 +96,7 @@ function PostSlide({ blog }: { blog: Blog }) {
   );
 }
 
-function CategoryCard({ category }: { category: CategoryGroup }) {
+function CategoryCard({ category, priority = false }: { category: CategoryGroup; priority?: boolean }) {
   const { playClick } = useAudioFeedback();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -94,29 +118,34 @@ function CategoryCard({ category }: { category: CategoryGroup }) {
             alt={category.name}
             fill
             sizes="(min-width: 640px) 50vw, 100vw"
+            priority={priority}
             className="object-cover transition-transform duration-700 group-hover/header:scale-[1.03]"
           />
         ) : (
           <div className="dotgrid size-full" aria-hidden />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4">
-          <h3 className="font-serif text-[22px] leading-none tracking-tight text-white drop-shadow-sm">
-            {category.name}
-          </h3>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
+        <div className="absolute right-3 bottom-3">
           <span className="rounded-full border border-white/25 bg-black/30 px-2 py-0.5 font-mono text-[9px] text-white/90 backdrop-blur-sm">
             {category.blogs.length} {category.blogs.length === 1 ? "post" : "posts"}
           </span>
         </div>
-        <div className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full border border-white/20 bg-black/30 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover/header:opacity-100">
+        <div className="absolute left-3 top-3 flex size-6 items-center justify-center rounded-full border border-white/20 bg-black/30 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover/header:opacity-100">
           <ArrowUpRight className="size-3 text-white" />
         </div>
       </Link>
 
       {/* Card body */}
       <div className="flex flex-1 flex-col p-4 sm:p-5">
+        {/* Title row */}
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-serif text-[20px] leading-tight tracking-tight text-foreground">
+            {category.name}
+          </h3>
+          <CategoryTotalViews slugs={category.blogs.map((b) => b.slug)} />
+        </div>
         {category.description && (
-          <p className="text-[12.5px] leading-relaxed text-muted">
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">
             {category.description}
           </p>
         )}
@@ -181,7 +210,7 @@ export function CategoryGrid({ blogs }: { blogs: Blog[] }) {
     <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
       {categories.map((cat, i) => (
         <Reveal key={cat.slug} delay={i * 0.08}>
-          <CategoryCard category={cat} />
+          <CategoryCard category={cat} priority={i === 0} />
         </Reveal>
       ))}
     </div>
