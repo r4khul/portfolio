@@ -1,3 +1,4 @@
+import Script from "next/script";
 import { profile, experience, education } from "@/data/profile";
 import { Project } from "@/lib/projects";
 import { Toy } from "@/lib/toys";
@@ -34,7 +35,8 @@ export function JsonLd() {
   };
 
   return (
-    <script
+    <Script
+      id="json-ld-person"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(personData) }}
     />
@@ -58,7 +60,8 @@ export function ProjectJsonLd({ project }: { project: Project }) {
   };
 
   return (
-    <script
+    <Script
+      id="json-ld-project"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(projectData) }}
     />
@@ -86,7 +89,8 @@ export function ToyJsonLd({ toy }: { toy: Toy }) {
   };
 
   return (
-    <script
+    <Script
+      id="json-ld-toy"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(toyData) }}
     />
@@ -109,7 +113,8 @@ export function BlogPostJsonLd({ blog }: { blog: Blog }) {
   };
 
   return (
-    <script
+    <Script
+      id="json-ld-blog"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(blogData) }}
     />

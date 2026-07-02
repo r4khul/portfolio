@@ -1,0 +1,313 @@
+---
+title: "Dart Exercises: Part 2"
+slug: "dart-exercises-part-2"
+description: "10 harder exercises. generics, sealed classes, streams, isolates, factory patterns. the dart you need for real flutter apps."
+date: "2025-07-08"
+category: "The Boring Flutter"
+number: 5
+tags: ["dart", "flutter", "exercises", "advanced", "streams", "isolates", "sealed-classes"]
+cover: "/images/blogs/the-boring-flutter/the-boring-flutter-banner.png"
+---
+
+## Prequel
+
+part 1 built the foundation. you can write variables, classes, null-safe code, and basic async. you know what the words mean and you can make them run.
+
+part 2 is where the code gets real.
+
+generics so your abstractions aren't brittle. sealed classes so you can model states the compiler actually enforces. streams for everything that lives and changes over time. isolates so you stop freezing the UI when you do real work. factory patterns for json, singletons, and the immutable data flows that run through every flutter app.
+
+these ten exercises are ordered. each one expands on the last. the back half will be genuinely hard if you haven't fully worked through the earlier ones.
+
+no answers here. use the docs, use dartpad, get it running.
+
+---
+
+## Exercise 1 — Functional Collections
+
+covers `.map()`, `.where()`, `.fold()`, `.reduce()`, `.expand()`, `.any()`, `.every()`, method chaining, lazy evaluation
+
+**directions**
+
+- given a list of product prices `[12.5, 300.0, 4500.0, 89.0, 1200.0, 55.0, 7800.0]`:
+  - use `.where()` to keep only prices above `100`
+  - use `.map()` on the filtered result to apply a `10%` discount and format each to 2 decimal places as a `String`
+  - use `.reduce()` to find the maximum price in the **original** list
+  - use `.fold()` to compute the sum of **all** original prices
+- given `[[1, 2], [3, 4], [5, 6]]`, use `.expand()` to flatten it into a single list
+- given scores `[85, 92, 78, 95, 60]`, use `.any()` to check if any score exceeds `90`, and `.every()` to check if all scores are above `50`
+- chain `.where()`, `.map()`, and `.toList()` in **one expression** to produce the discounted premium prices
+
+**expected output**
+
+```text
+Prices above 100: [300.0, 4500.0, 1200.0, 7800.0]
+After 10% discount: [270.00, 4050.00, 1080.00, 7020.00]
+Max price: 7800.0
+Total sum: 13956.5
+Flattened: [1, 2, 3, 4, 5, 6]
+Any above 90: true
+All passing: true
+Chained result: [270.00, 4050.00, 1080.00, 7020.00]
+```
+
+---
+
+## Exercise 2 — Extension Methods
+
+covers `extension on Type`, extending built-in types, extensions on generic types, computed getters in extensions
+
+**directions**
+
+- write an extension on `String` that adds:
+  - an `isPalindrome` getter that returns `bool`
+  - a `wordCount` getter that returns the number of words
+  - a `capitalize()` method that returns the string with the first letter uppercased and the rest unchanged
+- write an extension on `int` that adds:
+  - an `isPrime` getter that returns `bool`
+  - a `factorial` getter that returns the factorial as an `int`
+- write an extension on `List<int>` that adds an `average` getter returning a `double`
+- test every method and getter above and print the results
+
+**expected output**
+
+```text
+'racecar' is palindrome: true
+'flutter' is palindrome: false
+Word count of 'hello world dart': 3
+Capitalized: Flutter
+Is 7 prime: true
+Is 8 prime: false
+Factorial of 5: 120
+Average of [2, 4, 6, 8, 10]: 6.0
+```
+
+---
+
+## Exercise 3 — Generics
+
+covers type parameters `<T>`, generic classes, generic functions, type constraints with `extends`
+
+**directions**
+
+- write a generic class `Pair<A, B>` that holds two values. add a `swap()` method that returns a `Pair<B, A>`. override `toString()` to print `(first, second)`
+- write a generic function `firstOrDefault<T>(List<T> list, T defaultValue)` that returns the first element or the default value if the list is empty
+- write a generic class `Stack<T>` with:
+  - `push(T item)`, `pop()`, `peek` getter, and `isEmpty` getter
+  - `pop()` and `peek` must throw a `StateError` with a message if the stack is empty
+- write a generic function `maxOf<T extends Comparable<T>>(T a, T b)` that returns the larger of the two values. test it with both `int` and `String`
+
+**expected output**
+
+```text
+Pair: (42, dart)
+Swapped: (dart, 42)
+First: hello
+Default: empty
+Pushed: 1, 2, 3
+Peek: 3
+Popped: 3
+Peek after pop: 2
+Max int: 9
+Max string: zebra
+```
+
+---
+
+## Exercise 4 — Records
+
+covers record syntax `(Type, Type)`, named fields `({String name, int age})`, destructuring, records as function return types
+
+**directions**
+
+- write a function `getCoordinates()` that returns a positional record `(double, double)` representing latitude and longitude of any city you choose
+- write a function `getUser()` that returns a named-field record `({String name, int age, String role})`
+- write a function `minMax(List<int> numbers)` that returns a named record `({int min, int max})`
+- destructure all returned records and print their individual fields
+- create a `List<(String, int)>` of at least four student-score pairs. sort it by score descending using a custom comparator. print them in order
+
+**expected output**
+
+```text
+Coordinates: lat=12.97, lng=80.22
+User: name=Rakhul, age=24, role=Engineer
+Min: 3, Max: 97
+Top scores:
+  Alice → 98
+  Bob → 87
+  Charlie → 76
+  Dave → 61
+```
+
+---
+
+## Exercise 5 — Sealed Classes & Pattern Matching
+
+covers `sealed`, exhaustive `switch` expressions, `when` guards, object destructuring in patterns
+
+**directions**
+
+- declare a `sealed` class `NetworkState` with three subclasses:
+  - `Loading` (no fields)
+  - `Success` with a `String data` field
+  - `Failure` with a `String error` and an `int statusCode` field
+- write a function `describe(NetworkState state)` that uses an exhaustive `switch` **expression** (not statement) to return a string. `Success` must include the data, `Failure` must include both fields, `Loading` returns a fixed message. the compiler should error if you miss a case
+- write a function `isCritical(NetworkState state)` that returns `true` only when the state is a `Failure` with `statusCode >= 500`. use a `when` guard inside the switch
+- instantiate one of each state and run both functions on all three
+
+**expected output**
+
+```text
+Loading → Fetching data...
+Success → Data: {"user": "rakhul"}
+Failure → Error: Not Found (404)
+Is critical (404): false
+Is critical (503): true
+Is critical (loading): false
+```
+
+---
+
+## Exercise 6 — Custom Exceptions & Error Handling
+
+covers implementing `Exception`, `throw`, `try/catch/finally`, `on Type catch`, rethrowing, exception hierarchies
+
+**directions**
+
+- create a base class `AppException` with `message` and `code` fields that implements `Exception`. override `toString()` to format it cleanly
+- create two subclasses: `AuthException(message, code)` and `NetworkException(message, code, String url)`
+- write `String authenticate(String token)` that:
+  - throws `AuthException` with code `400` if token is empty
+  - throws `AuthException` with code `401` if token equals `"expired"`
+  - otherwise returns `"Authenticated: $token"`
+- write `String fetchData(String url)` that:
+  - throws `NetworkException` with code `503` if url contains `"bad"`
+  - otherwise returns `"Response from $url"`
+- in a single `main`, call both functions with various inputs. use `on AuthException catch`, `on NetworkException catch`, and a general `catch` fallback. every call site must have a `finally` block that prints `"Cleanup done"`
+
+**expected output**
+
+```text
+Auth OK: Authenticated: validToken123
+[AUTH 401] Token expired
+Cleanup done
+[NETWORK 503] Failed: bad-domain.com
+Cleanup done
+Fetch OK: Response from api.dart.dev
+Cleanup done
+```
+
+---
+
+## Exercise 7 — Streams
+
+covers `Stream`, `StreamController`, `async*` / `yield`, `.listen()`, `.map()`, `.where()`, `await for`, stream lifecycle
+
+**directions**
+
+- write an `async*` generator function `countDown(int from)` that `yield`s integers from `from` down to `1`, with a `500ms` delay between each. use `await for` in `main` to consume it and print each value prefixed with `Countdown:`
+- create a `StreamController<String>`. add four distinct log messages to it across different sections of your code (simulate app lifecycle events). close it when done. subscribe with `.listen()` and print each prefixed with `[LOG]`
+- create a stream from the list `['dart', 'flutter', 'firebase', 'go', 'python']` using `Stream.fromIterable`. apply `.where()` to keep only strings with length `<= 6`, then `.map()` to uppercase them. collect results with `await for` into a list and print it
+
+**expected output**
+
+```text
+Countdown: 3
+Countdown: 2
+Countdown: 1
+[LOG] App started
+[LOG] User loaded
+[LOG] Data fetched
+[LOG] Render complete
+Processed: [DART, GO]
+```
+
+---
+
+## Exercise 8 — Typedefs & Callable Classes
+
+covers `typedef` for function types, type aliases, callable classes with `call()`, using both to compose behavior
+
+**directions**
+
+- define `typedef Transformer<T> = T Function(T)`
+- write a function `applyPipeline<T>(T value, List<Transformer<T>> pipeline)` that applies each transformer in sequence and returns the final result
+- test it with a `String` pipeline of three steps: trim whitespace, convert to uppercase, prepend `"PROCESSED: "`
+- create a callable class `Multiplier` that stores a `final int factor`. implement `call(int value)` so it can be used as `multiplier(7)`. test it with two different factors
+- create a callable class `RegexValidator` that stores a `final RegExp pattern`. implement `call(String input)` returning `bool`. test it with an email pattern on two inputs (one valid, one not)
+
+**expected output**
+
+```text
+Pipeline result: PROCESSED: DART
+Multiplier(3)(7): 21
+Multiplier(10)(5): 50
+Valid email (test@dart.dev): true
+Valid email (notamail): false
+```
+
+---
+
+## Exercise 9 — Factory Constructors & Data Patterns
+
+covers `factory`, singleton pattern, `fromJson` / `toJson`, `copyWith`, `==` and `hashCode` overrides
+
+**directions**
+
+- create a `Config` class that:
+  - has `final String apiUrl` and `final int timeout` fields
+  - uses a `factory` constructor to implement the singleton pattern (same instance every call)
+  - verify that two separate calls to `Config(...)` return `identical` objects
+- create a `User` class with `name`, `email`, and `age` fields. implement:
+  - a `factory User.fromJson(Map<String, dynamic> json)` constructor
+  - a `toJson()` method returning `Map<String, dynamic>`
+  - a `copyWith({String? name, String? email, int? age})` method
+  - `==` operator and `hashCode` so two `User` instances with identical fields are considered equal
+- create a user from a JSON map, copy it changing only the email, print both, convert both back to JSON, and verify equality behavior
+
+**expected output**
+
+```text
+Config is singleton: true
+Original: User(rakhul, rakhul@dart.dev, 24)
+Updated:  User(rakhul, rakhul@flutter.dev, 24)
+Original JSON: {name: rakhul, email: rakhul@dart.dev, age: 24}
+Updated JSON:  {name: rakhul, email: rakhul@flutter.dev, age: 24}
+original == updated: false
+original == same data: true
+```
+
+---
+
+## Exercise 10 — Isolates
+
+covers `Isolate.run()`, offloading CPU work, why the main isolate matters, pure functions in isolates
+
+**directions**
+
+- write a synchronous function `isPrime(int n)` that correctly checks primality
+- write `int sumPrimesBelow(int limit)` that sums all primes below the limit. this is the CPU-intensive function you will move off the main thread
+- call `sumPrimesBelow(100000)` directly on the main isolate and print the result with a note: `"(main isolate)"`
+- call the same function using `Isolate.run(() => sumPrimesBelow(100000))` and print the result with a note: `"(isolate)"`
+- verify both results are identical
+- write a pure function `String encodeData(String raw)` that reverses the string and wraps it in `<<...>>`. run it via `Isolate.run` and print the output
+- add a comment in your code explaining in one sentence why running `sumPrimesBelow` on the main isolate could drop frames in a flutter app and why `Isolate.run` prevents that
+
+**expected output**
+
+```text
+Sum of primes below 100000 (main isolate): 454396537
+Sum of primes below 100000 (isolate): 454396537
+Results match: true
+Encoded: <<trad si trad>>
+```
+
+---
+
+## That's Part 2
+
+ten more exercises. functional ops, extensions, generics, records, sealed classes, exception hierarchies, streams, typedefs, factory patterns, isolates.
+
+if [part 1](/blogs/dart-exercises-part-1) meant you could write dart, part 2 means you can write dart the way real flutter codebases actually look. state modeling, JSON handling, stream-driven data, off-thread computation. the patterns in these exercises show up in essentially every production flutter app.
+
+the next post moves into flutter itself. widgets, layout, state. dart is done.
