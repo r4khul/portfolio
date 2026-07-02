@@ -1,0 +1,300 @@
+---
+title: "Dart Exercises: Part 1"
+slug: "dart-exercises-part-1"
+description: "10 exercises. solve them all and you will be able to write any dart code you want."
+date: "2025-07-01"
+category: "The Boring Flutter"
+number: 4
+tags: ["dart", "flutter", "exercises", "practice"]
+cover: "/images/blogs/the-boring-flutter/the-boring-flutter-banner.png"
+---
+
+## Prequel
+
+you have read the theory. variables, null safety, collections, OOP, async. you know what the words mean.
+
+but reading code and writing code are different things. the neurons that let you *produce* dart are not built by reading explanations. they are built by getting stuck, figuring it out, and running it. that is what these exercises do.
+
+10 exercises. each one targets something from the last two posts. they start simple and get harder, in that order. every concept you solve here compounds directly into real flutter work.
+
+no answers in this post. look things up, make mistakes, make it run.
+
+---
+
+## Exercise 1 - Variables
+
+covers `var`, explicit type annotations, `final`, `const`, `.runtimeType`, nullable types
+
+**directions**
+
+- declare at least one variable using each of: `var`, an explicit type, `final`, `const`. use at least four types: `int`, `double`, `String`, `bool`
+- try to reassign a `final` variable and a `const` variable. note what happens and put the error in a comment
+- declare a nullable `String?` and a non-nullable `String`. assign `null` to the nullable one. try assigning `null` to the non-nullable one and note what the compiler says
+- print the runtime type of each variable using `.runtimeType`
+
+**expected output**
+
+```text
+42 is int
+3.14 is double
+Dart is String
+true is bool
+name is final, cannot be reassigned
+PI is const, cannot be reassigned
+Nullable string: null
+Non-nullable string: Hello
+```
+
+---
+
+## Exercise 2 - Control Flow
+
+covers `if/else`, `switch`, `for`, `while`, `break`, `continue`
+
+**directions**
+
+- create a list of integers from 1 to 20
+- use a `for` loop with `continue` to print only even numbers, skipping odd ones
+- write a `switch` statement that classifies a number as `"small"` (1 to 5), `"medium"` (6 to 10), or `"large"` (11 to 20). run it on three different values
+- use a `while` loop to find the first number greater than 15 that is divisible by both 3 and 4. `break` when you find it
+
+**expected output**
+
+```text
+Even numbers: 2 4 6 8 10 12 14 16 18 20
+3 → small
+8 → medium
+17 → large
+First match (>15, div by 3&4): 24
+```
+
+---
+
+## Exercise 3 - Functions
+
+covers named parameters, optional positional parameters, default values, arrow functions, higher-order functions
+
+**directions**
+
+- write a function `greet` that takes a required `name` and a named optional `title` (default: `"Dev"`). it should return a greeting string
+- write an arrow function `square` that returns the square of a number
+- write a function `describe` with a required param and an optional positional param `[String suffix = '!']`
+- write a higher-order function `applyTwice` that takes a function and a value, applies the function twice, and returns the result
+- call `applyTwice` with `square` and the value `3`
+
+**expected output**
+
+```text
+Hello, Dev Rakhul!
+Hello, Engineer Arjun!
+Square of 5: 25
+described: Cool Dart!
+applyTwice(square, 3): 81
+```
+
+---
+
+## Exercise 4 - Strings
+
+covers string interpolation, multi-line strings, `.toUpperCase()`, `.contains()`, `.split()`, `.trim()`, `.replaceAll()`, `.startsWith()`, raw strings
+
+**directions**
+
+- build a full name from `firstName` and `lastName` using string interpolation
+- write a multi-line string using `"""` with three lines, any quote or text about code you want
+- demonstrate each of these in a print: `.toUpperCase()`, `.contains()`, `.split()`, `.trim()`, `.replaceAll()`, `.startsWith()`
+- print a raw string `r'\n is not a newline here'` and then a regular string that actually uses `\n`
+- reverse a string without using any built-in reverse method
+
+**expected output**
+
+```text
+Full name: Ada Lovelace
+--- Quote ---
+Code is poetry
+written in logic
+read by machines
+---
+Upper: ADA LOVELACE
+Contains 'Love': true
+Split by ' ': [Ada, Lovelace]
+Trimmed: "Dart"
+Replaced: Hello World
+Raw: \n is not a newline here
+With escape:
+new line here
+Reversed: ecalevoL adA
+```
+
+---
+
+## Exercise 5 - Collections
+
+covers `List`, `Map`, `Set`, the spread operator `...`, collection-if, collection-for
+
+**directions**
+
+- create a `List<String>` of 5 programming languages. add one, remove one, sort it, then iterate with index
+- create a `Map<String, int>` of language to year created. add a new entry, check if a key exists, loop through all entries and print them
+- create two `Set<int>`s and compute their union, intersection, and difference
+- use **collection-if** to conditionally include an element in a new list
+- use **collection-for** to build a list of uppercased strings from an existing list
+- use the spread operator `...` to merge two lists into one
+
+**expected output**
+
+```text
+Languages (sorted): [C, Dart, Go, Python, Rust]
+After add/remove: [C, Dart, Python, Rust]
+Map entry — Dart: 2011
+Has 'Go': false
+Union: {1, 2, 3, 4, 5}
+Intersection: {3}
+Difference: {1, 2}
+Conditional list: [dart, flutter, firebase]
+Uppercased: [DART, FLUTTER, FIREBASE]
+Merged: [C, Dart, Python, Go, Java]
+```
+
+---
+
+## Exercise 6 - Classes
+
+covers instance variables, private fields, constructors, named constructors, getters, computed properties
+
+**directions**
+
+- create a `BankAccount` class with `owner` (String) and a private `_balance` (double)
+- add a default constructor and a named constructor `BankAccount.empty(owner)` that initializes the balance to zero
+- add `deposit(amount)` and `withdraw(amount)` methods. `withdraw` should print an error message if funds are insufficient and leave the balance unchanged
+- add a getter `balance` that exposes the private `_balance`
+- add a computed getter `isRich` that returns `true` if the balance is above 10000
+- create both types of accounts, run through deposits and withdrawals, and print the state after each step
+
+**expected output**
+
+```text
+Account: Rakhul | Balance: ₹5000.0
+After deposit: ₹8000.0
+After withdraw: ₹5500.0
+Insufficient funds!
+Balance unchanged: ₹5500.0
+Is rich: false
+Empty account — Arjun | Balance: ₹0.0
+```
+
+---
+
+## Exercise 7 - Null Safety
+
+covers `?`, `??`, `??=`, `!`, null-aware access `?.`, null-aware cascade `?..`
+
+**directions**
+
+- declare a nullable `String? city`. print it before and after assigning a value
+- use `??` to print the city or `"Unknown City"` as a fallback when it is null
+- use `??=` to assign `"Mumbai"` only if `city` is null. then try `??=` again with a different value and confirm it did not change
+- create a nullable `List<String>?`. use `?.length` to safely access its length before and after giving it a value
+- create a simple class with a method that returns a string. make a nullable instance of it and call the method safely using `?.`
+- use the null assertion operator `!` on a known non-null nullable variable. add a comment in your code explaining what would happen at runtime if you used `!` on an actual null value
+
+**expected output**
+
+```text
+city is: null
+city with fallback: Unknown City
+After ??= 'Mumbai': Mumbai
+Assigning again with ??=... still: Mumbai
+Nullable list length: null
+After init, length: 3
+Safe method call result: HELLO
+Null assertion result: 42
+```
+
+---
+
+## Exercise 8 - Inheritance
+
+covers `abstract`, `extends`, `@override`, `implements`, polymorphism
+
+**directions**
+
+- write an `abstract` class `Shape` with an abstract method `area()` and a concrete method `describe()` that prints `"I am a [runtimeType]"`
+- create `Circle` and `Rectangle` that extend `Shape` and implement `area()`
+- create an interface (an abstract class) `Drawable` with a method `draw()`
+- make `Rectangle` implement `Drawable` as well as extend `Shape`
+- create a `List<Shape>` with one `Circle` and one `Rectangle`, loop through it, and call both `.area()` and `.describe()` on each shape
+
+**expected output**
+
+```text
+I am a Circle
+Circle area: 78.54
+I am a Rectangle
+Rectangle area: 24.0
+Rectangle is being drawn on canvas
+Polymorphic loop:
+  Circle → area: 78.54
+  Rectangle → area: 24.0
+```
+
+---
+
+## Exercise 9 - Mixins
+
+covers `mixin`, `with`, the `on` constraint, mixin composition
+
+**directions**
+
+- create a mixin `Logger` with a method `log(String message)` that prints `[LOG] message`
+- create a mixin `Validator` with a method `isValidEmail(String email)` that returns a `bool`
+- create a class `UserService` with no parent class. give it both mixins using `with`
+- create a base class `Model` with an `id` field and a `name` field
+- create a mixin `Serializable` with an `on Model` constraint. give it a `toJson()` method that reads from the `Model` fields and returns a `Map`
+- create a class that extends `Model` and uses `Serializable`. create an instance and call `toJson()` on it
+
+**expected output**
+
+```text
+[LOG] UserService initialized
+Email valid (test@dart.dev): true
+Email valid (notanemail): false
+[LOG] Validating user input...
+User JSON: {id: 1, name: Rakhul}
+```
+
+---
+
+## Exercise 10 - Async
+
+covers `Future`, `async/await`, `.then()`, `.catchError()`, `Future.wait`, `try/catch`
+
+**directions**
+
+- write `Future<String> fetchUser(int id)` using `Future.delayed` to simulate a 2-second network call. it should return `"User: $id"` for valid ids, or throw an exception if `id` is negative
+- call it with `async/await` and print the result
+- call it again using `.then()` and `.catchError()` instead
+- write two separate async functions `fetchPosts()` and `fetchComments()`, each with a short simulated delay
+- run both **in parallel** using `Future.wait` and print both results once they are done
+- call `fetchUser` with a negative id inside a `try/catch` block and handle the error
+
+**expected output**
+
+```text
+Fetching user...
+User: 42
+Then-style: User: 7
+Fetching posts and comments in parallel...
+Done: [Posts loaded, Comments loaded]
+Error caught: Invalid user ID
+```
+
+---
+
+## That's Part 1
+
+ten exercises, ten concepts. variables, control flow, functions, strings, collections, classes, null safety, inheritance, mixins, async.
+
+if you got through all of them, you can write dart. not just understand it when someone else wrote it. actually write it.
+
+part 2 goes deeper. sealed classes, streams, isolates, and the patterns you will hit in real flutter apps.
