@@ -1,0 +1,32 @@
+---
+title: "firebase_pnv"
+slug: "firebase_pnv"
+description: "Verify Android phone numbers directly with mobile carriers without sending an SMS."
+stack: ["Flutter", "Dart", "Firebase", "Android Credential Manager"]
+links:
+  - label: "GitHub"
+    url: "https://github.com/r4khul/firebase_pnv"
+  - label: "Pub.dev"
+    url: "https://pub.dev/packages/firebase_pnv"
+cover: "/images/projects/toys/firebase_pnv-banner.png"
+year: "2026"
+---
+
+firebase_pnv is an unofficial Flutter plugin for Google's Firebase Phone Number Verification (PNV) SDK. Instead of texting the user a one-time SMS code they have to manually type back, Firebase PNV verifies their number directly with their mobile carrier in the background using the Android Credential Manager. 
+
+The user just taps "Allow" on a native consent sheet. No text messages are sent, and no codes are typed.
+
+Because this flow skips SMS entirely, it completely protects you against SMS pumping and toll fraud. It is currently Android-only, but the package includes a safe stub for iOS so your shared codebase does not break.
+
+## How it works
+
+1. **Check support** - You run a quick check to see if the device and SIM support carrier verification.
+2. **Trigger verification** - If supported, call the verification method to show the native Google consent sheet.
+3. **Get token** - If the user accepts, you get a verified phone number and an auth token.
+4. **Exchange token** - Pass the token to your backend, verify it against Google's JWKS endpoint, and mint a custom Firebase token to log the user in.
+
+## Why use it
+
+- **Zero SMS costs** - Since no text messages are sent, there is zero risk of SMS pumping fraud.
+- **Better conversion** - The verification finishes in seconds without making the user wait for an SMS code and type it in.
+- **Clean fallback** - If PNV is not supported or fails, you can fall back to standard Firebase Auth SMS verification.
