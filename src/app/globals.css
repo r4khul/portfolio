@@ -69,6 +69,8 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-instrument-serif);
   --animate-status-breath: status-breath 3s ease-in-out infinite;
+  /* z-60 is not in Tailwind v4's default scale — extend it here */
+  --z-60: 60;
 }
 
 @keyframes status-breath {

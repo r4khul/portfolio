@@ -214,7 +214,7 @@ export function CategoryGrid({ blogs }: { blogs: Blog[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
       {categories.map((cat, i) => (
-        <Reveal key={cat.slug} delay={i * 0.08}>
+        <Reveal key={cat.slug} delay={i * 0.08} className="min-w-0">
           <CategoryCard category={cat} priority={i === 0} />
         </Reveal>
       ))}

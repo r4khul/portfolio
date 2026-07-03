@@ -66,7 +66,7 @@ export function MobileNav() {
           playClick();
           setIsOpen(!isOpen);
         }}
-        className="fixed right-4 top-3 z-60 flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
+        className="fixed right-4 top-3 z-[70] flex size-11 items-center justify-center rounded-full text-foreground/80 backdrop-blur-xl bg-background/30 border border-edge/30 shadow-sm transition active:scale-95 hover:bg-background/50 hover:text-foreground"
         aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" className="text-foreground">
@@ -106,7 +106,7 @@ export function MobileNav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { delay: 0.2, duration: 0.3 } }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-3xl px-6 py-6"
+            className="fixed inset-0 z-[65] flex flex-col bg-background/95 backdrop-blur-3xl px-6 py-6"
           >
             {/* Top spacing to account for fixed toggle button height */}
             <div className="h-11" />
