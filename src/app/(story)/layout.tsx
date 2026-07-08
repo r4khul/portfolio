@@ -1,5 +1,6 @@
 import "../story-engine.css";
 import { BackToTop } from "@/components/site/back-to-top";
+import { AudioPrompt } from "@/components/stories/engine/audio-prompt";
 
 export default function StoryEngineLayout({
   children,
@@ -19,6 +20,7 @@ export default function StoryEngineLayout({
       </main>
       
       <BackToTop />
+      <AudioPrompt />
     </div>
   );
 }

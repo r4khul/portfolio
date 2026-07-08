@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 
-type EffectType = "float" | "shatter" | "pulse" | "girl";
+type EffectType = "float" | "shatter" | "pulse" | "girl" | "room";
 
 interface StoryEffectProps {
   type: EffectType;
@@ -494,6 +494,167 @@ function runPulse(canvas: HTMLCanvasElement, signal: AbortSignal) {
   signal.addEventListener("abort", () => cancelAnimationFrame(raf));
 }
 
+// ---------- Room Effect ----------
+// Quiet night apartment building silhouette with exactly one room's light on
+function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
+  const ctx = canvas.getContext("2d")!;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  // Stars in the night sky
+  type Star = { x: number; y: number; r: number; phase: number; speed: number };
+  const stars: Star[] = Array.from({ length: 24 }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H * 0.55,
+    r: Math.random() * 0.8 + 0.3,
+    phase: Math.random() * Math.PI * 2,
+    speed: Math.random() * 0.015 + 0.008,
+  }));
+
+  // Building geometry
+  const bW = Math.min(W * 0.30, 150);
+  const bH = H * 0.70;
+  const bX = W / 2 - bW / 2;
+  const bY = H - bH;
+
+  // Window grid setup (3 columns, 5 rows)
+  const cols = 3;
+  const rows = 5;
+  const wMarginX = bW * 0.16;
+  const wMarginY = bH * 0.14;
+  const gridW = bW - wMarginX * 2;
+  const gridH = bH - wMarginY * 2;
+  const cellW = gridW / cols;
+  const cellH = gridH / rows;
+  const winW = cellW * 0.52;
+  const winH = cellH * 0.62;
+
+  // Lit window (Ranav's room) position: 2nd column (index 1), 4th row (index 3)
+  const litCol = 1;
+  const litRow = 3;
+
+  let frame = 0;
+  let raf: number;
+
+  function draw() {
+    if (signal.aborted) return;
+    frame++;
+
+    // 1. Dark night sky background gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, "#010103");
+    skyGrad.addColorStop(1, "#05050a");
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 2. Render twinkling stars
+    for (const s of stars) {
+      const opacity = 0.25 + 0.75 * Math.sin(frame * s.speed + s.phase);
+      ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, opacity)})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 2b. Draw crescent moon
+    ctx.save();
+    const mX = W * 0.22;
+    const mY = H * 0.22;
+    const mR = Math.min(W, H) * 0.045;
+    ctx.beginPath();
+    ctx.moveTo(mX, mY - mR);
+    ctx.arc(mX, mY, mR, -Math.PI / 2, Math.PI / 2, false);
+    ctx.quadraticCurveTo(mX + mR * 0.32, mY, mX, mY - mR);
+    ctx.fillStyle = "rgba(252, 251, 242, 0.85)";
+    ctx.shadowColor = "rgba(252, 251, 242, 0.35)";
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.restore();
+
+    // 3. Render Building Silhouette
+    ctx.fillStyle = "#07070b";
+    ctx.fillRect(bX, bY, bW, bH);
+
+    // Subtle rooftop antenna detail
+    ctx.fillRect(bX + bW * 0.18, bY - 10, bW * 0.18, 10);
+    ctx.strokeStyle = "#07070b";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bX + bW * 0.72, bY);
+    ctx.lineTo(bX + bW * 0.72, bY - 20);
+    ctx.stroke();
+
+    // 4. Render Windows
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const wx = bX + wMarginX + c * cellW + (cellW - winW) / 2;
+        const wy = bY + wMarginY + r * cellH + (cellH - winH) / 2;
+
+        const isLit = (c === litCol && r === litRow);
+
+        if (isLit) {
+          // Ranav's room (warm glowing light)
+          const lightProgress = Math.min(1, frame / 50); // fade up over 50 frames
+          const flicker = 0.94 + 0.06 * Math.sin(frame * 0.075) * Math.cos(frame * 0.03);
+          const currentAlpha = lightProgress * flicker;
+
+          ctx.save();
+          ctx.fillStyle = `rgba(253, 224, 71, ${currentAlpha})`;
+          ctx.shadowColor = "rgba(253, 224, 71, 0.4)";
+          ctx.shadowBlur = 10;
+          ctx.fillRect(wx, wy, winW, winH);
+          ctx.restore();
+
+          // Dark window pane divider lines
+          ctx.strokeStyle = "rgba(7, 7, 11, 0.8)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(wx + winW / 2, wy);
+          ctx.lineTo(wx + winW / 2, wy + winH);
+          ctx.moveTo(wx, wy + winH * 0.4);
+          ctx.lineTo(wx + winW, wy + winH * 0.4);
+          ctx.stroke();
+        } else {
+          // Darkened rooms
+          ctx.fillStyle = "#030306";
+          ctx.fillRect(wx, wy, winW, winH);
+
+          // Faint window divider
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(wx + winW / 2, wy);
+          ctx.lineTo(wx + winW / 2, wy + winH);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 5. Draw Ground Silhouette
+    const groundGrad = ctx.createLinearGradient(0, H - 20, 0, H);
+    groundGrad.addColorStop(0, "#040407");
+    groundGrad.addColorStop(1, "#010103");
+    ctx.fillStyle = groundGrad;
+    ctx.fillRect(0, H - 20, W, 20);
+
+    // 6. Subtle Vignette
+    const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.32, W / 2, H / 2, W * 0.68);
+    vig.addColorStop(0, "rgba(0,0,0,0)");
+    vig.addColorStop(1, "rgba(1, 1, 3, 0.65)");
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, W, H);
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  draw();
+  signal.addEventListener("abort", () => cancelAnimationFrame(raf));
+}
+
 // ---------- Component ----------
 
 const RUNNERS = {
@@ -501,6 +662,7 @@ const RUNNERS = {
   shatter: runShatter,
   pulse: runPulse,
   girl: runGirl,
+  room: runRoom,
 } as const;
 
 export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) {
@@ -593,6 +755,7 @@ export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) 
     shatter: "Visual: the sky shattering",
     pulse: "Visual: the push",
     girl: "Visual: silhouette running from a door",
+    room: "Visual: quiet apartment building with one warm window lit",
   }[type];
 
   return (
