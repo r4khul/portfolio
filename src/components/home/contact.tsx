@@ -10,7 +10,7 @@ export function ContactSection() {
   const { playClick } = useAudioFeedback();
 
   return (
-    <Section id="contact" index="07" title="Contact">
+    <Section id="contact" index="08" title="Contact">
       <Reveal>
         <div className="hatch rounded-lg border border-edge p-6 sm:p-8">
           <h3 className="font-serif text-[28px] leading-[1.1] tracking-tight sm:text-[34px]">

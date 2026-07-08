@@ -3,6 +3,7 @@ import { profile, experience, education } from "@/data/profile";
 import { Project } from "@/lib/projects";
 import { Toy } from "@/lib/toys";
 import { Blog } from "@/lib/blogs";
+import { Story } from "@/lib/stories";
 
 export function JsonLd() {
   const personData = {
@@ -117,6 +118,30 @@ export function BlogPostJsonLd({ blog }: { blog: Blog }) {
       id="json-ld-blog"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(blogData) }}
+    />
+  );
+}
+
+export function StoryPostJsonLd({ story }: { story: Story }) {
+  const storyData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: story.title,
+    description: story.description,
+    image: story.cover ? `${profile.url}${story.cover}` : `${profile.url}/images/site/main-banner.png`,
+    author: {
+      "@type": "Person",
+      name: profile.name,
+    },
+    datePublished: story.date,
+    url: `${profile.url}/stories/${story.slug}`,
+  };
+
+  return (
+    <Script
+      id="json-ld-story"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(storyData) }}
     />
   );
 }

@@ -10,6 +10,7 @@ import {
   Wrench,
   GitMerge,
   BookOpen,
+  Library,
   Mail,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
@@ -23,6 +24,7 @@ const nav = [
   { label: "Projects",    href: "/#projects",    icon: FolderOpen },
   { label: "Open Source", href: "/#open-source", icon: GitMerge },
   { label: "Blogs",       href: "/#blogs",       icon: BookOpen },
+  { label: "Stories",     href: "/#stories",     icon: Library },
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
 
@@ -54,6 +56,8 @@ export const SideNav = memo(() => {
         setActive("projects");
       } else if (pathname.startsWith("/blogs")) {
         setActive("blogs");
+      } else if (pathname.startsWith("/stories")) {
+        setActive("stories");
       } else {
         setActive("");
       }

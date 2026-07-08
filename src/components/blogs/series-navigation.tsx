@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import type { Blog } from "@/lib/blogs";
+
+type NavigableItem = {
+  title: string;
+  slug: string;
+  description: string;
+};
 
 interface SeriesNavigationProps {
-  prev?: Blog;
-  next?: Blog;
+  prev?: NavigableItem;
+  next?: NavigableItem;
+  basePath?: string;
 }
 
-export function SeriesNavigation({ prev, next }: SeriesNavigationProps) {
+export function SeriesNavigation({ prev, next, basePath = "/blogs" }: SeriesNavigationProps) {
   if (!prev && !next) return null;
 
   return (
@@ -15,7 +21,7 @@ export function SeriesNavigation({ prev, next }: SeriesNavigationProps) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {prev && (
           <Link
-            href={`/blogs/${prev.slug}`}
+            href={`${basePath}/${prev.slug}`}
             className="group flex items-center gap-3 rounded-lg border border-edge bg-surface px-3 py-2.5 transition-colors hover:bg-background"
           >
             <ArrowLeft className="size-3.5 shrink-0 text-faint transition-transform group-hover:-translate-x-0.5" />
@@ -32,7 +38,7 @@ export function SeriesNavigation({ prev, next }: SeriesNavigationProps) {
 
         {next && (
           <Link
-            href={`/blogs/${next.slug}`}
+            href={`${basePath}/${next.slug}`}
             className={`group flex items-center justify-end gap-3 rounded-lg border border-edge bg-surface px-3 py-2.5 transition-colors hover:bg-background ${
               !prev ? "sm:col-start-2" : ""
             }`}

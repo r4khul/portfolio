@@ -3,7 +3,7 @@
 import { useState, useEffect, ComponentProps } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { User, Briefcase, FolderOpen, Wrench, GitMerge, BookOpen, Mail } from "lucide-react";
+import { User, Briefcase, FolderOpen, Wrench, GitMerge, BookOpen, Library, Mail } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { AudioToggle } from "./audio-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
@@ -15,6 +15,7 @@ const nav = [
   { label: "Projects",    href: "/#projects",    icon: FolderOpen },
   { label: "Open Source", href: "/#open-source", icon: GitMerge },
   { label: "Blogs",       href: "/#blogs",       icon: BookOpen },
+  { label: "Stories",     href: "/#stories",     icon: Library },
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
 
