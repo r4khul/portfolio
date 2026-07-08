@@ -10,20 +10,31 @@ import {
   CinematicImage,
   Chapter,
 } from "./story-components";
+import { StoryReveal } from "./story-reveal";
+import { StoryEffect } from "./story-effect";
 
-// Story elements inherit mostly from CSS, we just add the fade-in to some
+// Every prose block is wrapped in a scroll-gated StoryReveal.
+// Custom components handle their own reveal internally via StoryReveal.
 const components = {
   h2: (props: ComponentProps<"h2">) => (
-    <h2 className="story-fade-in" {...props} />
+    <StoryReveal>
+      <h2 {...props} />
+    </StoryReveal>
   ),
   h3: (props: ComponentProps<"h3">) => (
-    <h3 className="font-serif text-[1.5rem] mt-10 mb-4 text-story-text story-fade-in" {...props} />
+    <StoryReveal>
+      <h3 className="font-serif text-[1.5rem] mt-10 mb-4 text-story-text" {...props} />
+    </StoryReveal>
   ),
   p: (props: ComponentProps<"p">) => (
-    <p className="story-fade-in" {...props} />
+    <StoryReveal>
+      <p {...props} />
+    </StoryReveal>
   ),
   ul: (props: ComponentProps<"ul">) => (
-    <ul className="my-6 space-y-2 pl-4 list-disc text-story-muted story-fade-in" {...props} />
+    <StoryReveal>
+      <ul className="my-6 space-y-2 pl-4 list-disc text-story-muted" {...props} />
+    </StoryReveal>
   ),
   li: (props: ComponentProps<"li">) => (
     <li className="pl-2" {...props} />
@@ -35,7 +46,9 @@ const components = {
     <em className="italic text-story-text/90" {...props} />
   ),
   blockquote: (props: ComponentProps<"blockquote">) => (
-    <blockquote className="border-l-2 border-story-accent pl-6 my-8 italic text-story-muted story-fade-in" {...props} />
+    <StoryReveal>
+      <blockquote className="border-l-2 border-story-accent pl-6 my-8 italic text-story-muted" {...props} />
+    </StoryReveal>
   ),
   a: (props: ComponentProps<"a">) => (
     <a
@@ -45,8 +58,8 @@ const components = {
       {...props}
     />
   ),
-  hr: () => <Pause />, // Replace standard HRs with the ornamental pause
-  
+  hr: () => <Pause />,
+
   // Custom Story Primitives
   Dialogue,
   Thought,
@@ -55,6 +68,7 @@ const components = {
   WideImage,
   CinematicImage,
   Chapter,
+  StoryEffect,
 };
 
 export function StoryMdxContent({ source }: { source: string }) {

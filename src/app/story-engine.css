@@ -77,32 +77,32 @@
   to { transform: scaleX(1); }
 }
 
-/* Subtle fade in for elements as they scroll into view */
-@supports (animation-timeline: view()) {
-  .story-fade-in {
-    animation: story-reveal linear forwards;
-    animation-timeline: view();
-    animation-range: entry 5% cover 15%;
-  }
-  
-  .story-parallax {
-    animation: story-parallax-shift linear forwards;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
-  }
+/* ---------- Scroll-Reveal (JS IntersectionObserver driven) ---------- */
+
+/* Default: hidden before intersection */
+.story-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(3px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 0.6s ease;
+  will-change: opacity, transform;
 }
 
-@keyframes story-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.99);
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
+/* Revealed state — added by JS */
+.story-reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Parallax image scrolling */
+.story-parallax {
+  animation: story-parallax-shift linear forwards;
+  animation-timeline: view();
+  animation-range: entry 0% exit 100%;
 }
 
 @keyframes story-parallax-shift {
@@ -110,13 +110,50 @@
   to { object-position: 50% 100%; }
 }
 
-/* Respect reduced motion */
+/* ---------- Canvas Effect Container ---------- */
+
+.story-effect-container {
+  position: relative;
+  width: calc(100% + 6rem); /* bleed a little wider than rail */
+  margin-left: -3rem;
+  margin-right: -3rem;
+  overflow: hidden;
+  border-radius: 4px;
+  margin-top: var(--s-gap-xl);
+  margin-bottom: var(--s-gap-xl);
+}
+
+@media (max-width: 640px) {
+  .story-effect-container {
+    width: calc(100% + 3rem);
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+  }
+}
+
+.story-effect-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- Reduced Motion ---------- */
+
 @media (prefers-reduced-motion: reduce) {
-  .story-fade-in, .story-parallax, .story-progress-bar {
-    animation: none !important;
+  .story-reveal {
+    opacity: 1 !important;
     transform: none !important;
     filter: none !important;
-    opacity: 1 !important;
+    transition: none !important;
+  }
+  .story-parallax {
+    animation: none !important;
+  }
+  .story-progress-bar {
+    animation: none !important;
+  }
+  .story-effect-container {
+    display: none; /* skip decorative canvas entirely */
   }
 }
 
