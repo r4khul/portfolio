@@ -1,0 +1,202 @@
+/* src/app/story-engine.css */
+
+.story-engine-root {
+  --story-bg: #fdfbf7;
+  --story-text: #2a2a2c;
+  --story-faint: #a39f98;
+  --story-muted: #6e6b66;
+  --story-accent: #c43a31;
+  --story-border: rgba(0, 0, 0, 0.06);
+  --story-paper-texture: url('/images/site/noise.png'); /* A very subtle noise texture if available */
+  
+  --story-font-sans: var(--font-geist-sans);
+  --story-font-serif: var(--font-instrument-serif);
+  --story-font-mono: var(--font-geist-mono);
+  
+  /* Reading Rhythm Spacing */
+  --s-gap-xs: 0.5rem;
+  --s-gap-sm: 1rem;
+  --s-gap-base: 1.75rem;
+  --s-gap-md: 2.5rem;
+  --s-gap-lg: 4rem;
+  --s-gap-xl: 8rem;
+
+  font-family: var(--story-font-sans);
+  font-size: 19px;
+  line-height: 1.75;
+  letter-spacing: -0.011em;
+}
+
+.dark .story-engine-root {
+  --story-bg: #0d0c0c;
+  --story-text: #e8e6e3;
+  --story-faint: #5a5754;
+  --story-muted: #9c9994;
+  --story-accent: #e55c54;
+  --story-border: rgba(255, 255, 255, 0.08);
+}
+
+/* Ambient presets */
+.story-engine-root[data-ambient="warm"] {
+  --story-bg: #fdf9f1;
+}
+.dark .story-engine-root[data-ambient="warm"] {
+  --story-bg: #14110e;
+}
+
+.story-engine-root[data-ambient="cold"] {
+  --story-bg: #f4f7fb;
+}
+.dark .story-engine-root[data-ambient="cold"] {
+  --story-bg: #0a111a;
+}
+
+/* Film grain effect using SVG noise via data URI */
+.story-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Scroll-driven Reading Progress Bar */
+@supports (animation-timeline: scroll()) {
+  .story-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--story-text);
+    transform-origin: 0 50%;
+    animation: story-progress-grow linear forwards;
+    animation-timeline: scroll(root block);
+    z-index: 100;
+  }
+}
+
+@keyframes story-progress-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Subtle fade in for elements as they scroll into view */
+@supports (animation-timeline: view()) {
+  .story-fade-in {
+    animation: story-reveal linear forwards;
+    animation-timeline: view();
+    animation-range: entry 5% cover 15%;
+  }
+  
+  .story-parallax {
+    animation: story-parallax-shift linear forwards;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
+  }
+}
+
+@keyframes story-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes story-parallax-shift {
+  from { object-position: 50% 0%; }
+  to { object-position: 50% 100%; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .story-fade-in, .story-parallax, .story-progress-bar {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Story Typography & Elements */
+
+.story-content-rail h1 {
+  font-family: var(--story-font-serif);
+  font-size: 3rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--s-gap-md);
+  font-weight: 400;
+  color: var(--story-text);
+}
+
+@media (min-width: 640px) {
+  .story-content-rail h1 {
+    font-size: 4rem;
+  }
+}
+
+.story-content-rail h2 {
+  font-family: var(--story-font-serif);
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-top: var(--s-gap-lg);
+  margin-bottom: var(--s-gap-base);
+  font-weight: 400;
+  color: var(--story-text);
+}
+
+.story-content-rail p {
+  margin-bottom: var(--s-gap-base);
+  color: var(--story-muted);
+}
+
+.story-content-rail p strong {
+  color: var(--story-text);
+  font-weight: 600;
+}
+
+/* Em-dash dialogue styling */
+.story-dialogue {
+  margin-bottom: var(--s-gap-base);
+  padding-left: 1.5rem;
+  text-indent: -1.5rem;
+  color: var(--story-text);
+}
+
+.story-thought {
+  font-style: italic;
+  color: var(--story-muted);
+}
+
+.story-letter {
+  margin: var(--s-gap-lg) 0;
+  padding: var(--s-gap-md);
+  background-color: var(--story-border);
+  border-radius: 4px;
+  font-family: var(--story-font-serif);
+  font-size: 1.15em;
+  color: var(--story-text);
+}
+
+.story-pause {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin: var(--s-gap-xl) 0;
+  color: var(--story-faint);
+  font-family: var(--story-font-serif);
+  font-size: 1.5rem;
+}
+
+.story-wide-image {
+  margin: var(--s-gap-xl) calc(50% - 50vw);
+  width: 100vw;
+  max-width: 100vw;
+  position: relative;
+  height: 60vh;
+  min-height: 400px;
+}
