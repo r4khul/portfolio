@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useAudioContext } from "@/lib/contexts/audio-context";
 
 type EffectType = "float" | "shatter" | "pulse" | "girl";
 
@@ -506,6 +507,51 @@ export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [triggered, setTriggered] = useState(false);
+  const { isMuted } = useAudioContext();
+
+  // Play audio when triggered
+  useEffect(() => {
+    if (!triggered || isMuted) return;
+
+    const activeAudios: HTMLAudioElement[] = [];
+    const activeTimers: number[] = [];
+
+    const playSound = (path: string, volume = 0.5, delay = 0) => {
+      if (typeof window === "undefined") return;
+      const audio = new Audio(path);
+      audio.volume = volume;
+      activeAudios.push(audio);
+
+      const timer = window.setTimeout(() => {
+        audio.play().catch(() => {
+          // Playback blocked or interrupted
+        });
+      }, delay);
+
+      activeTimers.push(timer);
+    };
+
+    if (type === "float") {
+      playSound("/sfx/sky_ambient.wav", 0.4);
+    } else if (type === "shatter") {
+      playSound("/sfx/glass_shatter.wav", 0.55);
+    } else if (type === "pulse") {
+      playSound("/sfx/time_skip.wav", 0.55);
+    } else if (type === "girl") {
+      playSound("/sfx/door_open.wav", 0.45);
+      playSound("/sfx/footsteps.wav", 0.5, 300);
+    }
+
+    return () => {
+      activeTimers.forEach(window.clearTimeout);
+      activeAudios.forEach((audio) => {
+        try {
+          audio.pause();
+          audio.src = "";
+        } catch {}
+      });
+    };
+  }, [triggered, type, isMuted]);
 
   // Trigger on intersection
   useEffect(() => {
