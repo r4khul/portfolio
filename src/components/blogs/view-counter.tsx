@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 type ViewCounterProps = {
   slug: string;
   trackView?: boolean;
-  variant?: "chip" | "inline";
+  variant?: "chip" | "inline" | "silent";
   showIcon?: boolean;
 };
 
@@ -31,7 +31,7 @@ export function ViewCounter({ slug, trackView = false, variant = "inline", showI
     fetchViews();
   }, [slug, trackView]);
 
-  if (views === null) return null;
+  if (views === null || variant === "silent") return null;
 
   if (variant === "chip") {
     return (

@@ -5,6 +5,7 @@ import { getStory, getStories, getSeriesNeighbors } from "@/lib/stories";
 import { profile } from "@/data/profile";
 import { StoryMdxContent } from "@/components/stories/engine/story-mdx";
 import { StoryPostJsonLd } from "@/components/site/json-ld";
+import { ViewCounter } from "@/components/blogs/view-counter";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -78,6 +79,7 @@ export default async function StoryChapterPage({ params }: Props) {
 
   return (
     <>
+      <ViewCounter slug={slug} trackView={true} variant="silent" />
       <div className="story-progress-bar" aria-hidden="true" />
       <StoryPostJsonLd story={story} />
 
