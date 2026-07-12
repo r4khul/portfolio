@@ -84,7 +84,6 @@ export default async function CategoryPage({ params }: Props) {
         ) : (
           <div className="dotgrid size-full" aria-hidden />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
       </div>
 
       {/* Header */}
