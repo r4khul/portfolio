@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { cache } from "react";
 import { getCategorySlug } from "./blog-utils";
 
 const BLOGS_DIR = path.join(process.cwd(), "src", "content", "blog");
@@ -38,12 +39,29 @@ function findMdxFiles(dir: string): string[] {
   return results;
 }
 
-export function getBlogs(): Blog[] {
+let cachedBlogs: Blog[] | null = null;
+let lastBlogsCacheTime = 0;
+const BLOGS_CACHE_TTL_DEV = 2000; // 2 seconds TTL in dev
+
+function loadBlogsRaw(): Blog[] {
   if (!fs.existsSync(BLOGS_DIR)) return [];
   return findMdxFiles(BLOGS_DIR)
     .map(parseBlog)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
+
+export const getBlogs = cache((): Blog[] => {
+  const now = Date.now();
+  const isProd = process.env.NODE_ENV === "production";
+
+  if (cachedBlogs && (isProd || now - lastBlogsCacheTime < BLOGS_CACHE_TTL_DEV)) {
+    return cachedBlogs;
+  }
+
+  cachedBlogs = loadBlogsRaw();
+  lastBlogsCacheTime = now;
+  return cachedBlogs;
+});
 
 export function getBlog(slug: string): Blog | undefined {
   return getBlogs().find((b) => b.slug === slug);

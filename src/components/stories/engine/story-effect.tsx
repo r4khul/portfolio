@@ -17,7 +17,7 @@ interface StoryEffectProps {
 // Particles drift upward — the feeling of lifting, flying
 function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const W = canvas.offsetWidth;
   const H = canvas.offsetHeight;
   canvas.width = W * dpr;
@@ -29,7 +29,7 @@ function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
 
   type Particle = { x: number; y: number; r: number; speed: number; opacity: number; drift: number; phase: number };
 
-  const count = Math.floor((W * H) / 3000);
+  const count = Math.min(Math.floor((W * H) / 4500), 120);
   const particles: Particle[] = Array.from({ length: count }, () => ({
     x: Math.random() * W,
     y: H + Math.random() * H * 0.5,
@@ -73,30 +73,23 @@ function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
   signal.addEventListener("abort", () => cancelAnimationFrame(raf));
 }
 
-// ---------- Shatter Effect ----------
-// Voronoi-style tiles fracture and fall away into darkness
 function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const W = canvas.offsetWidth;
   const H = canvas.offsetHeight;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.scale(dpr, dpr);
 
-  const isDark = document.documentElement.classList.contains("dark");
-  
-  // The void (darkness beneath)
   const voidColor = "#050505";
-  
-  // The sky color (tiles)
   const skyTop = "#ffffff";
   const skyBottom = "#f8fafc";
   const edgeColor = "rgba(0,0,0,0.08)";
 
-  // Generate irregular Voronoi-like tiles via seed points
-  const cols = 10;
-  const rows = 8;
+  const isMobile = W < 640;
+  const cols = isMobile ? 8 : 10;
+  const rows = isMobile ? 6 : 8;
   const cellW = W / cols;
   const cellH = H / rows;
 
@@ -109,6 +102,7 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
     life: number; delay: number;
     w: number; h: number;
     opacity: number;
+    grad: CanvasGradient;
   };
 
   const tiles: Tile[] = [];
@@ -120,6 +114,11 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
       const cy = r * cellH + cellH / 2 + jy;
       const dist = Math.sqrt((cx - W / 2) ** 2 + (cy - H / 2) ** 2);
       const maxDist = Math.sqrt((W / 2) ** 2 + (H / 2) ** 2);
+      
+      const grad = ctx.createLinearGradient(0, -cy, 0, H - cy);
+      grad.addColorStop(0, skyTop);
+      grad.addColorStop(1, skyBottom);
+
       tiles.push({
         x: cx - (cellW * 0.45) / 2,
         y: cy - (cellH * 0.45) / 2,
@@ -134,9 +133,14 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
         w: cellW * (0.9 + Math.random() * 0.3),
         h: cellH * (0.9 + Math.random() * 0.3),
         opacity: 1,
+        grad,
       });
     }
   }
+
+  const voidGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.8);
+  voidGrad.addColorStop(0, "transparent");
+  voidGrad.addColorStop(1, "rgba(0,0,0,0.8)");
 
   let frame = 0;
   let raf: number;
@@ -144,15 +148,10 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
   function draw() {
     if (signal.aborted) return;
     
-    // Draw the void beneath
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = voidColor;
     ctx.fillRect(0, 0, W, H);
     
-    // Void texture/vignette
-    const voidGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.8);
-    voidGrad.addColorStop(0, "transparent");
-    voidGrad.addColorStop(1, "rgba(0,0,0,0.8)");
     ctx.fillStyle = voidGrad;
     ctx.fillRect(0, 0, W, H);
 
@@ -162,15 +161,10 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
     for (const t of tiles) {
       if (frame < t.delay) {
         allDone = false;
-        // Draw intact tile
         ctx.save();
         ctx.translate(t.cx, t.cy);
         
-        const grad = ctx.createLinearGradient(0, -t.origCy, 0, H - t.origCy);
-        grad.addColorStop(0, skyTop);
-        grad.addColorStop(1, skyBottom);
-        ctx.fillStyle = grad;
-        
+        ctx.fillStyle = t.grad;
         ctx.strokeStyle = edgeColor;
         ctx.lineWidth = 1;
         roundRect(ctx, -t.w / 2, -t.h / 2, t.w, t.h, 1);
@@ -181,7 +175,7 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
       }
       
       const elapsed = frame - t.delay;
-      t.vy += 0.2; // gravity
+      t.vy += 0.2;
       t.cy += t.vy;
       t.cx += t.vx;
       t.angle += t.vrot;
@@ -195,11 +189,7 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
       ctx.rotate(t.angle);
       ctx.globalAlpha = t.opacity;
       
-      const grad = ctx.createLinearGradient(0, -t.origCy, 0, H - t.origCy);
-      grad.addColorStop(0, skyTop);
-      grad.addColorStop(1, skyBottom);
-      ctx.fillStyle = grad;
-      
+      ctx.fillStyle = t.grad;
       ctx.strokeStyle = edgeColor;
       ctx.lineWidth = 1;
       roundRect(ctx, -t.w / 2, -t.h / 2, t.w, t.h, 1);
@@ -209,7 +199,7 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
     }
 
     if (allDone) {
-      return; // stop looping, void is already drawn
+      return;
     }
 
     raf = requestAnimationFrame(draw);
@@ -224,22 +214,23 @@ function runShatter(canvas: HTMLCanvasElement, signal: AbortSignal) {
 // A child's silhouette emerges from a lit doorway and rushes at the viewer
 function runGirl(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const W = canvas.offsetWidth;
   const H = canvas.offsetHeight;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.scale(dpr, dpr);
 
-  const TOTAL = 240; // ~4s at 60fps — slower, calibrated pacing
+  const TOTAL = 240; 
   let frame = 0;
   let raf: number;
 
-  // Door: larger, closer
   const dW = W * 0.12; 
   const dH = dW * 2.2;
   const dX = W / 2 - dW / 2;
   const dY = H * 0.5 - dH * 0.45;
+
+  const isMobile = W < 640;
 
   function drawGirlSilhouette(ctx: CanvasRenderingContext2D, runCycle: number) {
     const legSwingLeft = Math.sin(runCycle);
@@ -249,14 +240,12 @@ function runGirl(canvas: HTMLCanvasElement, signal: AbortSignal) {
 
     ctx.fillStyle = "#020202";
     ctx.shadowColor = "#020202";
-    ctx.shadowBlur = 4;
+    ctx.shadowBlur = isMobile ? 0 : 3;
     
-    // --- Head ---
     ctx.beginPath();
     ctx.arc(0, -45, 16, 0, Math.PI * 2);
     ctx.fill();
     
-    // --- Hair (Free hair) ---
     ctx.beginPath();
     ctx.moveTo(-16, -45);
     ctx.bezierCurveTo(-25, -20, -35, -5, -28, 5);
@@ -264,36 +253,33 @@ function runGirl(canvas: HTMLCanvasElement, signal: AbortSignal) {
     ctx.bezierCurveTo(35, -5, 25, -20, 16, -45);
     ctx.fill();
     
-    // --- Arms ---
     ctx.beginPath();
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 9;
     ctx.strokeStyle = "#020202";
-    // Left Arm
+    
     ctx.moveTo(-16, -12);
     ctx.lineTo(-24 - armSwingLeft * 4, 15 - Math.abs(armSwingLeft) * 5);
     ctx.lineTo(-20 - armSwingLeft * 8, 35 - Math.abs(armSwingLeft) * 10);
-    // Right Arm
+    
     ctx.moveTo(16, -12);
     ctx.lineTo(24 - armSwingRight * 4, 15 - Math.abs(armSwingRight) * 5);
     ctx.lineTo(20 - armSwingRight * 8, 35 - Math.abs(armSwingRight) * 10);
     ctx.stroke();
 
-    // --- Legs ---
     ctx.beginPath();
     ctx.lineWidth = 11;
-    // Left Leg
+    
     ctx.moveTo(-12, 80);
     ctx.lineTo(-14, 105 - Math.max(0, legSwingLeft) * 15);
     ctx.lineTo(-14, 130 - Math.max(0, legSwingLeft) * 20);
-    // Right Leg
+    
     ctx.moveTo(12, 80);
     ctx.lineTo(14, 105 - Math.max(0, legSwingRight) * 15);
     ctx.lineTo(14, 130 - Math.max(0, legSwingRight) * 20);
     ctx.stroke();
 
-    // --- Dress / Frock ---
     ctx.beginPath();
     ctx.moveTo(-14, -15);
     ctx.lineTo(14, -15);
@@ -306,91 +292,90 @@ function runGirl(canvas: HTMLCanvasElement, signal: AbortSignal) {
     ctx.shadowBlur = 0;
   }
 
+  // Pre-create static radial and linear gradients once
+  const glowGrad = ctx.createRadialGradient(W / 2, dY + dH / 2, 0, W / 2, dY + dH / 2, dW * 8);
+  glowGrad.addColorStop(0, "rgba(253,250,235,0.55)");
+  glowGrad.addColorStop(0.5, "rgba(253,250,235,0.12)");
+  glowGrad.addColorStop(1, "rgba(0,0,0,0)");
+
+  const shadowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  shadowGrad.addColorStop(0, "rgba(0,0,0,1)");
+  shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
+
+  const vigGrad = ctx.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, W * 0.72);
+  vigGrad.addColorStop(0, "rgba(0,0,0,0)");
+  vigGrad.addColorStop(1, "rgba(2,2,2,0.85)");
+
   function draw() {
     if (signal.aborted) return;
     frame++;
 
     const t = Math.min(1, frame / TOTAL);
-    
-    // Calculate scale and position using linear perspective
-    // Girl height in path units is ~192 (from top of head -62 to hem 130)
     const initialGirlHeight = dH * 0.85; 
     const startScale = initialGirlHeight / 192;
     
-    // Perspective depth
     const startZ = 15;
-    // We limit max scale so she doesn't cover the whole canvas
     const maxTargetScale = (H * 0.65) / 192;
     const endZ = Math.max(0.5, (startScale * startZ) / maxTargetScale);
     const currentZ = startZ - (startZ - endZ) * t;
     const scale = (startScale * startZ) / currentZ;
 
-    // Running cycle bob and sway
-    const runCycle = t * Math.PI * 24; // Faster run cycle
+    const runCycle = t * Math.PI * 24; 
     const sway = Math.sin(runCycle / 2) * 0.04;
     const bobAmount = Math.abs(Math.sin(runCycle)) * (8 * scale);
 
-    // Floor Y position (perspective grounding)
     const startGround = dY + dH * 0.95;
-    const endGround = H * 1.15; // Adjusted so head stays below the top
+    const endGround = H * 1.15; 
     const currentGround = startGround + (endGround - startGround) * Math.pow(t, 1.2); 
 
-    // === Background ===
+    // Background
     ctx.fillStyle = "#050505";
     ctx.fillRect(0, 0, W, H);
 
-    // === Doorway glow (dims as she blocks it) ===
+    // Doorway glow
     const glowAlpha = Math.max(0, 1 - t * 0.8);
-    const glow = ctx.createRadialGradient(W / 2, dY + dH / 2, 0, W / 2, dY + dH / 2, dW * 8);
-    glow.addColorStop(0, `rgba(253,250,235,${glowAlpha * 0.55})`);
-    glow.addColorStop(0.5, `rgba(253,250,235,${glowAlpha * 0.12})`);
-    glow.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = glow;
+    ctx.save();
+    ctx.globalAlpha = glowAlpha;
+    ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, W, H);
+    ctx.restore();
 
     // Door rectangle
     ctx.fillStyle = `rgba(253, 251, 242, ${glowAlpha * 0.9 + 0.1})`;
     ctx.fillRect(dX, dY, dW, dH);
 
-    // === Ground shadow ===
+    // Ground shadow (drawn scaling a 1x1 radial gradient)
     if (t > 0.05) {
       const shadowA = Math.min(0.55, (t - 0.05) * 1.5);
-      const shadowW = 90 * scale * 1.5; // Path base width is ~90
+      const shadowW = 90 * scale * 1.5; 
       ctx.save();
       ctx.translate(W / 2, currentGround);
-      ctx.scale(1, 0.25);
-      const sg = ctx.createRadialGradient(0, 0, 0, 0, 0, shadowW * 0.5);
-      sg.addColorStop(0, `rgba(0,0,0,${shadowA})`);
-      sg.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = sg;
+      ctx.scale(shadowW * 0.5, shadowW * 0.125);
+      ctx.globalAlpha = shadowA;
+      ctx.fillStyle = shadowGrad;
       ctx.beginPath();
-      ctx.ellipse(0, 0, shadowW * 0.5, shadowW * 0.5, 0, 0, Math.PI * 2);
+      ctx.arc(0, 0, 1, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
-    // === Girl silhouette ===
+    // Girl silhouette
     ctx.save();
-    // Translate to ground, then move up by scaled feet position (130 is feet y in path)
     const scaleX = scale;
-    const scaleY = scale * 0.82; // Shorten her height alone a bit
+    const scaleY = scale * 0.82; 
     ctx.translate(W / 2, currentGround - 130 * scaleY - bobAmount);
     ctx.scale(scaleX, scaleY);
     ctx.rotate(sway);
     drawGirlSilhouette(ctx, runCycle);
     ctx.restore();
 
-    // === Edge vignette ===
-    const vig = ctx.createRadialGradient(W/2, H/2, H*0.28, W/2, H/2, W*0.72);
-    vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(1, "rgba(2,2,2,0.85)");
-    ctx.fillStyle = vig;
+    // Edge vignette
+    ctx.fillStyle = vigGrad;
     ctx.fillRect(0, 0, W, H);
 
     if (t < 1) {
       raf = requestAnimationFrame(draw);
     } else {
-      // Fade to pure black at the end
       let fade = 0;
       const fadeOut = () => {
         if (signal.aborted) return;
@@ -426,7 +411,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 // Expanding concentric rings from center — "the push"
 function runPulse(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const W = canvas.offsetWidth;
   const H = canvas.offsetHeight;
   canvas.width = W * dpr;
@@ -475,7 +460,6 @@ function runPulse(canvas: HTMLCanvasElement, signal: AbortSignal) {
       ctx.stroke();
     }
 
-    // Center flash dot
     const flashAge = frame;
     const flashOpacity = Math.max(0, 1 - flashAge / 30);
     if (flashOpacity > 0) {
@@ -498,16 +482,19 @@ function runPulse(canvas: HTMLCanvasElement, signal: AbortSignal) {
 // Quiet night apartment building silhouette with exactly one room's light on
 function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const W = canvas.offsetWidth;
   const H = canvas.offsetHeight;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.scale(dpr, dpr);
 
+  const isMobile = W < 640;
+
   // Stars in the night sky
   type Star = { x: number; y: number; r: number; phase: number; speed: number };
-  const stars: Star[] = Array.from({ length: 24 }, () => ({
+  const starCount = isMobile ? 12 : 24;
+  const stars: Star[] = Array.from({ length: starCount }, () => ({
     x: Math.random() * W,
     y: Math.random() * H * 0.55,
     r: Math.random() * 0.8 + 0.3,
@@ -533,21 +520,30 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const winW = cellW * 0.52;
   const winH = cellH * 0.62;
 
-  // Lit window (Ranav's room) position: 2nd column (index 1), 4th row (index 3)
   const litCol = 1;
   const litRow = 3;
 
   let frame = 0;
   let raf: number;
 
+  // Pre-create static gradients once
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+  skyGrad.addColorStop(0, "#010103");
+  skyGrad.addColorStop(1, "#05050a");
+
+  const groundGrad = ctx.createLinearGradient(0, H - 20, 0, H);
+  groundGrad.addColorStop(0, "#040407");
+  groundGrad.addColorStop(1, "#010103");
+
+  const vigGrad = ctx.createRadialGradient(W / 2, H / 2, H * 0.32, W / 2, H / 2, W * 0.68);
+  vigGrad.addColorStop(0, "rgba(0,0,0,0)");
+  vigGrad.addColorStop(1, "rgba(1, 1, 3, 0.65)");
+
   function draw() {
     if (signal.aborted) return;
     frame++;
 
-    // 1. Dark night sky background gradient
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-    skyGrad.addColorStop(0, "#010103");
-    skyGrad.addColorStop(1, "#05050a");
+    // 1. Dark night sky background
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, W, H);
 
@@ -571,7 +567,7 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
     ctx.quadraticCurveTo(mX + mR * 0.32, mY, mX, mY - mR);
     ctx.fillStyle = "rgba(252, 251, 242, 0.85)";
     ctx.shadowColor = "rgba(252, 251, 242, 0.35)";
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = isMobile ? 0 : 6;
     ctx.fill();
     ctx.restore();
 
@@ -579,7 +575,6 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
     ctx.fillStyle = "#07070b";
     ctx.fillRect(bX, bY, bW, bH);
 
-    // Subtle rooftop antenna detail
     ctx.fillRect(bX + bW * 0.18, bY - 10, bW * 0.18, 10);
     ctx.strokeStyle = "#07070b";
     ctx.lineWidth = 1.5;
@@ -597,19 +592,17 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
         const isLit = (c === litCol && r === litRow);
 
         if (isLit) {
-          // Ranav's room (warm glowing light)
-          const lightProgress = Math.min(1, frame / 50); // fade up over 50 frames
+          const lightProgress = Math.min(1, frame / 50); 
           const flicker = 0.94 + 0.06 * Math.sin(frame * 0.075) * Math.cos(frame * 0.03);
           const currentAlpha = lightProgress * flicker;
 
           ctx.save();
           ctx.fillStyle = `rgba(253, 224, 71, ${currentAlpha})`;
           ctx.shadowColor = "rgba(253, 224, 71, 0.4)";
-          ctx.shadowBlur = 10;
+          ctx.shadowBlur = isMobile ? 0 : 8;
           ctx.fillRect(wx, wy, winW, winH);
           ctx.restore();
 
-          // Dark window pane divider lines
           ctx.strokeStyle = "rgba(7, 7, 11, 0.8)";
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -619,11 +612,9 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
           ctx.lineTo(wx + winW, wy + winH * 0.4);
           ctx.stroke();
         } else {
-          // Darkened rooms
           ctx.fillStyle = "#030306";
           ctx.fillRect(wx, wy, winW, winH);
 
-          // Faint window divider
           ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -635,17 +626,11 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
     }
 
     // 5. Draw Ground Silhouette
-    const groundGrad = ctx.createLinearGradient(0, H - 20, 0, H);
-    groundGrad.addColorStop(0, "#040407");
-    groundGrad.addColorStop(1, "#010103");
     ctx.fillStyle = groundGrad;
     ctx.fillRect(0, H - 20, W, 20);
 
-    // 6. Subtle Vignette
-    const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.32, W / 2, H / 2, W * 0.68);
-    vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(1, "rgba(1, 1, 3, 0.65)");
-    ctx.fillStyle = vig;
+    // 6. Vignette
+    ctx.fillStyle = vigGrad;
     ctx.fillRect(0, 0, W, H);
 
     raf = requestAnimationFrame(draw);

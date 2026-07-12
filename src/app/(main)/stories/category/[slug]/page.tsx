@@ -13,7 +13,12 @@ function getCategoryData(slug: string) {
   const all = getStories();
   const stories = all
     .filter((s) => getCategorySlug(s.category) === slug)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => {
+      if (typeof a.number === "number" && typeof b.number === "number") {
+        return a.number - b.number;
+      }
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
   if (stories.length === 0) return null;
   const name = stories[0].category;
   const cover = stories.find((s) => s.cover)?.cover;

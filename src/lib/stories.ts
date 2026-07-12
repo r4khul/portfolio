@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { cache } from "react";
 import { getCategorySlug } from "./blog-utils";
 
 const STORIES_DIR = path.join(process.cwd(), "src", "content", "stories");
@@ -38,12 +39,29 @@ function findMdxFiles(dir: string): string[] {
   return results;
 }
 
-export function getStories(): Story[] {
+let cachedStories: Story[] | null = null;
+let lastStoriesCacheTime = 0;
+const STORIES_CACHE_TTL_DEV = 2000; // 2 seconds TTL in dev
+
+function loadStoriesRaw(): Story[] {
   if (!fs.existsSync(STORIES_DIR)) return [];
   return findMdxFiles(STORIES_DIR)
     .map(parseStory)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
+
+export const getStories = cache((): Story[] => {
+  const now = Date.now();
+  const isProd = process.env.NODE_ENV === "production";
+
+  if (cachedStories && (isProd || now - lastStoriesCacheTime < STORIES_CACHE_TTL_DEV)) {
+    return cachedStories;
+  }
+
+  cachedStories = loadStoriesRaw();
+  lastStoriesCacheTime = now;
+  return cachedStories;
+});
 
 export function getStory(slug: string): Story | undefined {
   return getStories().find((s) => s.slug === slug);
