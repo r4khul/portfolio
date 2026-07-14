@@ -121,6 +121,19 @@ export const openSource: OssContribution[] = [
     prs: [{ title: "PR #672", url: "https://github.com/flow-mn/flow/pull/672" }],
   },
   {
+    repo: "lichess-org/mobile",
+    repoUrl: "https://github.com/lichess-org/mobile",
+    users: "2.4k+ stars",
+    context: "Official Lichess mobile app written in Flutter",
+    prs: [
+      {
+        title: "PR #3447",
+        url: "https://github.com/lichess-org/mobile/pull/3447",
+        status: "review",
+      },
+    ],
+  },
+  {
     repo: "ente-io/ente",
     repoUrl: "https://github.com/ente-io/ente",
     users: "27k+ stars",
