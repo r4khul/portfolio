@@ -102,6 +102,19 @@ export const openSource: OssContribution[] = [
     ],
   },
   {
+    repo: "lichess-org/mobile",
+    repoUrl: "https://github.com/lichess-org/mobile",
+    users: "1M+ users",
+    context: "Official Lichess mobile app written in Flutter",
+    prs: [
+      {
+        title: "PR #3447",
+        url: "https://github.com/lichess-org/mobile/pull/3447",
+        status: "merged",
+      },
+    ],
+  },
+  {
     repo: "darkmoonight/Zest",
     repoUrl: "https://github.com/darkmoonight/Zest",
     users: "8k+ users",
@@ -119,19 +132,6 @@ export const openSource: OssContribution[] = [
     users: "4k+ users",
     context: "Open-source personal finance app",
     prs: [{ title: "PR #672", url: "https://github.com/flow-mn/flow/pull/672" }],
-  },
-  {
-    repo: "lichess-org/mobile",
-    repoUrl: "https://github.com/lichess-org/mobile",
-    users: "2.4k+ stars",
-    context: "Official Lichess mobile app written in Flutter",
-    prs: [
-      {
-        title: "PR #3447",
-        url: "https://github.com/lichess-org/mobile/pull/3447",
-        status: "review",
-      },
-    ],
   },
   {
     repo: "ente-io/ente",
