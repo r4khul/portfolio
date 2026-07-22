@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Pin } from "lucide-react";
+import { ArrowUpRight, Pin, Settings } from "lucide-react";
 import { getProjects } from "@/lib/projects";
 import { getToys } from "@/lib/toys";
+import { wipProjects } from "@/data/wip-projects";
+import { WipProjectCard } from "@/components/project/wip-project-card";
 import { profile } from "@/data/profile";
 import { BackButton } from "@/components/project/back-button";
 
@@ -120,6 +122,22 @@ export default function ProjectsPage() {
             </Link>
           ))}
         </div>
+
+        {wipProjects.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-edge">
+            <div className="mb-3.5 flex items-center gap-1.5">
+              <Settings className="size-4 text-muted shrink-0" />
+              <h2 className="font-serif text-[22px] leading-none tracking-tight sm:text-[24px]">
+                Work in Progress
+              </h2>
+            </div>
+            <div className="grid gap-3">
+              {wipProjects.map((wip) => (
+                <WipProjectCard key={wip.slug} project={wip} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {toys.length > 0 && (

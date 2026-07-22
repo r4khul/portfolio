@@ -3,11 +3,14 @@
 import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Pin } from "lucide-react";
+import { ArrowUpRight, Pin, Settings } from "lucide-react";
 import type { Project } from "@/lib/projects";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
+
+import { wipProjects } from "@/data/wip-projects";
+import { WipProjectCard } from "@/components/project/wip-project-card";
 
 interface ProjectsSectionProps {
   projects: Project[];
@@ -95,6 +98,23 @@ export const ProjectsSection = memo(({ projects }: ProjectsSectionProps) => {
         ))}
       </div>
 
+      {wipProjects.length > 0 && (
+        <div className="mt-6 pt-5 border-t border-edge">
+          <div className="mb-3 flex items-center gap-1.5">
+            <Settings className="size-3.5 text-muted shrink-0" />
+            <span className="font-mono text-[11px] font-semibold uppercase leading-none tracking-wider text-muted">
+              Work in Progress
+            </span>
+          </div>
+          <div className="grid gap-3">
+            {wipProjects.map((wip, i) => (
+              <Reveal key={wip.slug} delay={0.1 + i * 0.06}>
+                <WipProjectCard project={wip} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      )}
     </Section>
   );
 });
