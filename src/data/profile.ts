@@ -112,6 +112,11 @@ export const openSource: OssContribution[] = [
         url: "https://github.com/lichess-org/mobile/pull/3447",
         status: "merged",
       },
+      {
+        title: "PR #3478",
+        url: "https://github.com/lichess-org/mobile/pull/3478",
+        status: "merged",
+      },
     ],
   },
   {
