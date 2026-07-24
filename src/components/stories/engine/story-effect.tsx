@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 
-type EffectType = "float" | "shatter" | "pulse" | "girl" | "room";
+type EffectType = "float" | "shatter" | "pulse" | "girl" | "room" | "dust" | "street_house" | "police_scene";
 
 interface StoryEffectProps {
   type: EffectType;
@@ -640,6 +640,385 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
   signal.addEventListener("abort", () => cancelAnimationFrame(raf));
 }
 
+// ---------- Dust Effect ----------
+// Dust particles suspended in a beam of light — static, stopped time
+function runDust(canvas: HTMLCanvasElement, signal: AbortSignal) {
+  const ctx = canvas.getContext("2d")!;
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  const isDark = document.documentElement.classList.contains("dark");
+  const dustColor = isDark ? "220, 220, 210" : "100, 100, 100";
+
+  type Particle = {
+    x: number; y: number; r: number; 
+    vx: number; vy: number; 
+    swaySpeed: number; phase: number;
+    baseOpacity: number;
+  };
+
+  const pCount = Math.floor((W * H) / 4500);
+  const particles: Particle[] = Array.from({ length: Math.min(pCount, 150) }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 1.3 + 0.2,
+    vx: (Math.random() - 0.5) * 0.15,
+    vy: (Math.random() - 0.5) * 0.1 + 0.1, // slow drift downwards
+    swaySpeed: Math.random() * 0.01 + 0.005,
+    phase: Math.random() * Math.PI * 2,
+    baseOpacity: Math.random() * 0.6 + 0.2,
+  }));
+
+  let frame = 0;
+  let raf: number;
+
+  function draw() {
+    if (signal.aborted) return;
+    frame++;
+    ctx.clearRect(0, 0, W, H);
+
+    // Light shaft polygon
+    const topX1 = W * 0.55;
+    const topX2 = W + 50;
+    const botX1 = -50;
+    const botX2 = W * 0.45;
+
+    const lightGrad = ctx.createLinearGradient(topX1, 0, botX1, H);
+    lightGrad.addColorStop(0, isDark ? "rgba(255, 255, 230, 0.07)" : "rgba(255, 245, 200, 0.3)");
+    lightGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+    ctx.fillStyle = lightGrad;
+    ctx.beginPath();
+    ctx.moveTo(topX1, -50);
+    ctx.lineTo(topX2, -50);
+    ctx.lineTo(botX2, H + 50);
+    ctx.lineTo(botX1, H + 50);
+    ctx.fill();
+
+    for (const p of particles) {
+      p.x += p.vx + Math.sin(frame * p.swaySpeed + p.phase) * 0.2;
+      p.y += p.vy;
+
+      if (p.x < -20) p.x = W + 20;
+      if (p.x > W + 20) p.x = -20;
+      if (p.y > H + 20) {
+        p.y = -20;
+        p.x = Math.random() * W;
+      }
+      if (p.y < -20) p.y = H + 20;
+
+      const progressY = p.y / H;
+      const curLeftEdge = topX1 + (botX1 - topX1) * progressY;
+      const curRightEdge = topX2 + (botX2 - topX2) * progressY;
+
+      let inLight = 0;
+      if (p.x > curLeftEdge && p.x < curRightEdge) {
+        const distLeft = p.x - curLeftEdge;
+        const distRight = curRightEdge - p.x;
+        const distEdge = Math.min(distLeft, distRight);
+        inLight = Math.min(1, distEdge / 30); 
+      }
+
+      const twinkle = Math.sin(frame * 0.03 + p.phase) * 0.2 + 0.8;
+      const opacity = p.baseOpacity * twinkle * (0.15 + inLight * 0.85);
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${dustColor}, ${opacity})`;
+      ctx.fill();
+    }
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  draw();
+  signal.addEventListener("abort", () => cancelAnimationFrame(raf));
+}
+
+// ---------- Street House Effect ----------
+// 2-storey house in a dark, narrow, uneven street with low surveillance
+function runStreetHouse(canvas: HTMLCanvasElement, signal: AbortSignal) {
+  const ctx = canvas.getContext("2d")!;
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  let frame = 0;
+  let raf: number;
+
+  const bW = Math.min(W * 0.45, 240);
+  const bH = H * 0.65;
+  const bX = W * 0.6 - bW / 2;
+  const bY = H - bH - 40;
+
+  // Fog particles for atmosphere
+  const fogs = Array.from({ length: 20 }, () => ({
+    x: Math.random() * W,
+    y: H - 40 - Math.random() * 80,
+    r: Math.random() * 50 + 30,
+    vx: Math.random() * 0.2 + 0.1,
+    phase: Math.random() * Math.PI * 2,
+    opacity: Math.random() * 0.05 + 0.02
+  }));
+
+  function draw() {
+    if (signal.aborted) return;
+    frame++;
+
+    // Base night sky
+    ctx.fillStyle = "#030304";
+    ctx.fillRect(0, 0, W, H);
+
+    // Flickering street light from top-left out of frame
+    const flicker = Math.random() > 0.93 ? (Math.random() > 0.5 ? 0.7 : 0.3) : 0.9;
+    const lightAlpha = 0.25 * flicker;
+
+    const lightGrad = ctx.createLinearGradient(0, 0, W * 0.7, H);
+    lightGrad.addColorStop(0, `rgba(255, 235, 180, ${lightAlpha})`);
+    lightGrad.addColorStop(1, "rgba(0,0,0,0)");
+    
+    ctx.fillStyle = lightGrad;
+    ctx.beginPath();
+    ctx.moveTo(-50, -50);
+    ctx.lineTo(W * 0.4, -50);
+    ctx.lineTo(W * 0.9, H);
+    ctx.lineTo(-50, H);
+    ctx.fill();
+
+    // Distant background houses
+    ctx.fillStyle = "#050507";
+    ctx.fillRect(W * 0.1, H - 120, W * 0.3, 80);
+    ctx.fillRect(-W * 0.1, H - 160, W * 0.25, 120);
+
+    // Main 2-Storey Building Silhouette
+    ctx.fillStyle = "#08080a";
+    ctx.fillRect(bX, bY, bW, bH);
+    
+    // Roof line
+    ctx.fillStyle = "#050507";
+    ctx.beginPath();
+    ctx.moveTo(bX - 10, bY);
+    ctx.lineTo(bX + bW + 10, bY);
+    ctx.lineTo(bX + bW, bY - 15);
+    ctx.lineTo(bX, bY - 15);
+    ctx.fill();
+
+    // Windows (drawn curtains)
+    ctx.fillStyle = "#040405";
+    const wW = 35;
+    const wH = 50;
+    // Bottom floor (locked)
+    ctx.fillRect(bX + bW * 0.2, bY + bH * 0.6, wW, wH);
+    ctx.fillRect(bX + bW * 0.6, bY + bH * 0.6, wW, wH);
+    // Padlock indication on a door
+    ctx.fillRect(bX + bW * 0.4, bY + bH * 0.6 + 10, 25, 40);
+    ctx.fillStyle = "#111";
+    ctx.fillRect(bX + bW * 0.4 + 18, bY + bH * 0.6 + 30, 4, 6);
+
+    // Upper floor
+    ctx.fillStyle = "#040405";
+    ctx.fillRect(bX + bW * 0.2, bY + bH * 0.15, wW, wH);
+    ctx.fillRect(bX + bW * 0.6, bY + bH * 0.15, wW, wH);
+
+    // Outside Staircase (steep, diagonal)
+    ctx.strokeStyle = "#050506";
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    
+    const stairStartX = bX - 60;
+    const stairStartY = H - 40;
+    const stairEndX = bX;
+    const stairEndY = bY + bH * 0.4;
+    
+    // Main structural beams
+    ctx.beginPath();
+    ctx.moveTo(stairStartX, stairStartY);
+    ctx.lineTo(stairEndX, stairEndY);
+    ctx.stroke();
+
+    // Rusted railing
+    ctx.strokeStyle = "#080604"; // slight rust tint
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(stairStartX - 10, stairStartY - 30);
+    ctx.lineTo(stairEndX - 10, stairEndY - 30);
+    ctx.stroke();
+
+    // Vertical supports
+    for(let i = 0; i <= 6; i++) {
+        const t = i / 6;
+        const bx = stairStartX * (1-t) + stairEndX * t;
+        const by = stairStartY * (1-t) + stairEndY * t;
+        const rx = (stairStartX - 10) * (1-t) + (stairEndX - 10) * t;
+        const ry = (stairStartY - 30) * (1-t) + (stairEndY - 30) * t;
+        
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(rx, ry);
+        ctx.stroke();
+    }
+
+    // Uneven Street / broken tar
+    ctx.fillStyle = "#040405";
+    ctx.fillRect(0, H - 40, W, 40);
+    
+    ctx.strokeStyle = "#020202";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    // Long broken seam
+    ctx.moveTo(0, H - 25);
+    ctx.lineTo(W * 0.3, H - 30);
+    ctx.lineTo(W * 0.6, H - 15);
+    ctx.lineTo(W, H - 20);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(W * 0.2, H - 40);
+    ctx.lineTo(W * 0.4, H - 10);
+    ctx.stroke();
+
+    // Atmosphere/Fog
+    fogs.forEach(f => {
+      f.x += f.vx;
+      if (f.x - f.r > W) f.x = -f.r;
+      
+      const sway = Math.sin(frame * 0.02 + f.phase) * 10;
+      
+      ctx.beginPath();
+      ctx.arc(f.x, f.y + sway, f.r, 0, Math.PI * 2);
+      const grad = ctx.createRadialGradient(f.x, f.y + sway, 0, f.x, f.y + sway, f.r);
+      grad.addColorStop(0, `rgba(200, 200, 210, ${f.opacity * (flicker * 0.5 + 0.5)})`);
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
+    });
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  draw();
+  signal.addEventListener("abort", () => cancelAnimationFrame(raf));
+}
+
+
+// ---------- Police Scene Effect ----------
+// Flashing lights, police tape, forensics flash
+function runPoliceScene(canvas: HTMLCanvasElement, signal: AbortSignal) {
+  const ctx = canvas.getContext("2d")!;
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  let frame = 0;
+  let raf: number;
+  let lastFlash = 0;
+
+  // Tape segments to simulate waving
+  const tapePoints = 20;
+  const tapeY = H * 0.7;
+
+  function draw() {
+    if (signal.aborted) return;
+    frame++;
+
+    // Sirens / Flashing lights from window
+    const sirenCycle = (frame % 120) / 120;
+    let redAlpha = 0;
+    let blueAlpha = 0;
+
+    if (sirenCycle < 0.2) {
+      redAlpha = Math.sin((sirenCycle / 0.2) * Math.PI) * 0.3;
+    } else if (sirenCycle > 0.5 && sirenCycle < 0.7) {
+      blueAlpha = Math.sin(((sirenCycle - 0.5) / 0.2) * Math.PI) * 0.3;
+    }
+
+    // Room background
+    ctx.fillStyle = "#030303";
+    ctx.fillRect(0, 0, W, H);
+
+    // Apply red/blue glow
+    if (redAlpha > 0) {
+      ctx.fillStyle = `rgba(220, 20, 40, ${redAlpha})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+    if (blueAlpha > 0) {
+      ctx.fillStyle = `rgba(20, 60, 220, ${blueAlpha})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // Camera flash (forensics)
+    if (frame - lastFlash > 180 && Math.random() > 0.98) {
+      lastFlash = frame;
+    }
+    const flashAge = frame - lastFlash;
+    if (flashAge < 10) {
+      const flashAlpha = 1 - flashAge / 10;
+      ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha * 0.8})`;
+      ctx.fillRect(0, 0, W, H);
+      
+      // Draw silhouette of an officer during the flash
+      ctx.fillStyle = `rgba(10, 10, 12, ${flashAlpha})`;
+      ctx.beginPath();
+      ctx.arc(W * 0.7, H * 0.4, 40, 0, Math.PI * 2); // head
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(W * 0.7 - 60, H * 0.55);
+      ctx.lineTo(W * 0.7 + 60, H * 0.55);
+      ctx.lineTo(W * 0.7 + 80, H);
+      ctx.lineTo(W * 0.7 - 80, H);
+      ctx.fill(); // body
+    }
+
+    // Police tape in foreground
+    const sway = Math.sin(frame * 0.02) * 15;
+    ctx.strokeStyle = "#eab308"; // yellow
+    ctx.lineWidth = 24;
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    for (let i = 0; i <= tapePoints; i++) {
+      const x = (W / tapePoints) * i;
+      const t = i / tapePoints;
+      // create a subtle dip and wave
+      const y = tapeY + Math.sin(t * Math.PI) * 40 + Math.sin(frame * 0.05 + t * 4) * 8 + sway * t;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Tape stripes (black)
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 24;
+    ctx.setLineDash([30, 40]);
+    ctx.lineDashOffset = -frame * 0.2; // simulate slow movement
+    ctx.beginPath();
+    for (let i = 0; i <= tapePoints; i++) {
+      const x = (W / tapePoints) * i;
+      const t = i / tapePoints;
+      const y = tapeY + Math.sin(t * Math.PI) * 40 + Math.sin(frame * 0.05 + t * 4) * 8 + sway * t;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]); // reset
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  draw();
+  signal.addEventListener("abort", () => cancelAnimationFrame(raf));
+}
+
 // ---------- Component ----------
 
 const RUNNERS = {
@@ -648,6 +1027,9 @@ const RUNNERS = {
   pulse: runPulse,
   girl: runGirl,
   room: runRoom,
+  dust: runDust,
+  street_house: runStreetHouse,
+  police_scene: runPoliceScene,
 } as const;
 
 export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) {
@@ -687,6 +1069,12 @@ export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) 
     } else if (type === "girl") {
       playSound("/sfx/door_open.wav", 0.45);
       playSound("/sfx/footsteps.wav", 0.5, 300);
+    } else if (type === "street_house") {
+      playSound("/sfx/street_house.wav", 0.5);
+    } else if (type === "dust") {
+      playSound("/sfx/dust.wav", 0.4);
+    } else if (type === "police_scene") {
+      playSound("/sfx/police_scene.wav", 0.55);
     }
 
     return () => {
@@ -741,6 +1129,9 @@ export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) 
     pulse: "Visual: the push",
     girl: "Visual: silhouette running from a door",
     room: "Visual: quiet apartment building with one warm window lit",
+    dust: "Visual: dust motes suspended in a shaft of light",
+    street_house: "Visual: a 2-storey house in a dark, uneven street",
+    police_scene: "Visual: police tape swaying with forensics flash and siren reflections",
   }[type];
 
   return (
