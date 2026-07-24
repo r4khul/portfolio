@@ -25,7 +25,7 @@ function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
   ctx.scale(dpr, dpr);
 
   const isDark = document.documentElement.classList.contains("dark");
-  const particleColor = isDark ? "255,255,255" : "42,42,44";
+  const particleColor = isDark ? "#ffffff" : "#2a2a2c";
 
   type Particle = { x: number; y: number; r: number; speed: number; opacity: number; drift: number; phase: number };
 
@@ -48,6 +48,7 @@ function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
     ctx.clearRect(0, 0, W, H);
     frame++;
 
+    ctx.fillStyle = particleColor;
     for (const p of particles) {
       p.y -= p.speed;
       p.x += p.drift + Math.sin(frame * 0.01 + p.phase) * 0.3;
@@ -60,11 +61,12 @@ function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
         p.opacity = 0;
       }
 
+      ctx.globalAlpha = p.opacity * 0.6;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${particleColor},${p.opacity * 0.6})`;
       ctx.fill();
     }
+    ctx.globalAlpha = 1.0;
 
     raf = requestAnimationFrame(draw);
   }
@@ -654,6 +656,16 @@ function runDust(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const isDark = document.documentElement.classList.contains("dark");
   const dustColor = isDark ? "220, 220, 210" : "100, 100, 100";
 
+  // Pre-calculate geometry and static light shaft gradient ONCE
+  const topX1 = W * 0.55;
+  const topX2 = W + 50;
+  const botX1 = -50;
+  const botX2 = W * 0.45;
+
+  const lightGrad = ctx.createLinearGradient(topX1, 0, botX1, H);
+  lightGrad.addColorStop(0, isDark ? "rgba(255, 255, 230, 0.07)" : "rgba(255, 245, 200, 0.3)");
+  lightGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
   type Particle = {
     x: number; y: number; r: number; 
     vx: number; vy: number; 
@@ -680,16 +692,6 @@ function runDust(canvas: HTMLCanvasElement, signal: AbortSignal) {
     if (signal.aborted) return;
     frame++;
     ctx.clearRect(0, 0, W, H);
-
-    // Light shaft polygon
-    const topX1 = W * 0.55;
-    const topX2 = W + 50;
-    const botX1 = -50;
-    const botX2 = W * 0.45;
-
-    const lightGrad = ctx.createLinearGradient(topX1, 0, botX1, H);
-    lightGrad.addColorStop(0, isDark ? "rgba(255, 255, 230, 0.07)" : "rgba(255, 245, 200, 0.3)");
-    lightGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
 
     ctx.fillStyle = lightGrad;
     ctx.beginPath();
@@ -757,6 +759,17 @@ function runStreetHouse(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const bH = H * 0.65;
   const bX = W * 0.6 - bW / 2;
   const bY = H - bH - 40;
+
+  // Offscreen canvas sprite for fog particle optimization (prevents 1200 gradient allocations/sec)
+  const fogStamp = document.createElement("canvas");
+  fogStamp.width = 120;
+  fogStamp.height = 120;
+  const fCtx = fogStamp.getContext("2d")!;
+  const fGrad = fCtx.createRadialGradient(60, 60, 0, 60, 60, 60);
+  fGrad.addColorStop(0, "rgba(200, 200, 210, 1)");
+  fGrad.addColorStop(1, "rgba(0,0,0,0)");
+  fCtx.fillStyle = fGrad;
+  fCtx.fillRect(0, 0, 120, 120);
 
   // Fog particles for atmosphere
   const fogs = Array.from({ length: 20 }, () => ({
@@ -884,21 +897,16 @@ function runStreetHouse(canvas: HTMLCanvasElement, signal: AbortSignal) {
     ctx.lineTo(W * 0.4, H - 10);
     ctx.stroke();
 
-    // Atmosphere/Fog
+    // Atmosphere/Fog: Drawn using cached sprite for peak GPU/CPU efficiency
     fogs.forEach(f => {
       f.x += f.vx;
       if (f.x - f.r > W) f.x = -f.r;
       
       const sway = Math.sin(frame * 0.02 + f.phase) * 10;
-      
-      ctx.beginPath();
-      ctx.arc(f.x, f.y + sway, f.r, 0, Math.PI * 2);
-      const grad = ctx.createRadialGradient(f.x, f.y + sway, 0, f.x, f.y + sway, f.r);
-      grad.addColorStop(0, `rgba(200, 200, 210, ${f.opacity * (flicker * 0.5 + 0.5)})`);
-      grad.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = grad;
-      ctx.fill();
+      ctx.globalAlpha = f.opacity * (flicker * 0.5 + 0.5);
+      ctx.drawImage(fogStamp, f.x - f.r, f.y + sway - f.r, f.r * 2, f.r * 2);
     });
+    ctx.globalAlpha = 1.0;
 
     raf = requestAnimationFrame(draw);
   }
@@ -979,36 +987,37 @@ function runPoliceScene(canvas: HTMLCanvasElement, signal: AbortSignal) {
       ctx.fill(); // body
     }
 
-    // Police tape in foreground
+    // Police tape in foreground: Pre-compute wave geometry once per frame
     const sway = Math.sin(frame * 0.02) * 15;
-    ctx.strokeStyle = "#eab308"; // yellow
-    ctx.lineWidth = 24;
-    ctx.lineJoin = "round";
-
-    ctx.beginPath();
+    const tapePointsArr: { x: number; y: number }[] = [];
     for (let i = 0; i <= tapePoints; i++) {
       const x = (W / tapePoints) * i;
       const t = i / tapePoints;
-      // create a subtle dip and wave
       const y = tapeY + Math.sin(t * Math.PI) * 40 + Math.sin(frame * 0.05 + t * 4) * 8 + sway * t;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      tapePointsArr.push({ x, y });
     }
+
+    // Yellow tape base
+    ctx.strokeStyle = "#eab308";
+    ctx.lineWidth = 24;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    tapePointsArr.forEach((pt, i) => {
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
     ctx.stroke();
 
-    // Tape stripes (black)
+    // Black stripes
     ctx.strokeStyle = "#111";
     ctx.lineWidth = 24;
     ctx.setLineDash([30, 40]);
-    ctx.lineDashOffset = -frame * 0.2; // simulate slow movement
+    ctx.lineDashOffset = -frame * 0.2;
     ctx.beginPath();
-    for (let i = 0; i <= tapePoints; i++) {
-      const x = (W / tapePoints) * i;
-      const t = i / tapePoints;
-      const y = tapeY + Math.sin(t * Math.PI) * 40 + Math.sin(frame * 0.05 + t * 4) * 8 + sway * t;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
+    tapePointsArr.forEach((pt, i) => {
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
     ctx.stroke();
     ctx.setLineDash([]); // reset
 
@@ -1088,7 +1097,7 @@ export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) 
     };
   }, [triggered, type, isMuted]);
 
-  // Trigger on intersection
+  // Trigger on intersection (Strict lifecycle pause on scroll out of view)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -1097,16 +1106,9 @@ export function StoryEffect({ type, height = "40vh", label }: StoryEffectProps) 
 
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setTriggered(true);
-        } else {
-          // Reset if it scrolls back down past the viewport
-          if (entry.boundingClientRect.top > 0) {
-            setTriggered(false);
-          }
-        }
+        setTriggered(entry.isIntersecting);
       },
-      { threshold: 0.2 }
+      { threshold: 0.15 }
     );
     obs.observe(el);
     return () => obs.disconnect();
