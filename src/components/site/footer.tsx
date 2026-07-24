@@ -1,5 +1,6 @@
 import { profile, socials } from "@/data/profile";
 import { TotalViewCounter } from "./total-view-counter";
+import { Rss } from "lucide-react";
 
 export function Footer() {
   return (
@@ -23,6 +24,16 @@ export function Footer() {
               {s.label}
             </a>
           ))}
+          <a
+            href="/rss.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-mono text-[11px] text-muted transition-colors hover:text-amber-500"
+            title="Subscribe via RSS Feed"
+          >
+            <Rss className="h-3 w-3 text-amber-500/80" />
+            <span>RSS</span>
+          </a>
         </nav>
       </div>
     </footer>
