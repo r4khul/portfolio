@@ -117,6 +117,11 @@ export const openSource: OssContribution[] = [
         url: "https://github.com/lichess-org/mobile/pull/3478",
         status: "merged",
       },
+      {
+        title: "PR #3503",
+        url: "https://github.com/lichess-org/mobile/pull/3503",
+        status: "review",
+      },
     ],
   },
   {
@@ -145,9 +150,9 @@ export const openSource: OssContribution[] = [
     context: "Fully open-source, end-to-end encrypted photo backup & locker",
     prs: [
       {
-        title: "PR #10807",
-        url: "https://github.com/ente-io/ente/pull/10807",
-        status: "review",
+        title: "PR #11427",
+        url: "https://github.com/ente-io/ente/pull/11427",
+        status: "merged",
       },
     ],
   },
