@@ -28,17 +28,31 @@ export function GitHubContributionGraph() {
   const graphRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
+  const [hasError, setHasError] = useState(false);
+
   useEffect(() => {
     fetch('/api/github')
-      .then(res => res.json())
-      .then(data => setGithubData(data))
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`GitHub API error: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data && Array.isArray(data.contributions)) {
+          setGithubData(data);
+        } else {
+          setHasError(true);
+        }
+      })
       .catch(err => {
         console.error('Failed to fetch GitHub data:', err);
+        setHasError(true);
       });
   }, []);
 
   const data = useMemo(() => {
-    if (!githubData) return [];
+    if (!githubData?.contributions || !Array.isArray(githubData.contributions)) return [];
     return githubData.contributions.map(c => ({
       date: new Date(c.date),
       count: c.count
@@ -110,6 +124,8 @@ export function GitHubContributionGraph() {
       })
     });
   }, []);
+
+  if (hasError) return null;
 
   if (!githubData) {
     return (

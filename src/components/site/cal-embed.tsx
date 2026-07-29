@@ -1,13 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getCalApi } from "@calcom/embed-react";
+import { useTheme } from "next-themes";
 
 export function CalEmbed() {
-  useEffect(() => {
-    let calInstance: Awaited<ReturnType<typeof getCalApi>> | null = null;
+  const { resolvedTheme } = useTheme();
+  const calRef = useRef<Awaited<ReturnType<typeof getCalApi>> | null>(null);
 
-    const applyThemeStyles = (isDark: boolean) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    (async function () {
+      if (!calRef.current) {
+        calRef.current = await getCalApi({ namespace: "meet" });
+      }
+
+      if (!isMounted || !calRef.current) return;
+
+      const isDark = resolvedTheme === "dark";
+
+      calRef.current("ui", {
+        theme: isDark ? "dark" : "light",
+        hideEventTypeDetails: false,
+        layout: "month_view",
+      });
+
       if (isDark) {
         document.documentElement.style.colorScheme = "dark";
       } else {
@@ -19,48 +37,12 @@ export function CalEmbed() {
         document.documentElement.style.setProperty("--cal-brand-text", "#fcfcfc");
         document.documentElement.style.setProperty("--cal-brand-accent", "#18181b");
       }
-    };
-
-    const updateCalTheme = (isDark: boolean) => {
-      if (calInstance) {
-        calInstance("ui", {
-          theme: isDark ? "dark" : "light",
-          hideEventTypeDetails: false,
-          layout: "month_view",
-        });
-      }
-      applyThemeStyles(isDark);
-    };
-
-    (async function () {
-      calInstance = await getCalApi({ namespace: "meet" });
-      const isDark = document.documentElement.classList.contains("dark");
-      updateCalTheme(isDark);
     })();
 
-    // Monitor both html class and inline style changes in real-time
-    const observer = new MutationObserver(() => {
-      // Temporarily disconnect observer to prevent infinite feedback loop during style updates
-      observer.disconnect();
-
-      const isDark = document.documentElement.classList.contains("dark");
-      updateCalTheme(isDark);
-
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["class", "style"],
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "style"],
-    });
-
     return () => {
-      observer.disconnect();
+      isMounted = false;
     };
-  }, []);
+  }, [resolvedTheme]);
 
   return null;
 }

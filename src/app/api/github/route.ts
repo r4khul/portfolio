@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 
+interface ContributionDay {
+  date: string;
+  contributionCount: number;
+}
+
+interface ContributionWeek {
+  contributionDays: ContributionDay[];
+}
+
 export async function GET() {
   const token = process.env.GITHUB_PAT;
   const username = "r4khul";
-  const year = new Date().getFullYear();
 
   if (!token) {
     return NextResponse.json({ error: "Missing GITHUB_PAT token" }, { status: 500 });
@@ -55,8 +63,8 @@ export async function GET() {
       return NextResponse.json({ error: "No contribution data found" }, { status: 404 });
     }
 
-    const contributions = calendar.weeks.flatMap((w: any) =>
-      w.contributionDays.map((d: any) => ({
+    const contributions = calendar.weeks.flatMap((w: ContributionWeek) =>
+      w.contributionDays.map((d: ContributionDay) => ({
         date: d.date,
         count: d.contributionCount,
       }))
