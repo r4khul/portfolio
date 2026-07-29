@@ -16,7 +16,7 @@ function getContributionLevel(count: number) {
 
 export function GitHubContributionGraph() {
   const [githubData, setGithubData] = useState<{
-    contributions: Array<Array<{ date: string; contributionCount: number }>>;
+    contributions: Array<{ date: string; count: number }>;
     totalContributions: number;
   } | null>(null);
   const [hoveredDay, setHoveredDay] = useState<{
@@ -29,24 +29,23 @@ export function GitHubContributionGraph() {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    fetch('https://github-contributions-api.deno.dev/r4khul.json')
+    fetch('/api/github')
       .then(res => res.json())
       .then(data => setGithubData(data))
       .catch(err => {
         console.error('Failed to fetch GitHub data:', err);
-        // Fallback to hardcoded data if API fails
       });
   }, []);
 
   const data = useMemo(() => {
     if (!githubData) return [];
-    return githubData.contributions.flat().map(c => ({
+    return githubData.contributions.map(c => ({
       date: new Date(c.date),
-      count: c.contributionCount
+      count: c.count
     }));
   }, [githubData]);
 
-  const totalContributions = githubData?.totalContributions || 1612;
+  const totalContributions = githubData?.totalContributions ?? 0;
 
   const weeks = useMemo(() => {
     const result: Array<Array<{ date: Date; count: number }>> = [];
@@ -165,11 +164,11 @@ export function GitHubContributionGraph() {
             <span className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-[#87bbea]">
               {totalContributions.toLocaleString()}
             </span>
-            <span className="text-[10px] sm:text-xs font-mono text-muted uppercase tracking-wider">contributions</span>
+            <span className="text-[10px] sm:text-xs font-mono text-muted uppercase tracking-wider">contributions in the last year</span>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-mono text-muted uppercase tracking-wider">
             <Calendar className="size-3.5 text-faint" />
-            <span>Last year</span>
+            <span>Last 365 Days</span>
           </div>
         </div>
 
