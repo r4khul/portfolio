@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight, GitMerge, GitPullRequest } from "lucide-react";
 import { openSource } from "@/data/profile";
 import { Section } from "@/components/ui/section";
@@ -12,7 +13,21 @@ export const OpenSourceSection = memo(() => {
   const { playClick } = useAudioFeedback();
 
   return (
-    <Section id="open-source" index="05" title="Open Source">
+    <Section
+      id="open-source"
+      index="05"
+      title="Open Source"
+      action={
+        <Link
+          href="/open-source"
+          onClick={playClick}
+          className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
+        >
+          all contributions
+          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </Link>
+      }
+    >
       <div className="space-y-3">
         {openSource.map((contribution, i) => {
           const owner = contribution.repo.split("/")[0];

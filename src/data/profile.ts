@@ -81,12 +81,20 @@ export const skills: SkillGroup[] = [
   },
 ];
 
+export type OssPr = {
+  title: string;
+  fullTitle: string;
+  url: string;
+  status?: "merged" | "review";
+  description: string;
+};
+
 export type OssContribution = {
   repo: string;
   repoUrl: string;
   users: string;
   context: string;
-  prs: { title: string; url: string; status?: "merged" | "review" }[];
+  prs: OssPr[];
 };
 
 export const openSource: OssContribution[] = [
@@ -96,9 +104,30 @@ export const openSource: OssContribution[] = [
     users: "200k+ users",
     context: "Maintained by an MTS @ OpenAI & the founder of Traccar",
     prs: [
-      { title: "PR #143", url: "https://github.com/traccar/traccar-client/pull/143" },
-      { title: "PR #144", url: "https://github.com/traccar/traccar-client/pull/144" },
-      { title: "PR #146", url: "https://github.com/traccar/traccar-client/pull/146" },
+      {
+        title: "PR #143",
+        fullTitle: "Add QR scanner torch control using MobileScannerController",
+        url: "https://github.com/traccar/traccar-client/pull/143",
+        status: "merged",
+        description:
+          "Adds a flashlight toggle button to the QR scanner screen with proper MobileScannerController lifecycle management, making it easy to scan device codes in low-light environments.",
+      },
+      {
+        title: "PR #144",
+        fullTitle: "Improve permission denied error handling by providing direct access to app settings",
+        url: "https://github.com/traccar/traccar-client/pull/144",
+        status: "merged",
+        description:
+          "Integrates system app settings navigation using app_settings and improves user feedback when camera permission is denied on the QR scanner screen.",
+      },
+      {
+        title: "PR #146",
+        fullTitle: "Extend permission denied handling functionality to location toggle tracking in main screen",
+        url: "https://github.com/traccar/traccar-client/pull/146",
+        status: "merged",
+        description:
+          "Enhances location permission handling on the primary tracking screen by adding a direct action button to open OS app settings when location access is denied.",
+      },
     ],
   },
   {
@@ -109,18 +138,27 @@ export const openSource: OssContribution[] = [
     prs: [
       {
         title: "PR #3447",
+        fullTitle: "Add Broadcast Widget For Android OS",
         url: "https://github.com/lichess-org/mobile/pull/3447",
         status: "merged",
+        description:
+          "Implements a native, theme-aware home screen widget (BroadcastWidgetProvider) for Android to stream live Lichess broadcasts with asynchronous JSON fetching and background updates.",
       },
       {
         title: "PR #3478",
+        fullTitle: "Use sentence case for messages and chat",
         url: "https://github.com/lichess-org/mobile/pull/3478",
         status: "merged",
+        description:
+          "Configures text inputs in game chat and direct messaging screens to automatically use sentence-case capitalization for improved typing UX on mobile devices.",
       },
       {
         title: "PR #3503",
+        fullTitle: "Add blindfold mode to offline computer and over-the-board games",
         url: "https://github.com/lichess-org/mobile/pull/3503",
         status: "review",
+        description:
+          "Adds blindfold mode toggle and unified settings overlay to offline computer games and over-the-board chess matches.",
       },
     ],
   },
@@ -130,18 +168,39 @@ export const openSource: OssContribution[] = [
     users: "8k+ users",
     context: "Maintained by an SDE @ Innopolis",
     prs: [
-      { title: "PR #125", url: "https://github.com/darkmoonight/Zest/pull/125" },
-      { title: "PR #127", url: "https://github.com/darkmoonight/Zest/pull/127" },
-      { title: "PR #128", url: "https://github.com/darkmoonight/Zest/pull/128" },
-      { title: "PR #129", url: "https://github.com/darkmoonight/Zest/pull/129" },
+      {
+        title: "PR #125",
+        fullTitle: "fix(lang-settings): resolve issue in language dialog",
+        url: "https://github.com/darkmoonight/Zest/pull/125",
+        status: "merged",
+        description:
+          "Fixes a bug where the language dialog failed to open by changing GetX locale comparison from object equality to matching languageCode strings with fallbacks.",
+      },
+      {
+        title: "PR #127",
+        fullTitle: "fix: resolve duplicate todo problem due to race condition between watcher stream and manual updates",
+        url: "https://github.com/darkmoonight/Zest/pull/127",
+        status: "merged",
+        description:
+          "Eliminates duplicate task creation caused by a race condition between real-time database watcher streams and manual update dispatches.",
+      },
+      {
+        title: "PR #128",
+        fullTitle: "feat: add badges of github downloads and playstore downloads to the readme",
+        url: "https://github.com/darkmoonight/Zest/pull/128",
+        status: "merged",
+        description:
+          "Adds dynamic SVG release download counter badges from GitHub releases and Google Play Store to the project README.",
+      },
+      {
+        title: "PR #129",
+        fullTitle: "fix: setState Assertion Error in Calendar View",
+        url: "https://github.com/darkmoonight/Zest/pull/129",
+        status: "merged",
+        description:
+          "Fixes Flutter assertion error thrown when an async callback was passed directly to setState inside calendar chip selection.",
+      },
     ],
-  },
-  {
-    repo: "flow-mn/flow",
-    repoUrl: "https://github.com/flow-mn/flow",
-    users: "4k+ users",
-    context: "Open-source personal finance app",
-    prs: [{ title: "PR #672", url: "https://github.com/flow-mn/flow/pull/672" }],
   },
   {
     repo: "ente-io/ente",
@@ -151,8 +210,27 @@ export const openSource: OssContribution[] = [
     prs: [
       {
         title: "PR #11427",
+        fullTitle: "[mobile][photos] Add persistent video mute control",
         url: "https://github.com/ente-io/ente/pull/11427",
         status: "merged",
+        description:
+          "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
+      },
+    ],
+  },
+  {
+    repo: "flow-mn/flow",
+    repoUrl: "https://github.com/flow-mn/flow",
+    users: "4k+ users",
+    context: "Open-source personal finance app",
+    prs: [
+      {
+        title: "PR #672",
+        fullTitle: "feat: SelectCategorySheet now fetches categories from a provider and includes create button",
+        url: "https://github.com/flow-mn/flow/pull/672",
+        status: "merged",
+        description:
+          "Refactors SelectCategorySheet to fetch items via a provider and adds inline category creation directly inside the transaction flow.",
       },
     ],
   },
