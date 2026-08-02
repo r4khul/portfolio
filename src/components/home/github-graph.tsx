@@ -180,11 +180,11 @@ export function GitHubContributionGraph() {
             <span className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-[#87bbea]">
               {totalContributions.toLocaleString()}
             </span>
-            <span className="text-[10px] sm:text-xs font-mono text-muted uppercase tracking-wider">contributions in the last year</span>
+            <span className="text-[10px] sm:text-xs font-mono text-muted uppercase tracking-wider">contributions</span>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-mono text-muted uppercase tracking-wider">
             <Calendar className="size-3.5 text-faint" />
-            <span>Last 365 Days</span>
+            <span>Last Year</span>
           </div>
         </div>
 
