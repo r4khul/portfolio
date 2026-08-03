@@ -3,7 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, GitMerge, GitPullRequest } from "lucide-react";
+import { ArrowUpRight, GitMerge, GitPullRequest, Users, Star } from "lucide-react";
 import { openSource } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -55,27 +55,38 @@ export const OpenSourceSection = memo(() => {
                       <ArrowUpRight className="size-3 text-faint" />
                     </a>
                   </h3>
-                  <span className="font-mono text-[11px] text-accent">
-                    {contribution.users}
-                  </span>
+                  <div className="flex items-center gap-2.5 font-mono text-[11px] text-accent">
+                    {contribution.stats?.users && (
+                      <span className="flex items-center gap-1">
+                        <Users className="size-3" />
+                        {contribution.stats.users}
+                      </span>
+                    )}
+                    {contribution.stats?.stars && (
+                      <span className="flex items-center gap-1">
+                        <Star className="size-3" />
+                        {contribution.stats.stars}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className="mt-1 text-[12.5px] text-faint">{contribution.context}</p>
-                <ul className="mt-3 flex flex-wrap gap-2" aria-label="Pull requests">
+                <ul className="mt-3 flex overflow-x-auto gap-2 scrollbar-none pb-0.5" aria-label="Pull requests">
                   {contribution.prs.map((pr) => {
                     const isReview = pr.status === "review";
                     return (
-                      <li key={pr.url}>
+                      <li key={pr.url} className="shrink-0">
                         <a
                           href={pr.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={playClick}
-                          className="tactile inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted"
+                          className="tactile inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted whitespace-nowrap"
                         >
                           {isReview ? (
-                            <GitPullRequest className="size-3 text-blue-500 dark:text-blue-400" />
+                            <GitPullRequest className="size-3 text-blue-500 dark:text-blue-400 shrink-0" />
                           ) : (
-                            <GitMerge className="size-3 text-purple-400" />
+                            <GitMerge className="size-3 text-purple-400 shrink-0" />
                           )}
                           {pr.title} · {isReview ? "under review" : "merged"}
                         </a>

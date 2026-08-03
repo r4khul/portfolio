@@ -92,7 +92,10 @@ export type OssPr = {
 export type OssContribution = {
   repo: string;
   repoUrl: string;
-  users: string;
+  stats: {
+    users?: string;
+    stars?: string;
+  };
   context: string;
   prs: OssPr[];
 };
@@ -101,7 +104,7 @@ export const openSource: OssContribution[] = [
   {
     repo: "traccar/traccar-client",
     repoUrl: "https://github.com/traccar/traccar-client",
-    users: "200k+ users",
+    stats: { users: "200k+", stars: "700+" },
     context: "Maintained by an MTS @ OpenAI & the founder of Traccar",
     prs: [
       {
@@ -133,7 +136,7 @@ export const openSource: OssContribution[] = [
   {
     repo: "lichess-org/mobile",
     repoUrl: "https://github.com/lichess-org/mobile",
-    users: "1M+ users",
+    stats: { users: "1M+", stars: "2.5k+" },
     context: "Official Lichess mobile app written in Flutter",
     prs: [
       {
@@ -163,9 +166,41 @@ export const openSource: OssContribution[] = [
     ],
   },
   {
+    repo: "ente-io/ente",
+    repoUrl: "https://github.com/ente-io/ente",
+    stats: { users: "100k+", stars: "27k+" },
+    context: "Fully open-source, end-to-end encrypted photo backup & locker",
+    prs: [
+      {
+        title: "PR #11427",
+        fullTitle: "[mobile][photos] Add persistent video mute control",
+        url: "https://github.com/ente-io/ente/pull/11427",
+        status: "merged",
+        description:
+          "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
+      },
+      {
+        title: "PR #11770",
+        fullTitle: "Add deep linking for unconfigured home screen widgets",
+        url: "https://github.com/ente-io/ente/pull/11770",
+        status: "merged",
+        description:
+          "Adds deep linking support for unconfigured home screen widgets to navigate directly to widget setup instead of opening the main screen.",
+      },
+      {
+        title: "PR #11848",
+        fullTitle: "[mobile][photos] adjust SVG icon sizing in video editor bottom bar",
+        url: "https://github.com/ente-io/ente/pull/11848",
+        status: "merged",
+        description:
+          "Adjusts SVG icon sizing in the video editor bottom bar by removing internal margins to fix tiny and faint appearance.",
+      },
+    ],
+  },
+  {
     repo: "darkmoonight/Zest",
     repoUrl: "https://github.com/darkmoonight/Zest",
-    users: "8k+ users",
+    stats: { users: "8k+", stars: "400+" },
     context: "Maintained by an SDE @ Innopolis",
     prs: [
       {
@@ -203,25 +238,9 @@ export const openSource: OssContribution[] = [
     ],
   },
   {
-    repo: "ente-io/ente",
-    repoUrl: "https://github.com/ente-io/ente",
-    users: "27k+ stars",
-    context: "Fully open-source, end-to-end encrypted photo backup & locker",
-    prs: [
-      {
-        title: "PR #11427",
-        fullTitle: "[mobile][photos] Add persistent video mute control",
-        url: "https://github.com/ente-io/ente/pull/11427",
-        status: "merged",
-        description:
-          "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
-      },
-    ],
-  },
-  {
     repo: "flow-mn/flow",
     repoUrl: "https://github.com/flow-mn/flow",
-    users: "4k+ users",
+    stats: { users: "4k+", stars: "450+" },
     context: "Open-source personal finance app",
     prs: [
       {

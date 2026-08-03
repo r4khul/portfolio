@@ -9,6 +9,8 @@ import {
   GitPullRequest,
   Search,
   Filter,
+  Users,
+  Star
 } from "lucide-react";
 import { openSource, type OssContribution, type OssPr } from "@/data/profile";
 import { Reveal } from "@/components/ui/reveal";
@@ -147,9 +149,20 @@ export function OpenSourceList({ contributions = openSource }: OpenSourceListPro
                         <p className="text-[12px] text-faint">{contribution.context}</p>
                       </div>
                     </div>
-                    <span className="rounded-full border border-edge bg-background px-2.5 py-0.5 font-mono text-[11px] text-accent">
-                      {contribution.users}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {contribution.stats?.users && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-edge bg-background px-2.5 py-0.5 font-mono text-[11px] text-accent">
+                          <Users className="size-3" />
+                          {contribution.stats.users}
+                        </span>
+                      )}
+                      {contribution.stats?.stars && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-edge bg-background px-2.5 py-0.5 font-mono text-[11px] text-accent">
+                          <Star className="size-3" />
+                          {contribution.stats.stars}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Pull Requests List (Full horizontal space) */}
