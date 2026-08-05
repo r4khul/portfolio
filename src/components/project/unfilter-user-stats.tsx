@@ -173,21 +173,20 @@ export function UnfilterUserStats() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-2">
+                    <div>
                       <span className="font-serif text-base font-medium text-foreground">
                         {seg.label}
                       </span>
-                      <span
-                        className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold ${seg.color.badgeBg} ${seg.color.badgeText}`}
-                      >
-                        {seg.percentage}% of userbase
-                      </span>
+                      <div className="mt-1 flex items-center gap-1.5 font-mono text-[11px] text-muted">
+                        <span>{seg.sublabel}</span>
+                        <span>·</span>
+                        <span
+                          className={`rounded px-1.5 py-0.5 font-mono text-[10.5px] font-semibold ${seg.color.badgeBg} ${seg.color.badgeText}`}
+                        >
+                          {seg.userCount} users
+                        </span>
+                      </div>
                     </div>
-                    <p className="mt-0.5 font-mono text-[11px] text-muted">
-                      {seg.sublabel} · <span className="text-foreground font-medium">{seg.userCount} users</span>
-                    </p>
-                  </div>
 
                   <span className="font-mono text-lg font-bold tracking-tight text-foreground">
                     {seg.percentage}%
