@@ -8,6 +8,7 @@ import { getProject, getProjects } from "@/lib/projects";
 import { profile } from "@/data/profile";
 import { MdxContent } from "@/components/mdx-content";
 import { GithubStats } from "@/components/project/github-stats";
+import { UnfilterUserStats } from "@/components/project/unfilter-user-stats";
 import { ProjectJsonLd } from "@/components/site/json-ld";
 import { ProjectActions } from "@/components/project/project-actions";
 import { BackButton } from "@/components/project/back-button";
@@ -155,7 +156,10 @@ export default async function ProjectPage({ params }: Props) {
         </header>
 
         {project.slug === "unfilter" && (
-          <GithubStats repo="r4khul/unfilter" />
+          <>
+            <UnfilterUserStats />
+            <GithubStats repo="r4khul/unfilter" />
+          </>
         )}
       </div>
 
