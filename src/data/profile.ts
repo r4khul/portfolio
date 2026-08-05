@@ -136,7 +136,7 @@ export const openSource: OssContribution[] = [
   {
     repo: "lichess-org/mobile",
     repoUrl: "https://github.com/lichess-org/mobile",
-    stats: { users: "1M+", stars: "2.5k+" },
+    stats: { users: "2M+", stars: "2.5k+" },
     context: "Official Lichess mobile app written in Flutter",
     prs: [
       {
@@ -168,7 +168,7 @@ export const openSource: OssContribution[] = [
   {
     repo: "ente-io/ente",
     repoUrl: "https://github.com/ente-io/ente",
-    stats: { users: "100k+", stars: "27k+" },
+    stats: { users: "400k+", stars: "27k+" },
     context: "Fully open-source, end-to-end encrypted photo backup & locker",
     prs: [
       {
