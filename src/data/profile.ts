@@ -90,11 +90,13 @@ export type OssPr = {
 };
 
 export type OssContribution = {
+  slug: string;
   repo: string;
   repoUrl: string;
   stats: {
     users?: string;
     stars?: string;
+    contributions?: string;
   };
   context: string;
   prs: OssPr[];
@@ -102,9 +104,75 @@ export type OssContribution = {
 
 export const openSource: OssContribution[] = [
   {
+    slug: "ente",
+    repo: "ente-io/ente",
+    repoUrl: "https://github.com/ente-io/ente",
+    stats: { users: "400k+", stars: "27k+", contributions: "30+" },
+    context: "Fully open-source, end-to-end encrypted photo backup & locker",
+    prs: [
+      {
+        title: "PR #11427",
+        fullTitle: "[mobile][photos] Add persistent video mute control",
+        url: "https://github.com/ente-io/ente/pull/11427",
+        status: "merged",
+        description:
+          "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
+      },
+      {
+        title: "PR #11770",
+        fullTitle: "Add deep linking for unconfigured home screen widgets",
+        url: "https://github.com/ente-io/ente/pull/11770",
+        status: "merged",
+        description:
+          "Adds deep linking support for unconfigured home screen widgets to navigate directly to widget setup instead of opening the main screen.",
+      },
+      {
+        title: "PR #11848",
+        fullTitle: "[mobile][photos] adjust SVG icon sizing in video editor bottom bar",
+        url: "https://github.com/ente-io/ente/pull/11848",
+        status: "merged",
+        description:
+          "Adjusts SVG icon sizing in the video editor bottom bar by removing internal margins to fix tiny and faint appearance.",
+      },
+      {
+        title: "PR #12044",
+        fullTitle: "[mobile][photos] Fix hero animation glitch when exiting the full-screen viewer",
+        url: "https://github.com/ente-io/ente/pull/12044",
+        status: "merged",
+        description:
+          "Fixes hero animation glitch when exiting the full-screen photo viewer for a smooth visual transition back to the grid.",
+      },
+      {
+        title: "PR #12047",
+        fullTitle: "[mobile][photos] native handling for network disconnections in payment webview",
+        url: "https://github.com/ente-io/ente/pull/12047",
+        status: "merged",
+        description:
+          "Adds native error handling and offline state indication for network disconnections during payment webview transactions.",
+      },
+      {
+        title: "PR #12057",
+        fullTitle: "[mobile][locker] show cached item count in drawer when offline",
+        url: "https://github.com/ente-io/ente/pull/12057",
+        status: "merged",
+        description:
+          "Displays cached item count in the navigation drawer when offline, giving users clear visibility into stored files without a network connection.",
+      },
+      {
+        title: "PR #12097",
+        fullTitle: "[mobile][photos] fix tune slider active track at neutral position in image editor",
+        url: "https://github.com/ente-io/ente/pull/12097",
+        status: "merged",
+        description:
+          "Fixes tune slider active track rendering at neutral position in the image editor to eliminate visual offset glitches.",
+      },
+    ],
+  },
+  {
+    slug: "traccar-client",
     repo: "traccar/traccar-client",
     repoUrl: "https://github.com/traccar/traccar-client",
-    stats: { users: "200k+", stars: "700+" },
+    stats: { users: "200k+", stars: "700+", contributions: "10+" },
     context: "Maintained by an MTS @ OpenAI & the founder of Traccar",
     prs: [
       {
@@ -134,9 +202,10 @@ export const openSource: OssContribution[] = [
     ],
   },
   {
+    slug: "lichess-mobile",
     repo: "lichess-org/mobile",
     repoUrl: "https://github.com/lichess-org/mobile",
-    stats: { users: "2M+", stars: "2.5k+" },
+    stats: { users: "2M+", stars: "2.5k+", contributions: "15+" },
     context: "Official Lichess mobile app written in Flutter",
     prs: [
       {
@@ -166,41 +235,10 @@ export const openSource: OssContribution[] = [
     ],
   },
   {
-    repo: "ente-io/ente",
-    repoUrl: "https://github.com/ente-io/ente",
-    stats: { users: "400k+", stars: "27k+" },
-    context: "Fully open-source, end-to-end encrypted photo backup & locker",
-    prs: [
-      {
-        title: "PR #11427",
-        fullTitle: "[mobile][photos] Add persistent video mute control",
-        url: "https://github.com/ente-io/ente/pull/11427",
-        status: "merged",
-        description:
-          "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
-      },
-      {
-        title: "PR #11770",
-        fullTitle: "Add deep linking for unconfigured home screen widgets",
-        url: "https://github.com/ente-io/ente/pull/11770",
-        status: "merged",
-        description:
-          "Adds deep linking support for unconfigured home screen widgets to navigate directly to widget setup instead of opening the main screen.",
-      },
-      {
-        title: "PR #11848",
-        fullTitle: "[mobile][photos] adjust SVG icon sizing in video editor bottom bar",
-        url: "https://github.com/ente-io/ente/pull/11848",
-        status: "merged",
-        description:
-          "Adjusts SVG icon sizing in the video editor bottom bar by removing internal margins to fix tiny and faint appearance.",
-      },
-    ],
-  },
-  {
+    slug: "zest",
     repo: "darkmoonight/Zest",
     repoUrl: "https://github.com/darkmoonight/Zest",
-    stats: { users: "8k+", stars: "400+" },
+    stats: { users: "8k+", stars: "400+", contributions: "12+" },
     context: "Maintained by an SDE @ Innopolis",
     prs: [
       {
@@ -238,9 +276,10 @@ export const openSource: OssContribution[] = [
     ],
   },
   {
+    slug: "flow",
     repo: "flow-mn/flow",
     repoUrl: "https://github.com/flow-mn/flow",
-    stats: { users: "4k+", stars: "450+" },
+    stats: { users: "4k+", stars: "450+", contributions: "5+" },
     context: "Open-source personal finance app",
     prs: [
       {
@@ -254,6 +293,16 @@ export const openSource: OssContribution[] = [
     ],
   },
 ];
+
+export function getOssContribution(slug: string): OssContribution | undefined {
+  return openSource.find(
+    (c) => c.slug === slug || c.repo.replace("/", "-").toLowerCase() === slug.toLowerCase()
+  );
+}
+
+export function getOssContributions(): OssContribution[] {
+  return openSource;
+}
 
 export const education = {
   school: "Rajalakshmi Engineering College, Chennai",
