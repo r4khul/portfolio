@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowUpRight,
   ChevronDown,
@@ -18,9 +19,13 @@ import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
 interface OpenSourceListProps {
   contributions?: OssContribution[];
+  limitPrsPerCard?: boolean;
 }
 
-export function OpenSourceList({ contributions = openSource }: OpenSourceListProps) {
+export function OpenSourceList({
+  contributions = openSource,
+  limitPrsPerCard = true,
+}: OpenSourceListProps) {
   const { playClick } = useAudioFeedback();
   const [expandedPrs, setExpandedPrs] = useState<Record<string, boolean>>({});
   const [statusFilter, setStatusFilter] = useState<"all" | "merged" | "review">("all");
@@ -119,6 +124,9 @@ export function OpenSourceList({ contributions = openSource }: OpenSourceListPro
           {filteredContributions.map((contribution, repoIndex) => {
             const owner = contribution.repo.split("/")[0];
             const avatarUrl = `https://github.com/${owner}.png`;
+            const hasMorePrs = limitPrsPerCard && contribution.prs.length > 4;
+            const visiblePrs = hasMorePrs ? contribution.prs.slice(0, 4) : contribution.prs;
+            const remainingCount = contribution.prs.length - visiblePrs.length;
 
             return (
               <Reveal key={contribution.repo} delay={repoIndex * 0.05}>
@@ -135,15 +143,22 @@ export function OpenSourceList({ contributions = openSource }: OpenSourceListPro
                       />
                       <div>
                         <h2 className="font-mono text-[14px] font-semibold tracking-tight">
+                          <Link
+                            href={`/open-source/${contribution.slug}`}
+                            onClick={playClick}
+                            className="inline-flex items-center gap-1.5 hover:underline"
+                          >
+                            {contribution.repo}
+                          </Link>
                           <a
                             href={contribution.repoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={playClick}
-                            className="inline-flex items-center gap-1.5 hover:underline"
+                            className="ml-1.5 inline-flex items-center text-faint hover:text-foreground"
+                            title="Open on GitHub"
                           >
-                            {contribution.repo}
-                            <ArrowUpRight className="size-3 text-faint" />
+                            <ArrowUpRight className="size-3" />
                           </a>
                         </h2>
                         <p className="text-[12px] text-faint">{contribution.context}</p>
@@ -165,9 +180,9 @@ export function OpenSourceList({ contributions = openSource }: OpenSourceListPro
                     </div>
                   </div>
 
-                  {/* Pull Requests List (Full horizontal space) */}
+                  {/* Pull Requests List */}
                   <div className="divide-y divide-edge">
-                    {contribution.prs.map((pr) => {
+                    {visiblePrs.map((pr) => {
                       const isExpanded = !!expandedPrs[pr.url];
                       const isReview = pr.status === "review";
 
@@ -270,6 +285,28 @@ export function OpenSourceList({ contributions = openSource }: OpenSourceListPro
                       );
                     })}
                   </div>
+
+                  {/* Card Bottom Footer Bar for Repos with > 4 PRs */}
+                  {hasMorePrs && (
+                    <div className="border-t border-edge bg-surface/40 px-4 py-3 sm:px-5">
+                      <Link
+                        href={`/open-source/${contribution.slug}`}
+                        onClick={playClick}
+                        className="group flex flex-wrap items-center justify-between gap-2 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="rounded border border-edge bg-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-foreground">
+                            +{remainingCount} more
+                          </span>
+                          <span>View all {contribution.prs.length} pull requests</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 font-medium text-foreground group-hover:underline">
+                          View organization page
+                          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </span>
+                      </Link>
+                    </div>
+                  )}
                 </section>
               </Reveal>
             );
@@ -279,3 +316,4 @@ export function OpenSourceList({ contributions = openSource }: OpenSourceListPro
     </div>
   );
 }
+

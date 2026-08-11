@@ -32,15 +32,16 @@ export const OpenSourceSection = memo(() => {
         {openSource.map((contribution, i) => {
           const owner = contribution.repo.split("/")[0];
           const avatarUrl = `https://github.com/${owner}.png`;
+          const visiblePrs = contribution.prs.slice(0, 4);
+          const hasMorePrs = contribution.prs.length > 4;
+
           return (
             <Reveal key={contribution.repo} delay={i * 0.05}>
               <article className="rounded-lg border border-edge p-4 transition-colors hover:border-edge-strong sm:p-5">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                   <h3 className="font-mono text-[13.5px] font-semibold">
-                    <a
-                      href={contribution.repoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      href={`/open-source/${contribution.slug}`}
                       onClick={playClick}
                       className="inline-flex items-center gap-2 hover:underline"
                     >
@@ -52,7 +53,16 @@ export const OpenSourceSection = memo(() => {
                         className="size-5 rounded-full object-cover shrink-0"
                       />
                       {contribution.repo}
-                      <ArrowUpRight className="size-3 text-faint" />
+                    </Link>
+                    <a
+                      href={contribution.repoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={playClick}
+                      className="ml-1.5 inline-flex items-center text-faint hover:text-foreground"
+                      title="Open on GitHub"
+                    >
+                      <ArrowUpRight className="size-3" />
                     </a>
                   </h3>
                   <div className="flex items-center gap-2.5 font-mono text-[11px] text-accent">
@@ -72,7 +82,7 @@ export const OpenSourceSection = memo(() => {
                 </div>
                 <p className="mt-1 text-[12.5px] text-faint">{contribution.context}</p>
                 <ul className="mt-3 flex overflow-x-auto gap-2 scrollbar-none pb-0.5" aria-label="Pull requests">
-                  {contribution.prs.map((pr) => {
+                  {visiblePrs.map((pr) => {
                     const isReview = pr.status === "review";
                     return (
                       <li key={pr.url} className="shrink-0">
@@ -93,6 +103,18 @@ export const OpenSourceSection = memo(() => {
                       </li>
                     );
                   })}
+                  {hasMorePrs && (
+                    <li className="shrink-0">
+                      <Link
+                        href={`/open-source/${contribution.slug}`}
+                        onClick={playClick}
+                        className="tactile inline-flex items-center gap-1.5 rounded-md border border-edge bg-surface px-2.5 py-1 font-mono text-[11px] font-medium text-foreground whitespace-nowrap hover:border-edge-strong"
+                      >
+                        +{contribution.prs.length - 4} more PRs
+                        <ArrowUpRight className="size-3 text-faint" />
+                      </Link>
+                    </li>
+                  )}
                 </ul>
               </article>
             </Reveal>
