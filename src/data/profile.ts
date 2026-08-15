@@ -107,7 +107,7 @@ export const openSource: OssContribution[] = [
     slug: "ente",
     repo: "ente-io/ente",
     repoUrl: "https://github.com/ente-io/ente",
-    stats: { users: "400k+", stars: "27k+", contributions: "30+" },
+    stats: { users: "400k+", stars: "27k+", contributions: "40+" },
     context: "Fully open-source, end-to-end encrypted photo backup & locker",
     prs: [
       {
@@ -165,6 +165,38 @@ export const openSource: OssContribution[] = [
         status: "merged",
         description:
           "Fixes tune slider active track rendering at neutral position in the image editor to eliminate visual offset glitches.",
+      },
+      {
+        title: "PR #12138",
+        fullTitle: "[mobile][photos] fix ui clipping in BillingQuestionsWidget & improve FAQ parsing safety",
+        url: "https://github.com/ente/ente/pull/12138",
+        status: "merged",
+        description:
+          "Fixes UI clipping behavior and improves parsing safety for the billing FAQ modal sheet to prevent visual overflow and safely handle malformed data.",
+      },
+      {
+        title: "PR #12165",
+        fullTitle: "[mobile][photos] optimize timeline gallery lookups for large galleries",
+        url: "https://github.com/ente/ente/pull/12165",
+        status: "merged",
+        description:
+          "Replaces linear search with binary search for section lookups to resolve layout calculation bottlenecks in large galleries.",
+      },
+      {
+        title: "PR #12199",
+        fullTitle: "[mobile][photos] change selection menu action ordering and use platform-specific share icon",
+        url: "https://github.com/ente/ente/pull/12199",
+        status: "merged",
+        description:
+          "Updates the sequence of actions in the bottom selection bar to match a user-friendly flow and displays native share icons for iOS and Android.",
+      },
+      {
+        title: "PR #12204",
+        fullTitle: "[mobile][photos] disable page swiping while albums are selected",
+        url: "https://github.com/ente/ente/pull/12204",
+        status: "review",
+        description:
+          "Disables horizontal page swiping in the home tab bar while albums are selected in the Albums tab, matching the existing gallery swipe-to-select behavior.",
       },
     ],
   },
