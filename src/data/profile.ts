@@ -194,9 +194,25 @@ export const openSource: OssContribution[] = [
         title: "PR #12204",
         fullTitle: "[mobile][photos] disable page swiping while albums are selected",
         url: "https://github.com/ente/ente/pull/12204",
-        status: "review",
+        status: "merged",
         description:
           "Disables horizontal page swiping in the home tab bar while albums are selected in the Albums tab, matching the existing gallery swipe-to-select behavior.",
+      },
+      {
+        title: "PR #12313",
+        fullTitle: "[mobile][photos] add video playback speed controls in video viewer",
+        url: "https://github.com/ente/ente/pull/12313",
+        status: "merged",
+        description:
+          "Adds video playback-speed controls to the overflow menu with the selected speed shown as a trailing label, supporting 0.25×–2× speeds synced across original/preview streams and native/MediaKit players, kept active until the viewer is dismissed and unavailable in Memories.",
+      },
+      {
+        title: "PR #12404",
+        fullTitle: "[mobile][photos] add double tap seek feature to video player",
+        url: "https://github.com/ente/ente/pull/12404",
+        status: "merged",
+        description:
+          "Adds double-tap video seeking (±5s) with an animated seek badge that reveals controls, working while paused or zoomed and disabled for Memories, backed by a shared seek controller that handles rapid seeks, stale position events, and slider sync.",
       },
     ],
   },
