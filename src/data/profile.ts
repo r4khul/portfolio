@@ -276,7 +276,7 @@ export const openSource: OssContribution[] = [
         title: "PR #3503",
         fullTitle: "Add blindfold mode to offline computer and over-the-board games",
         url: "https://github.com/lichess-org/mobile/pull/3503",
-        status: "review",
+        status: "merged",
         description:
           "Adds blindfold mode toggle and unified settings overlay to offline computer games and over-the-board chess matches.",
       },
