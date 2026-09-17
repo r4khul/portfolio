@@ -14,7 +14,7 @@ interface StoryEffectProps {
 }
 
 // ---------- Float Effect ----------
-// Particles drift upward — the feeling of lifting, flying
+// Particles drift upward - the feeling of lifting, flying
 function runFloat(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -410,7 +410,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 }
 
 // ---------- Pulse Effect ----------
-// Expanding concentric rings from center — "the push"
+// Expanding concentric rings from center - "the push"
 function runPulse(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -643,7 +643,7 @@ function runRoom(canvas: HTMLCanvasElement, signal: AbortSignal) {
 }
 
 // ---------- Dust Effect ----------
-// Dust particles suspended in a beam of light — static, stopped time
+// Dust particles suspended in a beam of light - static, stopped time
 function runDust(canvas: HTMLCanvasElement, signal: AbortSignal) {
   const ctx = canvas.getContext("2d")!;
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);

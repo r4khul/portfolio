@@ -13,7 +13,7 @@ interface StoryRevealProps {
 /**
  * Wraps children in a scroll-gated reveal.
  * Text starts hidden (opacity 0, slightly offset) and reveals once
- * it enters the viewport. Intersection is observed once — then disconnected.
+ * it enters the viewport. Intersection is observed once - then disconnected.
  */
 export function StoryReveal({ children, delay = 0, className = "" }: StoryRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -22,7 +22,7 @@ export function StoryReveal({ children, delay = 0, className = "" }: StoryReveal
     const el = ref.current;
     if (!el) return;
 
-    // Reduced motion — skip entirely, just show
+    // Reduced motion - skip entirely, just show
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       el.classList.add("is-revealed");
       return;

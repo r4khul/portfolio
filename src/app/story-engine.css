@@ -90,7 +90,7 @@
     filter 0.6s ease;
 }
 
-/* Revealed state — added by JS */
+/* Revealed state - added by JS */
 .story-reveal.is-revealed {
   opacity: 1;
   transform: translateY(0);

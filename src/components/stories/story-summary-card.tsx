@@ -52,7 +52,7 @@ function TotalViews({ slugs }: { slugs: string[] }) {
     ).then((counts) => setTotal(counts.reduce((a, b) => a + b, 0)));
   }, [slugs]);
 
-  if (total === null) return <span className="text-faint">—</span>;
+  if (total === null) return <span className="text-faint">-</span>;
 
   return <span>{total.toLocaleString()}</span>;
 }

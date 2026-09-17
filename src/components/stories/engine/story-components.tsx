@@ -10,7 +10,7 @@ export function Dialogue({ speaker, children }: { speaker?: string; children: Re
         </span>
       )}
       <div className="flex items-start gap-1">
-        <span className="text-story-text select-none">—</span>
+        <span className="text-story-text select-none">-</span>
         <div className="flex-1">{children}</div>
       </div>
     </div>
