@@ -16,7 +16,7 @@ export function OpenToWorkBadge() {
         </span>
 
         <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-white">
-          Open to work
+          Building @ Ente
         </span>
 
         {/* Subtle cloud color fade within the badge */}

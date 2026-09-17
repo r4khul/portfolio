@@ -2,6 +2,8 @@
 
 import { memo } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight, GitPullRequest } from "lucide-react";
 import { experience } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -63,6 +65,19 @@ export const ExperienceSection = memo(() => {
                 <p className="mt-4 max-w-prose text-[14px] leading-relaxed text-muted">
                   {job.summary}
                 </p>
+                {job.company === "Ente" && (
+                  <Link
+                    href="/open-source/ente"
+                    onClick={playClick}
+                    className="group relative mt-4 inline-flex items-center gap-2 overflow-hidden rounded-lg border border-dashed border-edge-strong bg-surface px-2.5 py-2 font-mono text-[11px] text-muted transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:rotate-[0.5deg] hover:border-[var(--accent)]/50 hover:shadow-md"
+                  >
+                    <span className="flex size-6 -rotate-3 items-center justify-center rounded-md border border-edge bg-background text-accent transition-transform duration-200 group-hover:rotate-3">
+                      <GitPullRequest className="size-3.5" />
+                    </span>
+                    <span className="font-semibold text-foreground">see my work. it’s open</span>
+                    <ArrowUpRight className="size-3.5 text-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
+                  </Link>
+                )}
                 <ul className="mt-4 space-y-2">
                   {job.highlights.map((point) => (
                     <li
@@ -78,6 +93,7 @@ export const ExperienceSection = memo(() => {
             </Reveal>
           </div>
         ))}
+
       </div>
     </Section>
   );
