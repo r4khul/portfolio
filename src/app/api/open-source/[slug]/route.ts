@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 
 const WATCHED_REPOSITORIES = {
   ente: {
-    repository: "ente-io/ente",
+    repository: "ente/ente",
+    author: "r4khul",
+  },
+  "traccar-client": {
+    repository: "traccar/traccar-client",
+    author: "r4khul",
+  },
+  "lichess-mobile": {
+    repository: "lichess-org/mobile",
     author: "r4khul",
   },
 } as const;
@@ -47,11 +55,6 @@ export async function GET(
     return NextResponse.json({ error: "No watcher is configured for this project." }, { status: 404 });
   }
 
-  const token = process.env.GITHUB_PAT;
-  if (!token) {
-    return NextResponse.json({ error: "GitHub watcher is not configured." }, { status: 503 });
-  }
-
   const watched = WATCHED_REPOSITORIES[slug];
   const endpoint = new URL("https://api.github.com/search/issues");
   endpoint.searchParams.set("q", `repo:${watched.repository} author:${watched.author} is:pr`);
@@ -59,13 +62,20 @@ export async function GET(
   endpoint.searchParams.set("order", "desc");
   endpoint.searchParams.set("per_page", "100");
 
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "Portfolio-App",
+  };
+
+  const token = process.env.GITHUB_PAT;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   try {
     const response = await fetch(endpoint, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
-        "X-GitHub-Api-Version": "2026-03-10",
-      },
+      headers,
       next: { revalidate: 900 },
     });
 

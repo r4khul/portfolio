@@ -13,7 +13,7 @@ export function OssShowcaseCard({ className }: { className?: string }) {
   const ossItems = openSource.slice(0, 3);
   
   const storeLinks: Record<string, { play?: string; apple?: string }> = {
-    "ente-io/ente": {
+    "ente/ente": {
       play: "https://play.google.com/store/apps/details?id=io.ente.photos",
       apple: "https://apps.apple.com/us/app/ente-photos/id1542026904",
     },

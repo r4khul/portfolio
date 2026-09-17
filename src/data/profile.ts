@@ -32,7 +32,7 @@ export const experience: Experience[] = [
   {
     company: "Ente",
     companyUrl: "https://ente.io",
-    logo: "https://github.com/ente-io.png",
+    logo: "https://github.com/ente.png",
     title: "Software Engineer",
     period: "Sep 2026 - Present",
     location: "Bengaluru, India · On-site",
@@ -119,15 +119,15 @@ export type OssContribution = {
 // It is reached from the Ente experience card as an open-source work record.
 export const enteOpenSource: OssContribution = {
   slug: "ente",
-  repo: "ente-io/ente",
-  repoUrl: "https://github.com/ente-io/ente",
+  repo: "ente/ente",
+  repoUrl: "https://github.com/ente/ente",
   stats: { users: "400k+", stars: "27k+", contributions: "40+" },
   context: "Fully open-source, end-to-end encrypted photo backup & locker",
   prs: [
     {
       title: "PR #11427",
       fullTitle: "[mobile][photos] Add persistent video mute control",
-      url: "https://github.com/ente-io/ente/pull/11427",
+      url: "https://github.com/ente/ente/pull/11427",
       status: "merged",
       description:
         "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
@@ -135,7 +135,7 @@ export const enteOpenSource: OssContribution = {
     {
       title: "PR #11770",
       fullTitle: "Add deep linking for unconfigured home screen widgets",
-      url: "https://github.com/ente-io/ente/pull/11770",
+      url: "https://github.com/ente/ente/pull/11770",
       status: "merged",
       description:
         "Adds deep linking support for unconfigured home screen widgets to navigate directly to widget setup instead of opening the main screen.",
@@ -143,7 +143,7 @@ export const enteOpenSource: OssContribution = {
     {
       title: "PR #11848",
       fullTitle: "[mobile][photos] adjust SVG icon sizing in video editor bottom bar",
-      url: "https://github.com/ente-io/ente/pull/11848",
+      url: "https://github.com/ente/ente/pull/11848",
       status: "merged",
       description:
         "Adjusts SVG icon sizing in the video editor bottom bar by removing internal margins to fix tiny and faint appearance.",
@@ -151,7 +151,7 @@ export const enteOpenSource: OssContribution = {
     {
       title: "PR #12044",
       fullTitle: "[mobile][photos] Fix hero animation glitch when exiting the full-screen viewer",
-      url: "https://github.com/ente-io/ente/pull/12044",
+      url: "https://github.com/ente/ente/pull/12044",
       status: "merged",
       description:
         "Fixes hero animation glitch when exiting the full-screen photo viewer for a smooth visual transition back to the grid.",

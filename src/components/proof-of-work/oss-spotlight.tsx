@@ -9,7 +9,7 @@ import { BentoCard } from "./bento-grid";
 import { ossSpotlights } from "@/data/proof-of-work-oss";
 
 const storeLinks: Record<string, string> = {
-  "ente-io/ente": "https://play.google.com/store/apps/details?id=io.ente.photos",
+  "ente/ente": "https://play.google.com/store/apps/details?id=io.ente.photos",
   "lichess-org/mobile": "https://play.google.com/store/apps/details?id=org.lichess.mobileV2",
   "traccar/traccar-client": "https://play.google.com/store/apps/details?id=org.traccar.client",
 };
