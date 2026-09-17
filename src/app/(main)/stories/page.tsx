@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     canonical: "/stories",
   },
   openGraph: {
-    title: `Stories — ${profile.name}`,
+    title: `Stories - ${profile.name}`,
     description:
       "Fiction, fragments, and serialized tales. One chapter at a time.",
     url: `${profile.url}/stories`,
@@ -27,13 +27,13 @@ export const metadata: Metadata = {
         url: STORIES_BANNER,
         width: 1200,
         height: 630,
-        alt: `Stories — ${profile.name}`,
+        alt: `Stories - ${profile.name}`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `Stories — ${profile.name}`,
+    title: `Stories - ${profile.name}`,
     description:
       "Fiction, fragments, and serialized tales. One chapter at a time.",
     creator: "@r4khul",

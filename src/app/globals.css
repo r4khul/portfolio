@@ -69,7 +69,7 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-instrument-serif);
   --animate-status-breath: status-breath 3s ease-in-out infinite;
-  /* z-60 is not in Tailwind v4's default scale — extend it here */
+  /* z-60 is not in Tailwind v4's default scale - extend it here */
   --z-60: 60;
 }
 
@@ -127,7 +127,7 @@ body {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-/* Primary tactile button — inverted surface */
+/* Primary tactile button - inverted surface */
 .tactile-primary {
   color: var(--primary-text);
   background: linear-gradient(to bottom, var(--primary-from), var(--primary-to));
@@ -251,16 +251,16 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   SIDE NAV — Wheel-picker editorial navigation in the left gutter
+   SIDE NAV - Wheel-picker editorial navigation in the left gutter
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* Outer container — fixed to full viewport height, right-aligned within gutter */
+/* Outer container - fixed to full viewport height, right-aligned within gutter */
 .side-nav {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 40;
-  display: none; /* hidden on mobile — shown at xl */
+  display: none; /* hidden on mobile - shown at xl */
   height: 100%;
   /* Width = half of the space between viewport edge and content rail (max-w-3xl = 48rem) */
   width: calc((100vw - 48rem) / 2);
@@ -268,7 +268,7 @@ body {
   align-items: flex-end;
   justify-content: center;
   pointer-events: none; /* only interactive children get events */
-  /* Promote to its own compositing layer — prevents scroll repaints */
+  /* Promote to its own compositing layer - prevents scroll repaints */
   will-change: transform;
   transform: translateZ(0);
 }
@@ -291,7 +291,7 @@ body {
   contain: style;
 }
 
-/* Individual nav item — only animates transform + opacity (compositor-only) */
+/* Individual nav item - only animates transform + opacity (compositor-only) */
 .side-nav__item {
   position: relative;
   display: flex;
@@ -310,7 +310,7 @@ body {
     gap 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Idle — shrunk, faded, shifted right */
+/* Idle - shrunk, faded, shifted right */
 .side-nav__item--idle {
   opacity: 0.28;
   transform: scale(0.86) translateX(8px) translateZ(0);
@@ -320,14 +320,14 @@ body {
   transform: scale(0.93) translateX(4px) translateZ(0);
 }
 
-/* Active — full size, full opacity */
+/* Active - full size, full opacity */
 .side-nav__item--active {
   opacity: 1;
   transform: scale(1) translateX(0) translateZ(0);
   gap: 18px; /* Increased by 4px as requested */
 }
 
-/* Icon container — fixed 18×18 box prevents layout shifts */
+/* Icon container - fixed 18×18 box prevents layout shifts */
 .side-nav__icon {
   display: flex;
   align-items: center;
@@ -346,7 +346,7 @@ body {
   color: var(--foreground);
 }
 
-/* Label — Instrument Serif.
+/* Label - Instrument Serif.
    Fixed font-size of 16px (25% bigger than old 13px).
    Active scale(1.25) gives the visual "bigger" feel with zero layout reflow.
    transform-origin: right center so it scales outward toward the content rail. */
@@ -366,7 +366,7 @@ body {
 }
 .side-nav__label--active {
   color: var(--foreground);
-  /* Scale 25% in-place — pure compositor, zero layout reflow */
+  /* Scale 25% in-place - pure compositor, zero layout reflow */
   transform: scale(1.25) translateZ(0);
 }
 
@@ -395,10 +395,10 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   SYNTAX HIGHLIGHTING — rehype-highlight / highlight.js tokens
+   SYNTAX HIGHLIGHTING - rehype-highlight / highlight.js tokens
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* light mode — github palette */
+/* light mode - github palette */
 pre .hljs-comment,
 pre .hljs-quote         { color: #6a737d; font-style: italic; }
 pre .hljs-keyword,
@@ -416,7 +416,7 @@ pre .hljs-literal,
 pre .hljs-symbol        { color: #005cc5; }
 pre .hljs-meta          { color: #e36209; }
 
-/* dark mode — github-dark-dimmed palette */
+/* dark mode - github-dark-dimmed palette */
 :where(.dark) pre .hljs-comment,
 :where(.dark) pre .hljs-quote         { color: #768390; font-style: italic; }
 :where(.dark) pre .hljs-keyword,
@@ -435,7 +435,7 @@ pre .hljs-meta          { color: #e36209; }
 :where(.dark) pre .hljs-meta          { color: #f69d50; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   STRIPE BAR — Decorative diagonal hatch banner (replaces header)
+   STRIPE BAR - Decorative diagonal hatch banner (replaces header)
    ───────────────────────────────────────────────────────────────────────────── */
 
 .stripe-bar__pattern {

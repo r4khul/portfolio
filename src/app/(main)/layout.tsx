@@ -7,10 +7,10 @@ import { Footer } from "@/components/site/footer";
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Left-gutter side navigation — only visible on xl+ */}
+      {/* Left-gutter side navigation - only visible on xl+ */}
       <SideNav />
 
-      {/* Mobile navigation drawer — only visible below xl */}
+      {/* Mobile navigation drawer - only visible below xl */}
       <MobileNav />
 
       {/* Back to top button */}

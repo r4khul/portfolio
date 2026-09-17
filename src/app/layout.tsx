@@ -28,14 +28,14 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   metadataBase: new URL(profile.url),
   title: {
-    default: `${profile.name} | Mobile Engineer`,
+    default: `${profile.name} | Software Engineer`,
     template: `%s | ${profile.name}`,
   },
   description:
     "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software people actually use.",
   keywords: [
     "Flutter Developer",
-    "Mobile Engineer",
+    "Mobile Engineering",
     "Dart",
     "Rakhul Prakash",
     "r4khul",
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: `${profile.name} | Mobile Engineer`,
+    title: `${profile.name} | Software Engineer`,
     description:
       "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software.",
     url: profile.url,
@@ -95,13 +95,13 @@ export const metadata: Metadata = {
         url: "/images/site/main-banner.png",
         width: 1200,
         height: 630,
-        alt: `${profile.name} | Mobile Engineer`,
+        alt: `${profile.name} | Software Engineer`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${profile.name} | Mobile Engineer`,
+    title: `${profile.name} | Software Engineer`,
     description:
       "CS engineer focused on mobile development with Flutter, architecture, performance, and shipping reliable software.",
     creator: "@r4khul",
@@ -144,7 +144,7 @@ export default function RootLayout({
         <JsonLd />
         <AudioProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            {/* Cal.com embed initializer — must live inside ThemeProvider */}
+            {/* Cal.com embed initializer - must live inside ThemeProvider */}
             <CalEmbed />
 
             {children}

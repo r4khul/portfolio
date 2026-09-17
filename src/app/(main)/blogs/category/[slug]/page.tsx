@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: `/blogs/category/${slug}` },
     openGraph: {
-      title: `${title} — ${profile.name}`,
+      title: `${title} - ${profile.name}`,
       description,
       url: `${profile.url}/blogs/category/${slug}`,
       siteName: profile.name,
@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} — ${profile.name}`,
+      title: `${title} - ${profile.name}`,
       description,
       creator: "@r4khul",
       images: [image],

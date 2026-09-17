@@ -43,7 +43,7 @@ export const SideNav = memo(() => {
       if (el) {
         e.preventDefault();
         el.scrollIntoView({ behavior: "smooth", block: "start" });
-        // Optimistically set active on click — observer will correct if needed
+        // Optimistically set active on click - observer will correct if needed
         setActive(id);
       }
     },
@@ -114,7 +114,7 @@ export const SideNav = memo(() => {
 
   return (
     <aside aria-label="Site navigation" className="side-nav">
-      {/* Vertical nav list — wheel-picker style */}
+      {/* Vertical nav list - wheel-picker style */}
       <nav className="side-nav__list" aria-label="Primary">
         {nav.map((item) => {
           const id = item.href.replace("/#", "");
@@ -129,7 +129,7 @@ export const SideNav = memo(() => {
               className={`side-nav__item ${isActive ? "side-nav__item--active" : "side-nav__item--idle"}`}
               aria-current={isActive ? "page" : undefined}
             >
-              {/* Icon — replaces the horizontal pip */}
+              {/* Icon - replaces the horizontal pip */}
               <span className={`side-nav__icon ${isActive ? "side-nav__icon--active" : ""}`}>
                 <Icon strokeWidth={1.5} />
               </span>

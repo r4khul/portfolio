@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     canonical: "/blogs",
   },
   openGraph: {
-    title: `Blog — ${profile.name}`,
+    title: `Blog - ${profile.name}`,
     description:
       "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
     url: `${profile.url}/blogs`,
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
         url: "/images/site/main-banner.png",
         width: 1200,
         height: 630,
-        alt: `Blog — ${profile.name}`,
+        alt: `Blog - ${profile.name}`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `Blog — ${profile.name}`,
+    title: `Blog - ${profile.name}`,
     description:
       "Notes on system architecture, offline-first mobile engineering, clean interfaces, and lessons learned in production.",
     creator: "@r4khul",

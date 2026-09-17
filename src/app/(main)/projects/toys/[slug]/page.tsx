@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `/projects/toys/${slug}`,
     },
     openGraph: {
-      title: `${toy.title} — ${profile.name}`,
+      title: `${toy.title} - ${profile.name}`,
       description: toy.description,
       type: "article",
       url: `${profile.url}/projects/toys/${slug}`,
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${toy.title} — ${profile.name}`,
+      title: `${toy.title} - ${profile.name}`,
       description: toy.description,
       creator: "@r4khul",
       images: [ogImage.url],
