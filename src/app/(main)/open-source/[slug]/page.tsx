@@ -6,6 +6,7 @@ import { FaGithub } from "react-icons/fa";
 import { getOssContribution, getOssContributions, profile } from "@/data/profile";
 import { BackButton } from "@/components/project/back-button";
 import { OpenSourceList } from "@/components/open-source/open-source-list";
+import { LiveWorkRecord } from "@/components/open-source/live-work-record";
 import { Reveal } from "@/components/ui/reveal";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const contribution = getOssContribution(slug);
   if (!contribution) return {};
 
-  const title = `${contribution.repo} — Open Source — ${profile.name}`;
+  const title = `${contribution.repo} - Open Source - ${profile.name}`;
   const description = `Merged pull requests, bug fixes, and feature contributions for ${contribution.repo}. ${contribution.context}`;
 
   return {
@@ -61,6 +62,8 @@ export default async function OpenSourceOrgPage({ params }: Props) {
   const contribution = getOssContribution(slug);
   if (!contribution) notFound();
 
+  const isEnteWorkRecord = contribution.slug === "ente";
+
   const owner = contribution.repo.split("/")[0];
   const repoName = contribution.repo.split("/")[1] || contribution.repo;
   const avatarUrl = `https://github.com/${owner}.png`;
@@ -72,7 +75,10 @@ export default async function OpenSourceOrgPage({ params }: Props) {
   return (
     <main>
       <div className="bleed-line px-4 py-8 sm:px-8">
-        <BackButton href="/open-source" label="all open source" />
+        <BackButton
+          href={isEnteWorkRecord ? "/#experience" : "/open-source"}
+          label={isEnteWorkRecord ? "experience" : "all open source"}
+        />
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-3">
@@ -125,8 +131,7 @@ export default async function OpenSourceOrgPage({ params }: Props) {
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {!isEnteWorkRecord && <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Reveal delay={0.05} className="h-full">
             <div className="flex h-full flex-col justify-between rounded-lg border border-edge bg-surface/50 p-4">
               <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold truncate">
@@ -174,14 +179,20 @@ export default async function OpenSourceOrgPage({ params }: Props) {
               </div>
             </div>
           </Reveal>
-        </div>
+        </div>}
       </div>
 
       <div className="bleed-line px-4 pt-6 pb-14 sm:px-8 sm:pt-8">
-        <div className="mb-4 font-mono text-[12px] uppercase tracking-wider text-faint font-semibold">
-          Pull Requests & Contributions ({totalPrs})
-        </div>
-        <OpenSourceList contributions={[contribution]} limitPrsPerCard={false} />
+        {isEnteWorkRecord ? (
+          <LiveWorkRecord contribution={contribution} />
+        ) : (
+          <>
+            <div className="mb-4 font-mono text-[12px] uppercase tracking-wider text-faint font-semibold">
+              Pull Requests & Contributions ({totalPrs})
+            </div>
+            <OpenSourceList contributions={[contribution]} limitPrsPerCard={false} />
+          </>
+        )}
       </div>
     </main>
   );

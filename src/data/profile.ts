@@ -1,7 +1,7 @@
 export const profile = {
   name: "Rakhul Prakash S B",
   handle: "r4khul",
-  role: "Mobile Engineer · Flutter",
+  role: "Software Engineer @ Ente",
   location: "Chennai, India",
   timezone: "Asia/Kolkata",
   email: "rakhul2005@gmail.com",
@@ -9,9 +9,10 @@ export const profile = {
   cal: "https://cal.com/r4khul/",
   resume: "/r4khul_resume.pdf",
   about: [
-    "I'm Rakhul, a CS engineer who likes **building things that people actually use**.",
-    "My focus is **mobile development with Flutter**, from architecture and performance to edge cases and deployment. I've worked on startup products, open-source projects, and real client apps, where **reliability matters more than demos**.",
-    "I'm at my best when I can **take ownership**, learn fast, and turn messy problems into **solid, shippable software**.",
+    "**Software Engineer @ Ente. Product-minded. Open-source.**",
+    "I build and ship mobile apps end-to-end, mostly with **Flutter + Dart** - from the first product decision to the release that lands in someone’s hand.",
+    "I contribute to projects including **Lichess Mobile** and **Traccar**, and built **Unfilter** because I wanted to know what every app was built with.",
+    "Also: grew a tech community to **2k+**, SIH national finalist, and Make-a-thon ’24 runner-up.",
   ],
 } as const;
 
@@ -28,6 +29,18 @@ export type Experience = {
 };
 
 export const experience: Experience[] = [
+  {
+    company: "Ente",
+    companyUrl: "https://ente.io",
+    logo: "https://github.com/ente-io.png",
+    title: "Software Engineer",
+    period: "Sep 2026 - Present",
+    location: "Bengaluru, India · On-site",
+    status: "active",
+    summary:
+      "Building and shipping product-minded mobile experiences end to end, with Flutter and Dart at the core.",
+    highlights: [],
+  },
   {
     company: "Finfresh Wealth Creation",
     companyUrl: "https://www.linkedin.com/company/finfreshwealth/",
@@ -102,120 +115,123 @@ export type OssContribution = {
   prs: OssPr[];
 };
 
+// This work is deliberately separate from the independent contribution index.
+// It is reached from the Ente experience card as an open-source work record.
+export const enteOpenSource: OssContribution = {
+  slug: "ente",
+  repo: "ente-io/ente",
+  repoUrl: "https://github.com/ente-io/ente",
+  stats: { users: "400k+", stars: "27k+", contributions: "40+" },
+  context: "Fully open-source, end-to-end encrypted photo backup & locker",
+  prs: [
+    {
+      title: "PR #11427",
+      fullTitle: "[mobile][photos] Add persistent video mute control",
+      url: "https://github.com/ente-io/ente/pull/11427",
+      status: "merged",
+      description:
+        "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
+    },
+    {
+      title: "PR #11770",
+      fullTitle: "Add deep linking for unconfigured home screen widgets",
+      url: "https://github.com/ente-io/ente/pull/11770",
+      status: "merged",
+      description:
+        "Adds deep linking support for unconfigured home screen widgets to navigate directly to widget setup instead of opening the main screen.",
+    },
+    {
+      title: "PR #11848",
+      fullTitle: "[mobile][photos] adjust SVG icon sizing in video editor bottom bar",
+      url: "https://github.com/ente-io/ente/pull/11848",
+      status: "merged",
+      description:
+        "Adjusts SVG icon sizing in the video editor bottom bar by removing internal margins to fix tiny and faint appearance.",
+    },
+    {
+      title: "PR #12044",
+      fullTitle: "[mobile][photos] Fix hero animation glitch when exiting the full-screen viewer",
+      url: "https://github.com/ente-io/ente/pull/12044",
+      status: "merged",
+      description:
+        "Fixes hero animation glitch when exiting the full-screen photo viewer for a smooth visual transition back to the grid.",
+    },
+    {
+      title: "PR #12047",
+      fullTitle: "[mobile][photos] native handling for network disconnections in payment webview",
+      url: "https://github.com/ente/ente/pull/12047",
+      status: "merged",
+      description:
+        "Adds native error handling and offline state indication for network disconnections during payment webview transactions.",
+    },
+    {
+      title: "PR #12057",
+      fullTitle: "[mobile][locker] show cached item count in drawer when offline",
+      url: "https://github.com/ente/ente/pull/12057",
+      status: "merged",
+      description:
+        "Displays cached item count in the navigation drawer when offline, giving users clear visibility into stored files without a network connection.",
+    },
+    {
+      title: "PR #12097",
+      fullTitle: "[mobile][photos] fix tune slider active track at neutral position in image editor",
+      url: "https://github.com/ente/ente/pull/12097",
+      status: "merged",
+      description:
+        "Fixes tune slider active track rendering at neutral position in the image editor to eliminate visual offset glitches.",
+    },
+    {
+      title: "PR #12138",
+      fullTitle: "[mobile][photos] fix ui clipping in BillingQuestionsWidget & improve FAQ parsing safety",
+      url: "https://github.com/ente/ente/pull/12138",
+      status: "merged",
+      description:
+        "Fixes UI clipping behavior and improves parsing safety for the billing FAQ modal sheet to prevent visual overflow and safely handle malformed data.",
+    },
+    {
+      title: "PR #12165",
+      fullTitle: "[mobile][photos] optimize timeline gallery lookups for large galleries",
+      url: "https://github.com/ente/ente/pull/12165",
+      status: "merged",
+      description:
+        "Replaces linear search with binary search for section lookups to resolve layout calculation bottlenecks in large galleries.",
+    },
+    {
+      title: "PR #12199",
+      fullTitle: "[mobile][photos] change selection menu action ordering and use platform-specific share icon",
+      url: "https://github.com/ente/ente/pull/12199",
+      status: "merged",
+      description:
+        "Updates the sequence of actions in the bottom selection bar to match a user-friendly flow and displays native share icons for iOS and Android.",
+    },
+    {
+      title: "PR #12204",
+      fullTitle: "[mobile][photos] disable page swiping while albums are selected",
+      url: "https://github.com/ente/ente/pull/12204",
+      status: "merged",
+      description:
+        "Disables horizontal page swiping in the home tab bar while albums are selected in the Albums tab, matching the existing gallery swipe-to-select behavior.",
+    },
+    {
+      title: "PR #12313",
+      fullTitle: "[mobile][photos] add video playback speed controls in video viewer",
+      url: "https://github.com/ente/ente/pull/12313",
+      status: "merged",
+      description:
+        "Adds video playback-speed controls to the overflow menu with the selected speed shown as a trailing label, supporting 0.25×–2× speeds synced across original/preview streams and native/MediaKit players, kept active until the viewer is dismissed and unavailable in Memories.",
+    },
+    {
+      title: "PR #12404",
+      fullTitle: "[mobile][photos] add double tap seek feature to video player",
+      url: "https://github.com/ente/ente/pull/12404",
+      status: "merged",
+      description:
+        "Adds double-tap video seeking (±5s) with an animated seek badge that reveals controls, working while paused or zoomed and disabled for Memories, backed by a shared seek controller that handles rapid seeks, stale position events, and slider sync.",
+    },
+  ],
+};
+
 export const openSource: OssContribution[] = [
-  {
-    slug: "ente",
-    repo: "ente-io/ente",
-    repoUrl: "https://github.com/ente-io/ente",
-    stats: { users: "400k+", stars: "27k+", contributions: "40+" },
-    context: "Fully open-source, end-to-end encrypted photo backup & locker",
-    prs: [
-      {
-        title: "PR #11427",
-        fullTitle: "[mobile][photos] Add persistent video mute control",
-        url: "https://github.com/ente-io/ente/pull/11427",
-        status: "merged",
-        description:
-          "Adds persistent video mute toggle across app restarts and preloaded videos via event bus for both native and MediaKit video player engines.",
-      },
-      {
-        title: "PR #11770",
-        fullTitle: "Add deep linking for unconfigured home screen widgets",
-        url: "https://github.com/ente-io/ente/pull/11770",
-        status: "merged",
-        description:
-          "Adds deep linking support for unconfigured home screen widgets to navigate directly to widget setup instead of opening the main screen.",
-      },
-      {
-        title: "PR #11848",
-        fullTitle: "[mobile][photos] adjust SVG icon sizing in video editor bottom bar",
-        url: "https://github.com/ente-io/ente/pull/11848",
-        status: "merged",
-        description:
-          "Adjusts SVG icon sizing in the video editor bottom bar by removing internal margins to fix tiny and faint appearance.",
-      },
-      {
-        title: "PR #12044",
-        fullTitle: "[mobile][photos] Fix hero animation glitch when exiting the full-screen viewer",
-        url: "https://github.com/ente-io/ente/pull/12044",
-        status: "merged",
-        description:
-          "Fixes hero animation glitch when exiting the full-screen photo viewer for a smooth visual transition back to the grid.",
-      },
-      {
-        title: "PR #12047",
-        fullTitle: "[mobile][photos] native handling for network disconnections in payment webview",
-        url: "https://github.com/ente-io/ente/pull/12047",
-        status: "merged",
-        description:
-          "Adds native error handling and offline state indication for network disconnections during payment webview transactions.",
-      },
-      {
-        title: "PR #12057",
-        fullTitle: "[mobile][locker] show cached item count in drawer when offline",
-        url: "https://github.com/ente-io/ente/pull/12057",
-        status: "merged",
-        description:
-          "Displays cached item count in the navigation drawer when offline, giving users clear visibility into stored files without a network connection.",
-      },
-      {
-        title: "PR #12097",
-        fullTitle: "[mobile][photos] fix tune slider active track at neutral position in image editor",
-        url: "https://github.com/ente-io/ente/pull/12097",
-        status: "merged",
-        description:
-          "Fixes tune slider active track rendering at neutral position in the image editor to eliminate visual offset glitches.",
-      },
-      {
-        title: "PR #12138",
-        fullTitle: "[mobile][photos] fix ui clipping in BillingQuestionsWidget & improve FAQ parsing safety",
-        url: "https://github.com/ente/ente/pull/12138",
-        status: "merged",
-        description:
-          "Fixes UI clipping behavior and improves parsing safety for the billing FAQ modal sheet to prevent visual overflow and safely handle malformed data.",
-      },
-      {
-        title: "PR #12165",
-        fullTitle: "[mobile][photos] optimize timeline gallery lookups for large galleries",
-        url: "https://github.com/ente/ente/pull/12165",
-        status: "merged",
-        description:
-          "Replaces linear search with binary search for section lookups to resolve layout calculation bottlenecks in large galleries.",
-      },
-      {
-        title: "PR #12199",
-        fullTitle: "[mobile][photos] change selection menu action ordering and use platform-specific share icon",
-        url: "https://github.com/ente/ente/pull/12199",
-        status: "merged",
-        description:
-          "Updates the sequence of actions in the bottom selection bar to match a user-friendly flow and displays native share icons for iOS and Android.",
-      },
-      {
-        title: "PR #12204",
-        fullTitle: "[mobile][photos] disable page swiping while albums are selected",
-        url: "https://github.com/ente/ente/pull/12204",
-        status: "merged",
-        description:
-          "Disables horizontal page swiping in the home tab bar while albums are selected in the Albums tab, matching the existing gallery swipe-to-select behavior.",
-      },
-      {
-        title: "PR #12313",
-        fullTitle: "[mobile][photos] add video playback speed controls in video viewer",
-        url: "https://github.com/ente/ente/pull/12313",
-        status: "merged",
-        description:
-          "Adds video playback-speed controls to the overflow menu with the selected speed shown as a trailing label, supporting 0.25×–2× speeds synced across original/preview streams and native/MediaKit players, kept active until the viewer is dismissed and unavailable in Memories.",
-      },
-      {
-        title: "PR #12404",
-        fullTitle: "[mobile][photos] add double tap seek feature to video player",
-        url: "https://github.com/ente/ente/pull/12404",
-        status: "merged",
-        description:
-          "Adds double-tap video seeking (±5s) with an animated seek badge that reveals controls, working while paused or zoomed and disabled for Memories, backed by a shared seek controller that handles rapid seeks, stale position events, and slider sync.",
-      },
-    ],
-  },
   {
     slug: "traccar-client",
     repo: "traccar/traccar-client",
@@ -343,13 +359,13 @@ export const openSource: OssContribution[] = [
 ];
 
 export function getOssContribution(slug: string): OssContribution | undefined {
-  return openSource.find(
+  return [enteOpenSource, ...openSource].find(
     (c) => c.slug === slug || c.repo.replace("/", "-").toLowerCase() === slug.toLowerCase()
   );
 }
 
 export function getOssContributions(): OssContribution[] {
-  return openSource;
+  return [enteOpenSource, ...openSource];
 }
 
 export const education = {

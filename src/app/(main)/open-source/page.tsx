@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     canonical: "/open-source",
   },
   openGraph: {
-    title: `Open Source — ${profile.name}`,
+    title: `Open Source - ${profile.name}`,
     description:
       "A comprehensive record of pull requests, bug fixes, performance improvements, and feature contributions across production open-source software.",
     url: `${profile.url}/open-source`,
@@ -23,13 +23,13 @@ export const metadata: Metadata = {
         url: "/images/site/main-banner.png",
         width: 1200,
         height: 630,
-        alt: `Open Source — ${profile.name}`,
+        alt: `Open Source - ${profile.name}`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `Open Source — ${profile.name}`,
+    title: `Open Source - ${profile.name}`,
     description:
       "A comprehensive record of pull requests, bug fixes, performance improvements, and feature contributions across production open-source software.",
     creator: "@r4khul",
