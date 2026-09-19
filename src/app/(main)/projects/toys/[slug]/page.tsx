@@ -109,7 +109,7 @@ export default async function ToyPage({ params }: Props) {
             fill
             priority
             sizes="(max-width: 768px) 100vw, 768px"
-            className="object-cover"
+            className={toy.slug === "pinshot" ? "object-cover object-top" : "object-cover"}
           />
         ) : (
           <div className="dotgrid size-full" />

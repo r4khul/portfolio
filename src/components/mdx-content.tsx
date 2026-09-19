@@ -10,6 +10,7 @@ import { CommitCard } from "@/components/mdx/commit-card";
 import { ExtLink } from "@/components/mdx/ext-link";
 import { ImageZoom } from "@/components/mdx/image-zoom";
 import { UnfilterUserStats } from "@/components/project/unfilter-user-stats";
+import { PinshotGallery } from "@/components/project/pinshot-gallery";
 
 const components = {
   h2: (props: ComponentProps<"h2">) => (
@@ -87,6 +88,7 @@ const components = {
   ExtLink,
   ImageZoom,
   UnfilterUserStats,
+  PinshotGallery,
 };
 
 export function MdxContent({ source }: { source: string }) {
