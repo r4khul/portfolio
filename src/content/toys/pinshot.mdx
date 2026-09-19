@@ -1,0 +1,32 @@
+---
+title: "Pinshot"
+slug: "pinshot"
+description: "A 24-hour home for disposable screenshots—pin the ones worth keeping."
+stack: ["Kotlin", "Jetpack Compose", "Material 3", "Room", "WorkManager", "MediaStore"]
+links:
+  - label: "GitHub"
+    url: "https://github.com/r4khul/pinshot"
+cover: "/api/og/pinshot"
+year: "2026"
+platform: "android"
+---
+
+Pinshot is an open source Android app for the screenshots that are useful right now but probably not forever. Every new screenshot gets a 24-hour window. If it still matters, pin it. If it does not, Pinshot moves it to Android's system trash automatically.
+
+## Designed around intent
+
+- **Temporary by default** — new screenshots enter a clear 24-hour expiration window instead of silently piling up.
+- **Pin to keep** — one tap exempts anything important from automatic cleanup.
+- **Recoverable cleanup** — expired items move to Android's system trash, preserving a 30-day recovery window.
+- **Fast archive navigation** — a custom ballistic scrubber makes it quick to move across months and years of media.
+- **Timely reminders** — notifications surface screenshots before they expire, with direct actions to pin or review them.
+
+## The product
+
+<PinshotGallery />
+
+The interface follows Material 3 and adapts directly to the device's light or dark appearance. The gallery, expiring queue, and trash are intentionally separated so the lifecycle of every screenshot stays obvious.
+
+## Under the hood
+
+Pinshot watches Android MediaStore for new screenshots and records their lifecycle in a local Room database. WorkManager handles periodic expiration in the background, while Kotlin Flow and StateFlow keep the Jetpack Compose UI in sync. Cleanup uses Android's native trash permissions—no root access or custom storage layer required.
