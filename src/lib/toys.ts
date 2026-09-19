@@ -12,6 +12,7 @@ export type ToyFrontmatter = {
   links: { label: string; url: string }[];
   year: string;
   cover?: string;
+  platform?: "web" | "android";
 };
 
 export type Toy = ToyFrontmatter & { content: string };

@@ -72,11 +72,13 @@ export function ProjectJsonLd({ project }: { project: Project }) {
 export function ToyJsonLd({ toy }: { toy: Toy }) {
   const toyData = {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
+    "@type": toy.platform === "android" ? "MobileApplication" : "WebApplication",
     name: toy.title,
     description: toy.description,
     applicationCategory: "UtilityApplication",
-    browserRequirements: "Requires a modern web browser with JavaScript enabled",
+    ...(toy.platform === "android"
+      ? { operatingSystem: "Android" }
+      : { browserRequirements: "Requires a modern web browser with JavaScript enabled" }),
     author: {
       "@type": "Person",
       name: profile.name,

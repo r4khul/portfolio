@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getProjects } from "@/lib/projects";
 import { getBlogs } from "@/lib/blogs";
 import { getStories } from "@/lib/stories";
+import { getToys } from "@/lib/toys";
 import { profile } from "@/data/profile";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -24,6 +25,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(story.date),
     changeFrequency: "weekly" as const,
     priority: 0.7,
+  }));
+
+  const toys = getToys().map((toy) => ({
+    url: `${profile.url}/projects/toys/${toy.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
   }));
 
   return [
@@ -64,6 +72,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     ...projects,
+    ...toys,
     ...blogs,
     ...stories,
   ];
