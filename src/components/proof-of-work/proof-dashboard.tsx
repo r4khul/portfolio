@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Download, Mail } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Mail } from "lucide-react";
 import { FaGithub, FaGooglePlay, FaLinkedin } from "react-icons/fa6";
 import { BentoCard } from "./bento-grid";
 import { OssSpotlight } from "./oss-spotlight";
@@ -31,7 +31,7 @@ export function ProofDashboard() {
 function ProofToolbar() {
   return <header className="shrink-0 flex items-center justify-between rounded-2xl border border-edge bg-surface/70 px-4 py-2.5 backdrop-blur sm:px-5">
     <div className="flex items-center gap-3"><span className="font-mono text-xs font-bold tracking-tight">r4khul</span><span className="hidden h-4 w-px bg-edge-strong sm:block" /><span className="hidden font-mono text-[10px] uppercase tracking-[.2em] text-faint sm:block">Proof of work / 2026</span></div>
-    <div className="flex items-center gap-2"><span className="flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-emerald-500"><i className="size-1.5 rounded-full bg-emerald-500" /> Open to work</span><Link href={proofProfile.resume} className="hidden items-center gap-1.5 rounded-full bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-transform hover:-translate-y-px sm:flex"><Download className="size-3.5" /> Resume</Link></div>
+    <div className="flex items-center gap-2"><span className="flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-emerald-500"><i className="size-1.5 rounded-full bg-emerald-500" /> Open to work</span></div>
   </header>;
 }
 

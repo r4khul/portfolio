@@ -7,7 +7,6 @@ export const profile = {
   email: "rakhul2005@gmail.com",
   url: "https://rakhul.me",
   cal: "https://cal.com/r4khul/",
-  resume: "/r4khul_resume.pdf",
   about: [
     "**Software Engineer @ Ente. Product-minded. Open-source.**",
     "I build and ship mobile apps end-to-end, mostly with **Flutter + Dart** - from the first product decision to the release that lands in someone’s hand.",

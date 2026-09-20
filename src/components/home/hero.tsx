@@ -11,7 +11,6 @@ import { FaGithub, FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import { SiLeetcode } from "react-icons/si";
 import { profile, socials } from "@/data/profile";
 import { LocalTime } from "@/components/site/local-time";
-import { ResumeButton } from "@/components/ui/resume-button";
 import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
 import { GitHubContributionGraph } from "@/components/home/github-graph";
 import { Reveal } from "@/components/ui/reveal";
@@ -126,8 +125,6 @@ export function Hero() {
                       </a>
                     );
                   })}
-
-                  <ResumeButton href={profile.resume} />
                 </div>
               </Reveal>
             </div>
