@@ -13,9 +13,10 @@ import {
   Users,
   Star
 } from "lucide-react";
-import { openSource, type OssContribution, type OssPr } from "@/data/profile";
+import { openSource, type OssContribution } from "@/data/profile";
 import { Reveal } from "@/components/ui/reveal";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
+import { PullRequestDescription } from "@/components/open-source/pull-request-description";
 
 interface OpenSourceListProps {
   contributions?: OssContribution[];
@@ -263,9 +264,9 @@ export function OpenSourceList({
                                     {contribution.repo}
                                   </span>
                                 </div>
-                                <p className="text-[13.5px] leading-relaxed text-muted font-sans">
-                                  {pr.description}
-                                </p>
+                                <div className="font-sans">
+                                  <PullRequestDescription markdown={pr.description} />
+                                </div>
                                 <div className="pt-2">
                                   <a
                                     href={pr.url}
@@ -316,4 +317,3 @@ export function OpenSourceList({
     </div>
   );
 }
-

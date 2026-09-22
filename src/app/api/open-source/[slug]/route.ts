@@ -37,9 +37,16 @@ function isWatchedSlug(slug: string): slug is WatchedSlug {
   return slug in WATCHED_REPOSITORIES;
 }
 
+const MAX_DESCRIPTION_LENGTH = 1_600;
+
 function preview(body: string | null, status: "merged" | "review") {
-  const text = body?.replace(/\s+/g, " ").trim();
-  if (text) return text.slice(0, 500);
+  const markdown = body?.trim();
+  if (markdown) {
+    if (markdown.length <= MAX_DESCRIPTION_LENGTH) return markdown;
+
+    const truncated = markdown.slice(0, MAX_DESCRIPTION_LENGTH).replace(/\s+\S*$/, "").trimEnd();
+    return `${truncated}\n\n…`;
+  }
 
   return status === "merged"
     ? "Merged contribution. Open the pull request on GitHub for the full change set."
