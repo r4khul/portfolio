@@ -54,7 +54,9 @@ export function GitHubContributionGraph() {
   const data = useMemo(() => {
     if (!githubData?.contributions || !Array.isArray(githubData.contributions)) return [];
     return githubData.contributions.map(c => ({
-      date: new Date(c.date),
+      // GitHub sends calendar dates without a timezone. Keep each day local so
+      // visitors west of UTC do not see it shifted into the previous square.
+      date: new Date(`${c.date}T12:00:00`),
       count: c.count
     }));
   }, [githubData]);
