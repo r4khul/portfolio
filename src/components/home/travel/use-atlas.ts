@@ -26,13 +26,15 @@ type UseAtlasArgs = {
   onReady?: (engine: AtlasEngine) => void;
   /** fires once the first-view intro has settled */
   onIntroDone?: () => void;
+  onArrive?: () => void;
+  onEdge?: () => void;
 };
 
 /**
  * Owns the canvas engine lifecycle: sizing, theme sync, land loading,
  * on-screen-only rendering and the first-view intro.
  */
-export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onIntroDone }: UseAtlasArgs) {
+export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onIntroDone, onArrive, onEdge }: UseAtlasArgs) {
   const engineRef = useRef<AtlasEngine | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -40,11 +42,15 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onInt
   const hoverRef = useRef(onHover);
   const readyRef = useRef(onReady);
   const introRef = useRef(onIntroDone);
+  const arriveRef = useRef(onArrive);
+  const edgeRef = useRef(onEdge);
 
   useEffect(() => {
     hoverRef.current = onHover;
     readyRef.current = onReady;
     introRef.current = onIntroDone;
+    arriveRef.current = onArrive;
+    edgeRef.current = onEdge;
   });
 
   useEffect(() => {
@@ -61,9 +67,16 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onInt
       home: p.role === "home",
       now: p.role === "now",
     }));
-    const engine = new AtlasEngine(canvas, pins, { lowEnd, ...options }, {
+    // GPU dot layer lives in its own canvas just beneath the overlay canvas
+    const glCanvas = document.createElement("canvas");
+    glCanvas.className = canvas.className;
+    glCanvas.setAttribute("aria-hidden", "true");
+    canvas.parentElement?.insertBefore(glCanvas, canvas);
+    const engine = new AtlasEngine(canvas, pins, { lowEnd, glCanvas, ...options }, {
       onHover: (id) => hoverRef.current?.(id),
       onIntroDone: () => introRef.current?.(),
+      onArrive: () => arriveRef.current?.(),
+      onEdge: () => edgeRef.current?.(),
     });
     engineRef.current = engine;
     engine.setTheme(readTheme(stage));
@@ -123,6 +136,7 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onInt
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       engine.destroy();
+      glCanvas.remove();
       engineRef.current = null;
     };
     // options are read once; the engine is rebuilt only on remount
