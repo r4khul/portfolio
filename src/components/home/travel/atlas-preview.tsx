@@ -4,9 +4,10 @@ import { useRef } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
-import { places } from "@/data/travel";
+import { nowPlace, places } from "@/data/travel";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { useAtlas } from "./use-atlas";
+import { CityGlyph } from "./city-glyphs";
 
 const stateCount = new Set(places.map((p) => p.state)).size;
 
@@ -44,6 +45,17 @@ export function AtlasPreview() {
           role="img"
           aria-label={`Map of places I've been: ${places.map((p) => p.name).join(", ")}`}
         />
+        {/* live status, same family as the "Building @ Ente" badge */}
+        {nowPlace && (
+          <div className="glyph-live pointer-events-none absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-edge-strong bg-background/75 py-1 pr-2.5 pl-2 font-mono text-[10px] tracking-widest text-muted uppercase backdrop-blur-md">
+            <span className="inline-flex size-3.5 text-[#2f80d1] dark:text-[#87bbea]">
+              <CityGlyph id={nowPlace.id} />
+            </span>
+            <span>
+              Now <span className="text-faint">·</span> <span className="text-foreground">{nowPlace.name}</span>
+            </span>
+          </div>
+        )}
         <AnimatePresence>
           {!ready && (
             <motion.div
