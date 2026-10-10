@@ -514,46 +514,41 @@ pre .hljs-meta          { color: #e36209; }
   }
 }
 
-/* Bangalore - cloud drifts, drizzle falls */
-.glyph-cloud {
-  transition: transform 500ms ease;
+/* Bangalore - the light cycles, but it is mostly red */
+.glyph-lamp {
+  fill: currentColor;
+  opacity: 0.22;
 }
-.glyph-drop {
-  opacity: 0.55;
+.glyph-lamp--red {
+  fill: #ef4444;
+  opacity: 0.9;
 }
-:is(.city-token:hover, .city-token:focus-visible, .city-token.is-live, .glyph-live) .glyph-cloud {
-  animation: glyph-drift 2.4s ease-in-out infinite;
+:is(.city-token:hover, .city-token:focus-visible, .city-token.is-live, .glyph-live) .glyph-lamp--red {
+  animation: glyph-lamp-red 3s steps(1, end) infinite;
 }
-:is(.city-token:hover, .city-token:focus-visible, .city-token.is-live, .glyph-live) .glyph-drop {
-  animation: glyph-rain 0.9s linear infinite;
+:is(.city-token:hover, .city-token:focus-visible, .city-token.is-live, .glyph-live) .glyph-lamp--amber {
+  fill: #f59e0b;
+  animation: glyph-lamp-amber 3s steps(1, end) infinite;
 }
-.glyph-drop--2 {
-  animation-delay: 0.3s !important;
+:is(.city-token:hover, .city-token:focus-visible, .city-token.is-live, .glyph-live) .glyph-lamp--green {
+  fill: #22c55e;
+  animation: glyph-lamp-green 3s steps(1, end) infinite;
 }
-.glyph-drop--3 {
-  animation-delay: 0.6s !important;
+/* red ~70%, amber ~12%, green blinks for a moment, amber again */
+@keyframes glyph-lamp-red {
+  0% { opacity: 0.95; }
+  70% { opacity: 0.22; }
 }
-@keyframes glyph-rain {
-  0% {
-    transform: translateY(-2px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(2.6px);
-    opacity: 0;
-  }
+@keyframes glyph-lamp-amber {
+  0% { opacity: 0.22; }
+  70% { opacity: 0.95; }
+  82% { opacity: 0.22; }
+  90% { opacity: 0.95; }
 }
-@keyframes glyph-drift {
-  0%,
-  100% {
-    transform: translateX(-0.5px);
-  }
-  50% {
-    transform: translateX(0.7px);
-  }
+@keyframes glyph-lamp-green {
+  0% { opacity: 0.22; }
+  82% { opacity: 0.95; }
+  90% { opacity: 0.22; }
 }
 
 /* Fallback - pin hops */

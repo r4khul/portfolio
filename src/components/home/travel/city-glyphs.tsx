@@ -57,20 +57,15 @@ function Palm() {
   );
 }
 
-/** Bangalore: a soft cloud and that famous evening drizzle. */
-function Drizzle() {
+/** Bangalore: a traffic light that is, mostly, red. */
+function TrafficLight() {
   return (
-    <svg viewBox="0 0 16 16" className="glyph glyph--drizzle" aria-hidden>
-      <path
-        className="glyph-cloud"
-        d="M4.6 9.6h6.9a2.4 2.4 0 0 0 .2-4.8 3.4 3.4 0 0 0-6.5-.6A2.7 2.7 0 0 0 4.6 9.6z"
-        {...stroke}
-      />
-      <g className="glyph-rain">
-        <path className="glyph-drop" d="M5.6 11.6v1.4" {...stroke} />
-        <path className="glyph-drop glyph-drop--2" d="M8.2 11.9v1.4" {...stroke} />
-        <path className="glyph-drop glyph-drop--3" d="M10.8 11.6v1.4" {...stroke} />
-      </g>
+    <svg viewBox="0 0 16 16" className="glyph glyph--traffic" aria-hidden>
+      <rect x="5.4" y="1.2" width="5.2" height="11.2" rx="2.6" {...stroke} />
+      <path d="M8 12.4V15" {...stroke} />
+      <circle className="glyph-lamp glyph-lamp--red" cx="8" cy="3.9" r="1.15" />
+      <circle className="glyph-lamp glyph-lamp--amber" cx="8" cy="6.8" r="1.15" />
+      <circle className="glyph-lamp glyph-lamp--green" cx="8" cy="9.7" r="1.15" />
     </svg>
   );
 }
@@ -90,7 +85,7 @@ function Pin() {
 const glyphs: Record<string, () => ReactNode> = {
   chennai: Waves,
   nagercoil: Palm,
-  bangalore: Drizzle,
+  bangalore: TrafficLight,
 };
 
 export function CityGlyph({ id }: { id: string }) {
