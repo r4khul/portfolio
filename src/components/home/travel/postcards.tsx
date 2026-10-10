@@ -511,6 +511,23 @@ export function hasPostcard(id: string) {
   return id in scenes;
 }
 
+/**
+ * Just the scene (no card, no motion wrapper): for static compositions such
+ * as the /travels Open Graph image.
+ */
+export function PostcardArt({ id, className = "" }: { id: string; className?: string }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const Scene = scenes[id];
+  if (!Scene) return null;
+  return (
+    <div className={`pc ${className}`}>
+      <svg viewBox="0 0 160 96" role="img" aria-label={`Postcard from ${id}`}>
+        <Scene uid={uid} />
+      </svg>
+    </div>
+  );
+}
+
 /* ───────────────────────── frame ───────────────────────── */
 
 /**
