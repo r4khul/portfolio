@@ -9,6 +9,8 @@
  * Projection: equirectangular. Camera: centre (lng, lat) + k (px per degree).
  */
 
+import { DotLayerGL, type MaskData } from "./atlas-gl";
+
 export type RGB = [number, number, number];
 
 export type AtlasPlace = {
@@ -43,11 +45,17 @@ export type AtlasOptions = {
   maxLabels?: number;
   /** start in reduced-quality mode (low-memory / low-core devices) */
   lowEnd?: boolean;
+  /** canvas beneath the main one for the GPU dot layer; Canvas2D fallback if absent/unsupported */
+  glCanvas?: HTMLCanvasElement | null;
 };
 
 export type AtlasCallbacks = {
   onHover?: (id: string | null) => void;
   onIntroDone?: () => void;
+  /** a camera flight finished */
+  onArrive?: () => void;
+  /** a drag ran into the edge of the world */
+  onEdge?: () => void;
 };
 
 type Mask = {
@@ -150,7 +158,9 @@ function sampleMask(m: Mask, lng: number, lat: number): number {
   return lerp(top, bot, ty) / 255;
 }
 
-export type LandSampler = (lng: number, lat: number) => number;
+export type LandSampler = ((lng: number, lat: number) => number) & {
+  masks?: { world: MaskData; detail: MaskData };
+};
 
 let landPromise: Promise<LandSampler> | null = null;
 
@@ -162,15 +172,18 @@ export function loadLand(): Promise<LandSampler> {
       loadMask("/atlas/south-asia.png", [60, 0, 100, 40]),
     ]).then(([world, detail]) => {
       const edge = 1.5; // degrees of cross-fade so the patch has no seam
-      return (lng: number, lat: number) => {
+      const sample: LandSampler = (lng: number, lat: number) => {
         if (lat < -58 || lat > 84) return 0;
         lng = ((((lng + 180) % 360) + 360) % 360) - 180;
-        const w = sampleMask(world, lng, lat);
-        const d = sampleMask(detail, lng, lat);
-        if (d < 0) return w;
         const inset = Math.min(lng - detail.west, detail.east - lng, lat - detail.south, detail.north - lat);
-        return lerp(w, d, clamp(inset / edge, 0, 1));
+        // deep inside the detail patch the world mask is never needed
+        if (inset >= edge) return sampleMask(detail, lng, lat);
+        const w = sampleMask(world, lng, lat);
+        if (inset <= 0) return w;
+        return lerp(w, sampleMask(detail, lng, lat), inset / edge);
       };
+      sample.masks = { world, detail };
+      return sample;
     });
     landPromise.catch(() => {
       landPromise = null;
@@ -187,6 +200,7 @@ const ARC_STAGGER = 0.05; // s between routes
 const LENS_R = 70; // px
 const COMET_CYCLE = 6.5; // s between comets on the same route
 const COMET_TRAVEL = 2.4; // s a comet takes to arrive
+const ALPHA_STEPS = 8; // intro fade quantisation for the pixel buffer
 
 export class AtlasEngine {
   private canvas: HTMLCanvasElement;
@@ -197,13 +211,28 @@ export class AtlasEngine {
   private places: AtlasPlace[];
   private routes: AtlasPlace[];
   private home: AtlasPlace;
-  private opts: Required<AtlasOptions>;
+  private opts: Required<Omit<AtlasOptions, "glCanvas">>;
+  private gl: DotLayerGL | null = null;
+  private glCanvas: HTMLCanvasElement | null = null;
+  private cellsDirty = true;
   private pitchBoost = 0;
   private frameCost = 0; // EMA of ms spent drawing a frame
   private slowFrames = 0;
   private ambientSkip = false;
   private styleCache: { theme: AtlasTheme; styles: string[] } | null = null;
+  /** raw pixel buffer for the dot layer (device pixels) */
+  private pix: ImageData | null = null;
+  private pix32: Uint32Array | null = null;
+  /** half-resolution dot layer used while the camera is moving (CPU path) */
+  private low: HTMLCanvasElement | null = null;
+  private lowCtx: CanvasRenderingContext2D | null = null;
+  private lastMove = -1;
+  /** pre-blended opaque colours: [heat level][alpha step] -> ABGR */
+  private pixTable: { theme: AtlasTheme; table: Uint32Array } | null = null;
   private textWidth = new Map<string, number>();
+  /** pre-rasterised label + glow sprites (text rasterisation is the priciest canvas op) */
+  private sprites = new Map<string, HTMLCanvasElement>();
+  private spriteKey = "";
   private cb: AtlasCallbacks;
   private land: LandSampler | null = null;
   private theme: AtlasTheme | null = null;
@@ -243,7 +272,17 @@ export class AtlasEngine {
     cb: AtlasCallbacks = {},
   ) {
     this.canvas = canvas;
-    const ctx = canvas.getContext("2d", { alpha: false });
+    // GPU dot layer when available; the 2D canvas then only carries overlays
+    if (opts.glCanvas) {
+      this.gl = DotLayerGL.create(opts.glCanvas);
+      if (this.gl) {
+        this.glCanvas = opts.glCanvas;
+        this.gl.onLost = () => this.dropGL();
+      } else {
+        opts.glCanvas.style.display = "none";
+      }
+    }
+    const ctx = canvas.getContext("2d", { alpha: this.gl !== null });
     if (!ctx) throw new Error("2d context unavailable");
     this.ctx = ctx;
     this.cache = document.createElement("canvas");
@@ -269,6 +308,25 @@ export class AtlasEngine {
 
   setLand(land: LandSampler) {
     this.land = land;
+    if (this.gl && land.masks) {
+      try {
+        this.gl.setMasks(land.masks.world, land.masks.detail);
+      } catch {
+        this.dropGL();
+      }
+    }
+    this.invalidate();
+  }
+
+  /** Whether dots are being drawn on the GPU (for diagnostics). */
+  get usingGPU() {
+    return this.gl !== null;
+  }
+
+  /** GPU unavailable or lost: carry on with the Canvas2D renderer. */
+  private dropGL() {
+    this.gl = null;
+    if (this.glCanvas) this.glCanvas.style.display = "none";
     this.invalidate();
   }
 
@@ -299,6 +357,14 @@ export class AtlasEngine {
     }
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
+    if (this.gl && this.glCanvas) {
+      this.gl.resize(Math.round(w * dpr), Math.round(h * dpr));
+      this.glCanvas.style.width = `${w}px`;
+      this.glCanvas.style.height = `${h}px`;
+    }
+    this.pix = null;
+    this.pix32 = null;
+    this.sprites.clear();
     if (first || !this.flight) this.cam = first ? this.homeView() : this.clampCam(this.cam);
     this.invalidate();
   }
@@ -391,6 +457,7 @@ export class AtlasEngine {
     const before = this.unproject(ax, ay);
     const k = this.clampK(this.cam.k * factor);
     this.flight = null;
+    this.lastMove = performance.now();
     this.cam = this.clampCam({
       lng: before.lng - (ax - this.w / 2) / k,
       lat: before.lat + (ay - this.h / 2) / k,
@@ -404,13 +471,16 @@ export class AtlasEngine {
     this.flyTo({ ...this.cam, k: this.cam.k * factor }, 0.45);
   }
 
+  private atEdge = false;
+
   panBy(dx: number, dy: number) {
+    this.lastMove = performance.now();
     this.flight = null;
-    this.cam = this.clampCam({
-      ...this.cam,
-      lng: this.cam.lng - dx / this.cam.k,
-      lat: this.cam.lat + dy / this.cam.k,
-    });
+    const want = { ...this.cam, lng: this.cam.lng - dx / this.cam.k, lat: this.cam.lat + dy / this.cam.k };
+    this.cam = this.clampCam(want);
+    const blocked = Math.abs(want.lng - this.cam.lng) + Math.abs(want.lat - this.cam.lat) > 1e-6;
+    if (blocked && !this.atEdge) this.cb.onEdge?.();
+    this.atEdge = blocked;
     this.invalidate();
   }
 
@@ -506,7 +576,10 @@ export class AtlasEngine {
 
   destroy() {
     this.stop();
+    this.gl?.destroy();
+    this.gl = null;
     this.cache.width = this.cache.height = 0;
+    if (this.low) this.low.width = this.low.height = 0;
   }
 
   private kick() {
@@ -515,6 +588,7 @@ export class AtlasEngine {
 
   private invalidate() {
     this.fieldDirty = true;
+    this.cellsDirty = true;
     this.cacheDirty = true;
     this.kick();
   }
@@ -541,6 +615,7 @@ export class AtlasEngine {
     // ambient motion keeps the loop alive; with reduced motion we only
     // animate while something is actually changing
     const settling =
+      this.moving() ||
       this.flight !== null ||
       Math.abs(this.lensAmt - (this.pointer ? 1 : 0)) > 0.01 ||
       [...this.emphasis.values()].some((v) => v > 0.01 && v < 0.99);
@@ -574,8 +649,12 @@ export class AtlasEngine {
         k: Math.exp(logK),
       });
       this.fieldDirty = true;
+      this.cellsDirty = true;
       this.cacheDirty = true;
-      if (t >= 1) this.flight = null;
+      if (t >= 1) {
+        this.flight = null;
+        this.cb.onArrive?.();
+      }
     }
 
     const it = this.introT;
@@ -678,6 +757,10 @@ export class AtlasEngine {
   private draw() {
     const theme = this.theme;
     if (!theme || !this.w) return;
+    if (this.gl?.ok && this.gl.hasMasks) {
+      this.drawGPU(theme);
+      return;
+    }
     if (this.fieldDirty) this.buildField();
     const ctx = this.ctx;
     const it = this.introT;
@@ -687,6 +770,26 @@ export class AtlasEngine {
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       this.drawDots(ctx, theme, it);
       this.cacheDirty = true;
+    } else if (this.cacheDirty && this.moving() && this.dpr > 1.01) {
+      // camera in motion: rasterise at 1x and let the compositor upscale with
+      // nearest-neighbour; detail returns the moment the camera settles
+      if (!this.low) {
+        this.low = document.createElement("canvas");
+        this.lowCtx = this.low.getContext("2d", { alpha: false });
+      }
+      const lw = Math.round(this.w);
+      const lh = Math.round(this.h);
+      if (this.low.width !== lw || this.low.height !== lh) {
+        this.low.width = lw;
+        this.low.height = lh;
+      }
+      this.drawDots(this.lowCtx!, theme, Infinity, 1);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(this.low, 0, 0, this.canvas.width, this.canvas.height);
+      ctx.imageSmoothingEnabled = true;
+      ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      this.drawPing(ctx, theme);
     } else {
       if (this.cacheDirty) {
         this.cacheCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
@@ -705,6 +808,85 @@ export class AtlasEngine {
     this.drawLabels(ctx, theme);
   }
 
+  /** Camera is flying or was dragged/zoomed in the last few frames. */
+  private moving() {
+    return this.flight !== null || performance.now() - this.lastMove < 140;
+  }
+
+  /** Grid geometry shared by both renderers. */
+  private grid() {
+    const pitch = (this.w < 480 ? 5 : this.w > 1300 ? 7 : 6) + this.pitchBoost;
+    const k = this.cam.k;
+    const ox = (((this.w / 2 - this.cam.lng * k) % pitch) + pitch) % pitch;
+    const oy = (((this.h / 2 + this.cam.lat * k) % pitch) + pitch) % pitch;
+    const cols = Math.floor((this.w - ox) / pitch) + 1;
+    const rows = Math.floor((this.h - oy) / pitch) + 1;
+    return { pitch, ox, oy, cols, rows };
+  }
+
+  /** GPU path: dots, intro, ping and lens in shaders; overlays on the 2D canvas. */
+  private drawGPU(theme: AtlasTheme) {
+    const gl = this.gl!;
+    const g = this.grid();
+    const home = this.project(this.home.lng, this.home.lat);
+    const far = Math.max(
+      Math.hypot(home.x, home.y),
+      Math.hypot(this.w - home.x, home.y),
+      Math.hypot(home.x, this.h - home.y),
+      Math.hypot(this.w - home.x, this.h - home.y),
+    );
+    const it = this.introT;
+    const intro =
+      it < 0
+        ? { on: true, front: -1 }
+        : it !== Infinity && it < RIPPLE + 0.4
+          ? { on: true, front: (it / RIPPLE) * far }
+          : { on: false, front: 0 };
+
+    let ping = { r: 0, band: 1, strength: 0 };
+    if (!intro.on && !this.reduced && this.focusAmt <= 0.6) {
+      const ph = ((this.clock - Math.max(0, this.introAt)) % 7) / 7;
+      const fade = Math.pow(1 - ph, 1.5) * (1 - this.focusAmt * 0.7);
+      ping = { r: easeOut(ph) * far, band: 46, strength: fade * (theme.dark ? 0.32 : 0.3) };
+    }
+    const p = this.pointer;
+    const lens =
+      this.opts.interactive && p && this.lensAmt > 0.01
+        ? { x: p.x, y: p.y, r: LENS_R, amt: this.lensAmt }
+        : { x: 0, y: 0, r: 1, amt: 0 };
+
+    gl.render({
+      w: this.w,
+      h: this.h,
+      dpr: this.dpr,
+      cam: this.cam,
+      ...g,
+      base: g.pitch * 0.38,
+      bg: theme.bg,
+      land: theme.land,
+      accent: theme.accent,
+      landAlpha: theme.landAlpha,
+      heatAlpha: theme.heatAlpha,
+      heatMix: theme.dark ? 0.75 : 0.9,
+      home,
+      places: this.places.map((q) => this.project(q.lng, q.lat)),
+      sigma: clamp(this.cam.k * 0.9, 8, 18),
+      intro,
+      ping,
+      lens,
+      cellsDirty: this.cellsDirty,
+    });
+    this.cellsDirty = false;
+
+    const ctx = this.ctx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.drawRoutes(ctx, theme);
+    this.drawMarkers(ctx, theme);
+    this.drawLabels(ctx, theme);
+  }
+
   private dotStyles(theme: AtlasTheme) {
     if (this.styleCache?.theme === theme) return this.styleCache.styles;
     const levels = 6;
@@ -717,40 +899,89 @@ export class AtlasEngine {
     return styles;
   }
 
-  /** Background + land dots. `t` = seconds into the intro (Infinity = settled). */
-  private drawDots(ctx: CanvasRenderingContext2D, theme: AtlasTheme, t: number) {
-    ctx.fillStyle = rgba(theme.bg, 1);
-    ctx.fillRect(0, 0, this.w, this.h);
+  /**
+   * Opaque colours for every (heat level, alpha step), pre-blended over the
+   * background so dots can be written straight into a pixel buffer.
+   */
+  private pixColors(theme: AtlasTheme) {
+    if (this.pixTable?.theme === theme) return this.pixTable.table;
+    const levels = 6;
+    const steps = ALPHA_STEPS + 1;
+    const table = new Uint32Array(levels * steps);
+    for (let lv = 0; lv < levels; lv++) {
+      const h = lv / (levels - 1);
+      const c = mix(theme.land, theme.accent, h * (theme.dark ? 0.75 : 0.9));
+      const a = lerp(theme.landAlpha, theme.heatAlpha, h);
+      for (let st = 0; st < steps; st++) {
+        const k = a * (st / ALPHA_STEPS);
+        const r = Math.round(lerp(theme.bg[0], c[0], k));
+        const g = Math.round(lerp(theme.bg[1], c[1], k));
+        const b = Math.round(lerp(theme.bg[2], c[2], k));
+        table[lv * steps + st] = ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0;
+      }
+    }
+    this.pixTable = { theme, table };
+    return table;
+  }
+
+  /**
+   * Background + land dots, rasterised by hand: every dot is a few native
+   * `Uint32Array.fill` calls into one buffer, uploaded with a single
+   * putImageData. No path rasterisation, no per-dot canvas state, and every
+   * square lands exactly on device pixels.
+   * `t` = seconds into the intro (Infinity = settled).
+   */
+  private drawDots(ctx: CanvasRenderingContext2D, theme: AtlasTheme, t: number, scale = this.dpr) {
+    const W = Math.round(this.w * scale);
+    const H = Math.round(this.h * scale);
+    if (!this.pix || this.pix.width !== W || this.pix.height !== H) {
+      this.pix = new ImageData(W, H);
+      this.pix32 = new Uint32Array(this.pix.data.buffer);
+    }
+    const buf = this.pix32!;
+    const table = this.pixColors(theme);
+    const steps = ALPHA_STEPS + 1;
+    buf.fill(table[0]); // alpha step 0 == background
+
     const f = this.field;
-    if (!f || t < 0) return;
-    const size = f.pitch * 0.38;
-    const styles = this.dotStyles(theme);
-    const top = styles.length - 1;
-    const live = t !== Infinity;
-    const front = (t / RIPPLE) * f.far;
-    let last = -1;
-    for (let i = 0; i < f.count; i++) {
-      let s = size * (1 + f.heat[i] * 0.3);
-      let lv = Math.round(f.heat[i] * top);
-      if (live) {
-        const behind = front - f.dist[i];
-        if (behind <= 0) continue;
-        const a = clamp(behind / 90, 0, 1);
-        ctx.globalAlpha = a;
-        // a soft swell rides the wavefront
-        const crest = clamp(1 - behind / 60, 0, 1);
-        if (crest > 0) {
-          lv = Math.max(lv, Math.round(crest * top * 0.8));
-          s *= 1 + crest * 0.5;
+    if (f && t >= 0) {
+      const dpr = scale;
+      const base = f.pitch * 0.38;
+      const top = 5;
+      const live = t !== Infinity;
+      const front = (t / RIPPLE) * f.far;
+      for (let i = 0; i < f.count; i++) {
+        let s = base * (1 + f.heat[i] * 0.3);
+        let lv = Math.round(f.heat[i] * top);
+        let st = ALPHA_STEPS;
+        if (live) {
+          const behind = front - f.dist[i];
+          if (behind <= 0) continue;
+          st = Math.max(1, Math.round(clamp(behind / 90, 0, 1) * ALPHA_STEPS));
+          const crest = clamp(1 - behind / 60, 0, 1);
+          if (crest > 0) {
+            lv = Math.max(lv, Math.round(crest * top * 0.8));
+            s *= 1 + crest * 0.5;
+          }
+        }
+        const sd = Math.max(1, Math.round(s * dpr));
+        let x0 = Math.round(f.xs[i] * dpr - sd / 2);
+        let y0 = Math.round(f.ys[i] * dpr - sd / 2);
+        let x1 = x0 + sd;
+        let y1 = y0 + sd;
+        if (x0 < 0) x0 = 0;
+        if (y0 < 0) y0 = 0;
+        if (x1 > W) x1 = W;
+        if (y1 > H) y1 = H;
+        if (x0 >= x1 || y0 >= y1) continue;
+        const color = table[lv * steps + st];
+        for (let y = y0; y < y1; y++) {
+          const row = y * W;
+          buf.fill(color, row + x0, row + x1);
         }
       }
-      if (lv !== last) {
-        ctx.fillStyle = styles[lv];
-        last = lv;
-      }
-      ctx.fillRect(f.xs[i] - s / 2, f.ys[i] - s / 2, s, s);
     }
-    ctx.globalAlpha = 1;
+    ctx.putImageData(this.pix!, 0, 0);
   }
 
   /** A slow, faint breath that rolls out from home every few seconds. */
@@ -944,13 +1175,9 @@ export class AtlasEngine {
       }
 
       const glowR = (p.home ? 14 : 9 + em * 6) * pop;
-      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
-      g.addColorStop(0, rgba(theme.accent, (theme.dark ? 0.4 : 0.22) * rv * dim));
-      g.addColorStop(1, rgba(theme.accent, 0));
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.globalAlpha = rv * dim;
+      ctx.drawImage(this.glowSprite(theme), s.x - glowR, s.y - glowR, glowR * 2, glowR * 2);
+      ctx.globalAlpha = 1;
 
       const core = ((p.home ? 3.6 : 2.6) + em * 1.4) * pop;
       ctx.save();
@@ -965,6 +1192,60 @@ export class AtlasEngine {
     };
     this.routes.forEach((p, i) => drawOne(p, i));
     drawOne(this.home, -1);
+  }
+
+  private checkSprites(theme: AtlasTheme) {
+    const key = `${theme.dark}|${theme.bg.join()}|${theme.accent.join()}|${this.dpr}`;
+    if (key !== this.spriteKey) {
+      this.sprites.clear();
+      this.spriteKey = key;
+    }
+  }
+
+  /** Soft accent glow, rendered once per theme and scaled with drawImage. */
+  private glowSprite(theme: AtlasTheme) {
+    this.checkSprites(theme);
+    let c = this.sprites.get("glow");
+    if (!c) {
+      c = document.createElement("canvas");
+      c.width = c.height = 64;
+      const g = c.getContext("2d")!;
+      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, rgba(theme.accent, theme.dark ? 0.4 : 0.22));
+      grad.addColorStop(1, rgba(theme.accent, 0));
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 64, 64);
+      this.sprites.set("glow", c);
+    }
+    return c;
+  }
+
+  /** A place name with its halo, rasterised once per (name, size, tone). */
+  private labelSprite(theme: AtlasTheme, name: string, size: number, tone: number, home: boolean, width: number) {
+    this.checkSprites(theme);
+    const key = `l|${name}|${size}|${tone}|${home}`;
+    let c = this.sprites.get(key);
+    if (!c) {
+      const pad = 4;
+      const dpr = this.dpr;
+      c = document.createElement("canvas");
+      c.width = Math.ceil((width + pad * 2) * dpr);
+      c.height = Math.ceil((size + 2 + pad * 2) * dpr);
+      const g = c.getContext("2d")!;
+      g.scale(dpr, dpr);
+      g.font = `${size}px ${theme.serif}`;
+      g.textBaseline = "middle";
+      g.lineJoin = "round";
+      g.strokeStyle = rgba(theme.bg, 0.92);
+      g.lineWidth = 4;
+      const y = pad + (size + 2) / 2;
+      g.strokeText(name, pad, y);
+      const color = mix(mix(theme.text, theme.bg, home ? 0.05 : 0.22), theme.accent, (tone / 3) * 0.6);
+      g.fillStyle = rgba(color, 1);
+      g.fillText(name, pad, y);
+      this.sprites.set(key, c);
+    }
+    return c;
   }
 
   /** Serif place names with a soft halo; greedy placement, no overlaps. */
@@ -990,10 +1271,10 @@ export class AtlasEngine {
       const em = this.emphasis.get(p.id) ?? 0;
       if (shown >= this.opts.maxLabels && em < 0.05) continue;
       const size = p.home || p.now || em > 0.5 ? 16 : 14;
-      ctx.font = `${size}px ${theme.serif}`;
       const key = `${size}|${p.name}`;
       let tw = this.textWidth.get(key);
       if (tw === undefined) {
+        ctx.font = `${size}px ${theme.serif}`;
         tw = ctx.measureText(p.name).width;
         this.textWidth.set(key, tw);
       }
@@ -1022,13 +1303,10 @@ export class AtlasEngine {
       shown++;
 
       const dim = p.home ? 1 : 1 - this.focusAmt * 0.6 * (1 - em);
-      const color = mix(mix(theme.text, theme.bg, p.home ? 0.05 : 0.22), theme.accent, em * 0.6);
+      const tone = Math.round(em * 3);
+      const sprite = this.labelSprite(theme, p.name, size, tone, !!p.home, width);
       ctx.globalAlpha = rv * dim;
-      ctx.strokeStyle = rgba(theme.bg, 0.92);
-      ctx.lineWidth = 4;
-      ctx.strokeText(p.name, spot.x, spot.y + bh / 2);
-      ctx.fillStyle = rgba(color, 1);
-      ctx.fillText(p.name, spot.x, spot.y + bh / 2);
+      ctx.drawImage(sprite, spot.x - 4, spot.y - 4, sprite.width / this.dpr, sprite.height / this.dpr);
     }
     ctx.globalAlpha = 1;
     ctx.restore();
