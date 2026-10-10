@@ -12,6 +12,7 @@ import {
   BookOpen,
   Library,
   Mail,
+  Earth,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { AudioToggle } from "./audio-toggle";
@@ -25,6 +26,7 @@ const nav = [
   { label: "Open Source", href: "/#open-source", icon: GitMerge },
   { label: "Blogs",       href: "/#blogs",       icon: BookOpen },
   { label: "Stories",     href: "/#stories",     icon: Library },
+  { label: "Travels",     href: "/#travels",     icon: Earth },
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
 
