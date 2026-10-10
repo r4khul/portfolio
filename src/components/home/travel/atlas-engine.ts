@@ -859,18 +859,23 @@ export class AtlasEngine {
       const segs = 48;
       const end = Math.max(1, Math.round(segs * prog));
 
-      // base route
-      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.42 : 0.5, 0.9, hl));
-      ctx.lineWidth = lerp(1.1, 1.8, hl);
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
+      // base route: soft glow underlay + crisp dashed flight path
+      const route = new Path2D();
+      route.moveTo(a.x, a.y);
       for (let s = 1; s <= end; s++) {
         const q = this.bez(a, c, b, s / segs);
-        ctx.lineTo(q.x, q.y);
+        route.lineTo(q.x, q.y);
       }
-      ctx.stroke();
+      ctx.strokeStyle = rgba(theme.accent, lerp(0.1, 0.22, hl));
+      ctx.lineWidth = lerp(3, 5, hl);
+      ctx.stroke(route);
+      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.7 : 0.75, 1, hl));
+      ctx.lineWidth = lerp(1.25, 1.8, hl);
+      ctx.setLineDash([4, 4]);
+      ctx.lineDashOffset = this.reduced ? 0 : -this.clock * 6;
+      ctx.stroke(route);
       ctx.setLineDash([]);
+      ctx.lineDashOffset = 0;
 
       // drawing head during intro
       if (prog < 1) {
