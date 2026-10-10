@@ -95,8 +95,6 @@ export const ThemeToggle = memo(({
 
       // Wait for animation to finish
       await animation.finished;
-      // the reveal lands: a soft settle under the finger
-      haptic("land");
     } finally {
       // Re-enable transitions
       document.documentElement.classList.remove("no-transitions");

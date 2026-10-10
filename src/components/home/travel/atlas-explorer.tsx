@@ -207,8 +207,8 @@ export function AtlasExplorer() {
         const d = Math.hypot(a.x - b.x, a.y - b.y);
         if (gesture.current.pinch > 0) {
           engine.zoomBy(d / gesture.current.pinch, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
-          // detents every ~35% of zoom, felt like the clicks of a dial
-          const detent = Math.floor(Math.log(engine.cam.k) / Math.log(1.35));
+          // detents every ~60% of zoom: a few soft clicks of a dial, not a ratchet
+          const detent = Math.floor(Math.log(engine.cam.k) / Math.log(1.6));
           if (detent !== gesture.current.detent) {
             gesture.current.detent = detent;
             haptic("notch");
