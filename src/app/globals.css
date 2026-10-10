@@ -472,6 +472,30 @@ pre .hljs-meta          { color: #e36209; }
   overflow: hidden;
 }
 
+/* colour: each glyph carries its city's palette */
+.glyph--waves .glyph-sun { stroke: #f59e0b; }
+.glyph--waves .glyph-wave { stroke: #3b82f6; }
+.dark .glyph--waves .glyph-wave { stroke: #87bbea; }
+.glyph--palm .glyph-trunk { stroke: #b45309; }
+.dark .glyph--palm .glyph-trunk { stroke: #d6a25e; }
+.glyph--palm .glyph-fronds { stroke: #16a34a; }
+.dark .glyph--palm .glyph-fronds { stroke: #4ade80; }
+.glyph--palm .glyph-ground { stroke: #3b82f6; }
+.dark .glyph--palm .glyph-ground { stroke: #87bbea; }
+
+/* idle loops (in-view only) run slower and softer than on hover */
+.glyph-idle .glyph-wave { animation: glyph-wave 2.2s linear infinite; }
+.glyph-idle .glyph-wave--slow { animation-duration: 3.6s; }
+.glyph-idle .glyph-sun { animation: glyph-sunbob 4s ease-in-out infinite; }
+.glyph-idle .glyph-fronds { animation: glyph-sway 3.2s ease-in-out infinite; }
+.glyph-idle .glyph-lamp--red { animation: glyph-lamp-red 3s steps(1, end) infinite; }
+.glyph-idle .glyph-lamp--amber { fill: #f59e0b; animation: glyph-lamp-amber 3s steps(1, end) infinite; }
+.glyph-idle .glyph-lamp--green { fill: #22c55e; animation: glyph-lamp-green 3s steps(1, end) infinite; }
+@keyframes glyph-sunbob {
+  0%, 100% { transform: translateY(1.2px); }
+  50% { transform: translateY(-1.2px); }
+}
+
 /* Chennai - sun climbs, sea rolls */
 .glyph-sun {
   transform: translateY(1.2px);

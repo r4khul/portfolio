@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import Link from "next/link";
 
 /**
@@ -44,8 +44,8 @@ function Waves() {
 function Palm() {
   return (
     <svg viewBox="0 0 16 16" className="glyph glyph--palm" aria-hidden>
-      <path d="M8.2 15c-.5-2.9-.3-5.8 1-8.3" {...stroke} />
-      <path d="M5 15h6.5" {...stroke} strokeOpacity={0.55} />
+      <path className="glyph-trunk" d="M8.2 15c-.5-2.9-.3-5.8 1-8.3" {...stroke} />
+      <path className="glyph-ground" d="M5 15h6.5" {...stroke} strokeOpacity={0.55} />
       <g className="glyph-fronds">
         <path d="M9.2 6.7C7.8 5.1 5.6 4.7 3.8 5.4" {...stroke} />
         <path d="M9.2 6.7c.3-2 1.8-3.4 3.9-3.8" {...stroke} />
@@ -134,9 +134,34 @@ function TokenBody({ id, children }: { id: string; children: ReactNode }) {
   );
 }
 
-/** Inline city that links to it on /travels. */
-export function CityLink({ id, children, onClick }: { id: string; children: ReactNode; onClick?: () => void }) {
+/** Adds `glyph-idle` only while the element is on screen, so idle loops cost nothing off-screen. */
+export function useIdleWhileVisible<T extends HTMLElement>(ref: RefObject<T | null>, enabled = true) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled || !el) return;
+    const io = new IntersectionObserver(([e]) => el.classList.toggle("glyph-idle", e.isIntersecting));
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      el.classList.remove("glyph-idle");
+    };
+  }, [ref, enabled]);
+}
+
+/** Inline city that links to it on /travels. `live` loops the glyph gently while in view. */
+export function CityLink({
+  id,
+  children,
+  onClick,
+  live = false,
+}: {
+  id: string;
+  children: ReactNode;
+  onClick?: () => void;
+  live?: boolean;
+}) {
   const ref = useTouchReveal<HTMLAnchorElement>();
+  useIdleWhileVisible(ref, live);
   return (
     <Link ref={ref} href={`/travels?place=${id}`} onClick={onClick} className={tokenClass}>
       <TokenBody id={id}>{children}</TokenBody>

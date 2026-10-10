@@ -7,7 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { nowPlace, places } from "@/data/travel";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { useAtlas } from "./use-atlas";
-import { CityGlyph } from "./city-glyphs";
+import { CityGlyph, useIdleWhileVisible } from "./city-glyphs";
 
 const stateCount = new Set(places.map((p) => p.state)).size;
 
@@ -18,6 +18,8 @@ const stateCount = new Set(places.map((p) => p.state)).size;
 export function AtlasPreview() {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
+  useIdleWhileVisible(pillRef);
   const { playClick } = useAudioFeedback();
   const { ready, failed } = useAtlas({
     stageRef,
@@ -47,7 +49,7 @@ export function AtlasPreview() {
         />
         {/* live status, same family as the "Building @ Ente" badge */}
         {nowPlace && (
-          <div className="glyph-live pointer-events-none absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-edge-strong bg-background/75 py-1 pr-2.5 pl-2 font-mono text-[10px] tracking-widest text-muted uppercase backdrop-blur-md">
+          <div ref={pillRef} className="pointer-events-none absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-edge-strong bg-background/90 py-1 pr-2.5 pl-2 font-mono text-[10px] tracking-widest text-muted uppercase">
             <span className="inline-flex size-3.5 text-[#2f80d1] dark:text-[#87bbea]">
               <CityGlyph id={nowPlace.id} />
             </span>
