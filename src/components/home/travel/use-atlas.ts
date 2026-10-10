@@ -17,23 +17,27 @@ type UseAtlasArgs = {
   onHover?: (id: string | null) => void;
   /** called once the engine exists, before the first frame (set insets here) */
   onReady?: (engine: AtlasEngine) => void;
+  /** fires once the first-view intro has settled */
+  onIntroDone?: () => void;
 };
 
 /**
  * Owns the canvas engine lifecycle: sizing, theme sync, land loading,
  * on-screen-only rendering and the first-view intro.
  */
-export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: UseAtlasArgs) {
+export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onIntroDone }: UseAtlasArgs) {
   const engineRef = useRef<AtlasEngine | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const reduce = useReducedMotion();
   const hoverRef = useRef(onHover);
   const readyRef = useRef(onReady);
+  const introRef = useRef(onIntroDone);
 
   useEffect(() => {
     hoverRef.current = onHover;
     readyRef.current = onReady;
+    introRef.current = onIntroDone;
   });
 
   useEffect(() => {
@@ -53,6 +57,7 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: Use
     }));
     const engine = new AtlasEngine(canvas, pins, { lowEnd, ...options }, {
       onHover: (id) => hoverRef.current?.(id),
+      onIntroDone: () => introRef.current?.(),
     });
     engineRef.current = engine;
     engine.setTheme(readTheme(stage));

@@ -9,6 +9,8 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { haversineKm, type AtlasEngine } from "./atlas-engine";
 import { useAtlas, warmAtlas } from "./use-atlas";
+import { CityButton } from "./city-glyphs";
+import { ScrollHint } from "./scroll-hint";
 
 // start fetching + decoding the land as soon as this chunk loads
 warmAtlas();
@@ -25,6 +27,9 @@ const groups = (() => {
       a.state === home.state ? -1 : b.state === home.state ? 1 : b.list.length - a.list.length || a.state.localeCompare(b.state),
     );
 })();
+
+const NATIVE_ID = nativePlace?.id ?? "";
+const NOW_ID = nowPlace?.id ?? "";
 
 const ACCENT_TEXT = "text-[#2f80d1] dark:text-[#87bbea]";
 
@@ -69,6 +74,7 @@ export function AtlasExplorer() {
     options: { interactive: true },
     onHover: setHovered,
     onReady: applyInsets,
+    onIntroDone: () => openFromUrl(),
   });
 
   // keep the resting framing honest when the panel or viewport changes size
@@ -115,6 +121,18 @@ export function AtlasExplorer() {
     },
     [engineRef, playClick],
   );
+
+  const peekAt = useCallback((id: string | null) => engineRef.current?.setHovered(id), [engineRef]);
+
+  // /travels?place=bangalore opens straight onto that place once the intro settles
+  const openFromUrl = useCallback(() => {
+    const id = new URLSearchParams(window.location.search).get("place");
+    const e = engineRef.current;
+    if (!id || !e || !places.some((p) => p.id === id)) return;
+    setSelected(id);
+    const cam = e.focusView(id);
+    if (cam) e.flyTo(cam, 1.5);
+  }, [engineRef]);
 
   const recenter = useCallback(() => {
     const e = engineRef.current;
@@ -302,11 +320,37 @@ export function AtlasExplorer() {
                 <h1 className="font-serif text-[40px] leading-[0.95] tracking-tight min-[900px]:text-[52px]">
                   Places I&apos;ve been
                 </h1>
-                <p className="mt-3 max-w-[38ch] text-[14px] leading-relaxed text-muted">
-                  Born and raised in {home.name}
-                  {nativePlace ? <>, with roots in {nativePlace.name}</> : null}
-                  {nowPlace ? <>, working out of {nowPlace.name} for now</> : null}. Every line starts at
-                  home.
+                <p className="mt-3.5 max-w-[40ch] text-[14.5px] leading-[1.75] text-muted">
+                  Born and raised in{" "}
+                  <CityButton id={home.id} onClick={() => select(home.id)} onHover={(on) => peekAt(on ? home.id : null)}>
+                    {home.name}
+                  </CityButton>
+                  {nativePlace ? (
+                    <>
+                      , roots in{" "}
+                      <CityButton
+                        id={nativePlace.id}
+                        onClick={() => select(NATIVE_ID)}
+                        onHover={(on) => peekAt(on ? NATIVE_ID : null)}
+                      >
+                        {nativePlace.name}
+                      </CityButton>
+                    </>
+                  ) : null}
+                  {nowPlace ? (
+                    <>
+                      , and working out of{" "}
+                      <CityButton
+                        id={nowPlace.id}
+                        onClick={() => select(NOW_ID)}
+                        onHover={(on) => peekAt(on ? NOW_ID : null)}
+                      >
+                        {nowPlace.name}
+                      </CityButton>{" "}
+                      for now
+                    </>
+                  ) : null}
+                  . Every line starts at home.
                 </p>
                 <button
                   type="button"
@@ -335,7 +379,7 @@ export function AtlasExplorer() {
                 }`}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="max-h-[42vh] overflow-y-auto overscroll-contain pt-2 pb-2 [mask-image:linear-gradient(to_bottom,transparent,black_12px,black_calc(100%-20px),transparent)] [scrollbar-width:none] min-[900px]:max-h-[46vh]">
+                  <ScrollHint className="max-h-[42vh] pt-2 pr-4 pb-2 min-[900px]:max-h-[46vh]">
                     {groups.map((g) => (
                       <section key={g.state} className="py-2.5">
                         <h2 className="mb-1.5 flex items-baseline justify-between font-mono text-[10.5px] tracking-widest text-faint uppercase">
@@ -366,7 +410,7 @@ export function AtlasExplorer() {
                         </ul>
                       </section>
                     ))}
-                  </div>
+                  </ScrollHint>
                 </div>
               </div>
             </motion.div>
