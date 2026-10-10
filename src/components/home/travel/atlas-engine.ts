@@ -1,11 +1,10 @@
 /**
  * Atlas engine: a hand-rolled, dependency-free dot-matrix map renderer.
  *
- * The world is sampled from two grayscale land masks (see
- * scripts/generate_atlas_masks.py) onto a grid of tiny square "pixels" that
- * share the visual language of the GitHub contribution graph. Everything
- * else (graticule, routes, markers, labels, the cursor lens) is drawn on top
- * in the same canvas, so the whole map is one compositor layer.
+ * Land is sampled from two grayscale masks (see scripts/generate_atlas_masks.py)
+ * onto a world-anchored grid of tiny squares, the same pixel language as the
+ * contribution graph. Routes, markers and labels are drawn on top in the same
+ * canvas, so the whole map is a single compositor layer.
  *
  * Projection: equirectangular. Camera: centre (lng, lat) + k (px per degree).
  */
@@ -21,6 +20,7 @@ export type AtlasPlace = {
 };
 
 export type Camera = { lng: number; lat: number; k: number };
+export type Insets = { top: number; right: number; bottom: number; left: number };
 
 export type AtlasTheme = {
   bg: RGB;
@@ -28,9 +28,20 @@ export type AtlasTheme = {
   landAlpha: number;
   accent: RGB;
   text: RGB;
-  faint: RGB;
   dark: boolean;
-  mono: string;
+  serif: string;
+};
+
+export type AtlasOptions = {
+  /** cursor lens + hover hit-testing */
+  interactive?: boolean;
+  /** cap on simultaneously visible place names (home always wins) */
+  maxLabels?: number;
+};
+
+export type AtlasCallbacks = {
+  onHover?: (id: string | null) => void;
+  onIntroDone?: () => void;
 };
 
 type Mask = {
@@ -44,43 +55,29 @@ type Mask = {
 };
 
 type Field = {
-  /** screen positions of land dots (css px) */
   xs: Float32Array;
   ys: Float32Array;
-  /** heat 0..1: proximity to a visited place */
+  /** proximity to a visited place, 0..1 */
   heat: Float32Array;
-  /** reveal delay (s) for the intro ripple */
-  delay: Float32Array;
+  /** distance from home in px (drives the intro ripple and the ping) */
+  dist: Float32Array;
   count: number;
   pitch: number;
+  far: number;
 };
 
-type Flight = {
-  from: Camera;
-  to: Camera;
-  start: number;
-  duration: number;
-  bump: number;
-};
+type Flight = { from: Camera; to: Camera; start: number; duration: number; bump: number };
 
-export type AtlasCallbacks = {
-  onHover?: (id: string | null) => void;
-  onCursor?: (pos: { lng: number; lat: number } | null) => void;
-  onSelect?: (id: string | null) => void;
-  onCamera?: (cam: Camera) => void;
-};
-
-/* ───────────────────────────── math helpers ───────────────────────────── */
+/* ───────────────────────────── math ───────────────────────────── */
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const smooth = (t: number) => t * t * (3 - 2 * t);
-const easeInOut = (t: number) =>
-  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeOutBack = (t: number) => {
-  const c1 = 1.70158;
-  const c3 = c1 + 1;
-  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  const c1 = 1.4;
+  return 1 + (c1 + 1) * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
 };
 const mix = (a: RGB, b: RGB, t: number): RGB => [
   Math.round(lerp(a[0], b[0], t)),
@@ -101,14 +98,7 @@ export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; l
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-/** Formats a coordinate pair as `12.97°N 77.59°E`. */
-export function formatLngLat(lng: number, lat: number, digits = 2) {
-  const la = `${Math.abs(lat).toFixed(digits)}°${lat >= 0 ? "N" : "S"}`;
-  const lo = `${Math.abs(lng).toFixed(digits)}°${lng >= 0 ? "E" : "W"}`;
-  return `${la} ${lo}`;
-}
-
-/* ───────────────────────────── land masks ───────────────────────────── */
+/* ───────────────────────────── land ───────────────────────────── */
 
 async function loadMask(
   src: string,
@@ -127,11 +117,11 @@ async function loadMask(
   const px = ctx.getImageData(0, 0, c.width, c.height).data;
   const data = new Uint8Array(c.width * c.height);
   for (let i = 0, j = 0; i < data.length; i++, j += 4) data[i] = px[j];
-  c.width = c.height = 0; // release backing store
+  c.width = c.height = 0;
   return { w: img.naturalWidth, h: img.naturalHeight, west, south, east, north, data };
 }
 
-/** Bilinear coverage 0..1, or -1 when the point is outside the mask. */
+/** Bilinear coverage 0..1, or -1 outside the mask. */
 function sampleMask(m: Mask, lng: number, lat: number): number {
   if (lng < m.west || lng > m.east || lat < m.south || lat > m.north) return -1;
   const fx = ((lng - m.west) / (m.east - m.west)) * m.w - 0.5;
@@ -143,55 +133,48 @@ function sampleMask(m: Mask, lng: number, lat: number): number {
   const tx = clamp(fx - x0, 0, 1);
   const ty = clamp(fy - y0, 0, 1);
   const d = m.data;
-  const a = d[y0 * m.w + x0];
-  const b = d[y0 * m.w + x1];
-  const c = d[y1 * m.w + x0];
-  const e = d[y1 * m.w + x1];
-  return (lerp(lerp(a, b, tx), lerp(c, e, tx), ty)) / 255;
+  const top = lerp(d[y0 * m.w + x0], d[y0 * m.w + x1], tx);
+  const bot = lerp(d[y1 * m.w + x0], d[y1 * m.w + x1], tx);
+  return lerp(top, bot, ty) / 255;
 }
 
 export type LandSampler = (lng: number, lat: number) => number;
 
-let maskPromise: Promise<LandSampler> | null = null;
+let landPromise: Promise<LandSampler> | null = null;
 
-/** Loads (once per page) the world + South Asia detail masks. */
+/** Loads (once per page) the world mask + the high-detail South Asia patch. */
 export function loadLand(): Promise<LandSampler> {
-  if (!maskPromise) {
-    maskPromise = Promise.all([
+  if (!landPromise) {
+    landPromise = Promise.all([
       loadMask("/atlas/world.png", [-180, -90, 180, 90]),
       loadMask("/atlas/south-asia.png", [60, 0, 100, 40]),
     ]).then(([world, detail]) => {
-      // Fade from the detail mask into the world mask near the patch edge so
-      // there is no visible seam while panning.
-      const edge = 1.5;
+      const edge = 1.5; // degrees of cross-fade so the patch has no seam
       return (lng: number, lat: number) => {
         if (lat < -58 || lat > 84) return 0;
         lng = ((((lng + 180) % 360) + 360) % 360) - 180;
         const w = sampleMask(world, lng, lat);
         const d = sampleMask(detail, lng, lat);
         if (d < 0) return w;
-        const inset = Math.min(
-          lng - detail.west,
-          detail.east - lng,
-          lat - detail.south,
-          detail.north - lat,
-        );
+        const inset = Math.min(lng - detail.west, detail.east - lng, lat - detail.south, detail.north - lat);
         return lerp(w, d, clamp(inset / edge, 0, 1));
       };
     });
-    maskPromise.catch(() => {
-      maskPromise = null;
+    landPromise.catch(() => {
+      landPromise = null;
     });
   }
-  return maskPromise;
+  return landPromise;
 }
 
 /* ───────────────────────────── engine ───────────────────────────── */
 
-const INTRO_RIPPLE = 1.5; // s, wave from home to the far edge
-const ARC_DRAW = 0.9; // s per arc
-const ARC_STAGGER = 0.11; // s between arcs
-const LENS_R = 78; // px
+const RIPPLE = 1.4; // s for the reveal to cross the view
+const ARC_DRAW = 1.1; // s per route
+const ARC_STAGGER = 0.09; // s between routes
+const LENS_R = 70; // px
+const COMET_CYCLE = 6.5; // s between comets on the same route
+const COMET_TRAVEL = 2.4; // s a comet takes to arrive
 
 export class AtlasEngine {
   private canvas: HTMLCanvasElement;
@@ -200,7 +183,9 @@ export class AtlasEngine {
   private cacheCtx: CanvasRenderingContext2D;
 
   private places: AtlasPlace[];
+  private routes: AtlasPlace[];
   private home: AtlasPlace;
+  private opts: Required<AtlasOptions>;
   private cb: AtlasCallbacks;
   private land: LandSampler | null = null;
   private theme: AtlasTheme | null = null;
@@ -208,30 +193,37 @@ export class AtlasEngine {
   private w = 0;
   private h = 0;
   private dpr = 1;
+  private insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
 
-  cam: Camera = { lng: 20, lat: 14, k: 2 };
+  cam: Camera = { lng: 78, lat: 18, k: 10 };
   private flight: Flight | null = null;
   private field: Field | null = null;
   private fieldDirty = true;
   private cacheDirty = true;
 
   private pointer: { x: number; y: number } | null = null;
-  private lensAmt = 0; // eased 0..1
+  private lensAmt = 0;
   private hovered: string | null = null;
   private selected: string | null = null;
-  private hoverAmt = new Map<string, number>();
+  private emphasis = new Map<string, number>();
+  private focusAmt = 0; // 0..1, something is hovered/selected
 
   private raf = 0;
   private running = false;
   private last = 0;
   private clock = 0;
 
-  /** clock time the intro ripple / arcs started; -1 = not yet, Infinity = done */
-  private rippleAt = -1;
-  private arcsAt = -1;
+  /** clock time the intro started; -1 = waiting, Infinity = skipped */
+  private introAt = -1;
+  private introNotified = false;
   private reduced = false;
 
-  constructor(canvas: HTMLCanvasElement, places: AtlasPlace[], cb: AtlasCallbacks = {}) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    places: AtlasPlace[],
+    opts: AtlasOptions = {},
+    cb: AtlasCallbacks = {},
+  ) {
     this.canvas = canvas;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) throw new Error("2d context unavailable");
@@ -242,6 +234,8 @@ export class AtlasEngine {
     this.cacheCtx = cctx;
     this.places = places;
     this.home = places.find((p) => p.home) ?? places[0];
+    this.routes = places.filter((p) => p !== this.home);
+    this.opts = { interactive: opts.interactive ?? true, maxLabels: opts.maxLabels ?? 99 };
     this.cb = cb;
   }
 
@@ -262,9 +256,13 @@ export class AtlasEngine {
     this.reduced = reduced;
   }
 
+  setInsets(insets: Insets) {
+    this.insets = insets;
+  }
+
   resize(w: number, h: number, dpr: number) {
     if (w === this.w && h === this.h && dpr === this.dpr) return;
-    const prevW = this.w;
+    const first = this.w === 0;
     this.w = w;
     this.h = h;
     this.dpr = dpr;
@@ -274,49 +272,74 @@ export class AtlasEngine {
     }
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
-    // keep the same geographic framing across resizes
-    if (prevW > 0) this.cam = { ...this.cam, k: (this.cam.k * w) / prevW };
+    if (first || !this.flight) this.cam = first ? this.homeView() : this.clampCam(this.cam);
     this.invalidate();
   }
 
-  /* ── views ── */
-
-  /** Camera that fits a lng/lat box (with padding in px). */
-  fit(west: number, south: number, east: number, north: number, pad = 28): Camera {
-    const k = Math.min(
-      (this.w - pad * 2) / Math.max(east - west, 0.01),
-      (this.h - pad * 2) / Math.max(north - south, 0.01),
-    );
-    return { lng: (west + east) / 2, lat: (south + north) / 2, k: this.clampK(k) };
+  get size() {
+    return { w: this.w, h: this.h };
   }
 
-  worldView(): Camera {
-    const k = Math.max(this.w / 360, this.h / 172);
-    return { lng: this.w / k >= 359 ? 0 : 22, lat: 16, k };
-  }
+  /* ── camera ── */
 
-  placesView(): Camera {
+  /** The resting view: every place in frame, inside the insets. */
+  homeView(): Camera {
     const lngs = this.places.map((p) => p.lng);
     const lats = this.places.map((p) => p.lat);
-    const padLng = 3.5;
-    const padLat = 2.5;
+    const pad = 2.2;
     return this.fit(
-      Math.min(...lngs) - padLng,
-      Math.min(...lats) - padLat,
-      Math.max(...lngs) + padLng,
-      Math.max(...lats) + padLat,
+      Math.min(...lngs) - pad,
+      Math.min(...lats) - pad,
+      Math.max(...lngs) + pad,
+      Math.max(...lats) + pad,
     );
   }
 
+  /** Close-up on one place. */
   focusView(id: string): Camera | null {
     const p = this.places.find((q) => q.id === id);
     if (!p) return null;
-    const span = 7.5; // degrees of latitude in view
-    return { lng: p.lng, lat: p.lat, k: this.clampK(this.h / span) };
+    const i = this.insets;
+    const span = 6; // degrees of latitude visible in the free area
+    const k = this.clampK((this.h - i.top - i.bottom) / span);
+    return this.centerOn(p.lng, p.lat, k);
+  }
+
+  private fit(west: number, south: number, east: number, north: number): Camera {
+    const i = this.insets;
+    const aw = Math.max(this.w - i.left - i.right, 40);
+    const ah = Math.max(this.h - i.top - i.bottom, 40);
+    const k = this.clampK(Math.min(aw / (east - west), ah / (north - south)));
+    return this.centerOn((west + east) / 2, (south + north) / 2, k);
+  }
+
+  /** Camera that puts (lng, lat) in the centre of the inset area. */
+  private centerOn(lng: number, lat: number, k: number): Camera {
+    const i = this.insets;
+    const cx = i.left + (this.w - i.left - i.right) / 2;
+    const cy = i.top + (this.h - i.top - i.bottom) / 2;
+    return { lng: lng - (cx - this.w / 2) / k, lat: lat + (cy - this.h / 2) / k, k };
   }
 
   private clampK(k: number) {
-    return clamp(k, Math.max(this.w / 360, 0.5), 220);
+    return clamp(k, Math.max(this.w / 300, 0.8), 260);
+  }
+
+  private clampCam(c: Camera): Camera {
+    const k = this.clampK(c.k);
+    const halfW = this.w / 2 / k;
+    const halfH = this.h / 2 / k;
+    const lng = halfW >= 180 ? 0 : clamp(c.lng, -180 + halfW, 180 - halfW);
+    const lat = halfH >= 70 ? 12 : clamp(c.lat, -58 + halfH, 82 - halfH);
+    return { lng, lat, k };
+  }
+
+  /** True when the camera has drifted away from the resting view. */
+  isAway() {
+    const hv = this.homeView();
+    const dx = Math.abs(hv.lng - this.cam.lng) * hv.k;
+    const dy = Math.abs(hv.lat - this.cam.lat) * hv.k;
+    return dx + dy > 24 || Math.abs(Math.log(this.cam.k / hv.k)) > 0.15;
   }
 
   jumpTo(cam: Camera) {
@@ -325,15 +348,13 @@ export class AtlasEngine {
     this.invalidate();
   }
 
-  flyTo(cam: Camera, duration = 1.6) {
+  flyTo(cam: Camera, duration = 1.4) {
     const to = this.clampCam(cam);
     if (this.reduced) return this.jumpTo(to);
     const from = { ...this.cam };
-    // how far the view travels, in screen widths at the wider zoom
     const kMin = Math.min(from.k, to.k);
     const travel = Math.hypot((to.lng - from.lng) * kMin, (to.lat - from.lat) * kMin) / this.w;
-    const bump = clamp(travel * 0.9, 0, 1.4);
-    this.flight = { from, to, start: this.clock, duration, bump };
+    this.flight = { from, to, start: this.clock, duration, bump: clamp(travel * 0.8, 0, 1.1) };
     this.kick();
   }
 
@@ -342,13 +363,18 @@ export class AtlasEngine {
     const ay = anchor?.y ?? this.h / 2;
     const before = this.unproject(ax, ay);
     const k = this.clampK(this.cam.k * factor);
-    const cam = { ...this.cam, k };
-    // keep the anchor fixed under the cursor
-    cam.lng = before.lng - (ax - this.w / 2) / k;
-    cam.lat = before.lat + (ay - this.h / 2) / k;
     this.flight = null;
-    this.cam = this.clampCam(cam);
+    this.cam = this.clampCam({
+      lng: before.lng - (ax - this.w / 2) / k,
+      lat: before.lat + (ay - this.h / 2) / k,
+      k,
+    });
     this.invalidate();
+  }
+
+  /** Animated zoom for buttons. */
+  zoomStep(factor: number) {
+    this.flyTo({ ...this.cam, k: this.cam.k * factor }, 0.45);
   }
 
   panBy(dx: number, dy: number) {
@@ -361,51 +387,35 @@ export class AtlasEngine {
     this.invalidate();
   }
 
-  private clampCam(c: Camera): Camera {
-    const k = this.clampK(c.k);
-    const halfW = this.w / 2 / k;
-    const halfH = this.h / 2 / k;
-    const lng = halfW >= 180 ? 0 : clamp(c.lng, -180 + halfW, 180 - halfW);
-    const lat = halfH >= 75 ? 14 : clamp(c.lat, -60 + halfH, 85 - halfH);
-    return { lng, lat, k };
-  }
-
   /* ── intro ── */
 
   playIntro() {
+    this.jumpTo(this.homeView());
     if (this.reduced) {
-      this.rippleAt = Infinity;
-      this.arcsAt = Infinity;
-      this.jumpTo(this.placesView());
+      this.introAt = Infinity;
+      this.finishIntro();
       return;
     }
-    this.jumpTo(this.worldView());
-    this.rippleAt = this.clock + 0.05;
-    this.arcsAt = -1;
+    this.introAt = this.clock + 0.05;
+    this.introNotified = false;
     this.kick();
   }
 
-  get introDone() {
-    return this.arcsAt === Infinity || (this.arcsAt >= 0 && this.clock - this.arcsAt > this.arcsTotal());
+  private get introT() {
+    return this.introAt < 0 ? -1 : this.introAt === Infinity ? Infinity : this.clock - this.introAt;
   }
 
-  private arcsTotal() {
-    return ARC_DRAW + ARC_STAGGER * this.places.length;
+  private finishIntro() {
+    if (this.introNotified) return;
+    this.introNotified = true;
+    this.cb.onIntroDone?.();
   }
 
   /* ── interaction ── */
 
   setPointer(p: { x: number; y: number } | null) {
     this.pointer = p;
-    if (p) {
-      const ll = this.unproject(p.x, p.y);
-      this.cb.onCursor?.(ll);
-      const hit = this.hitTest(p.x, p.y);
-      this.setHovered(hit);
-    } else {
-      this.cb.onCursor?.(null);
-      this.setHovered(null);
-    }
+    this.setHovered(p && this.opts.interactive ? this.hitTest(p.x, p.y) : null);
     this.kick();
   }
 
@@ -423,7 +433,7 @@ export class AtlasEngine {
 
   hitTest(x: number, y: number): string | null {
     let best: string | null = null;
-    let bestD = 16;
+    let bestD = 18;
     for (const p of this.places) {
       const s = this.project(p.lng, p.lat);
       const d = Math.hypot(s.x - x, s.y - y);
@@ -434,8 +444,6 @@ export class AtlasEngine {
     }
     return best;
   }
-
-  /* ── projection ── */
 
   project(lng: number, lat: number) {
     return {
@@ -463,6 +471,7 @@ export class AtlasEngine {
   stop() {
     this.running = false;
     cancelAnimationFrame(this.raf);
+    this.raf = 0;
   }
 
   destroy() {
@@ -486,20 +495,18 @@ export class AtlasEngine {
     const dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
     this.clock += dt;
-
     this.step(dt);
     this.draw();
-
-    // keep animating: markers pulse forever unless motion is reduced
-    const busy =
-      !this.reduced ||
+    // ambient motion keeps the loop alive; with reduced motion we only
+    // animate while something is actually changing
+    const settling =
       this.flight !== null ||
-      Math.abs(this.lensAmt - (this.pointer ? 1 : 0)) > 0.01;
-    if (busy) this.raf = requestAnimationFrame(this.tick);
+      Math.abs(this.lensAmt - (this.pointer ? 1 : 0)) > 0.01 ||
+      [...this.emphasis.values()].some((v) => v > 0.01 && v < 0.99);
+    if (!this.reduced || settling) this.raf = requestAnimationFrame(this.tick);
   };
 
   private step(dt: number) {
-    // camera flight
     if (this.flight) {
       const f = this.flight;
       const t = clamp((this.clock - f.start) / f.duration, 0, 1);
@@ -512,38 +519,36 @@ export class AtlasEngine {
       });
       this.fieldDirty = true;
       this.cacheDirty = true;
-      if (t >= 1) {
-        this.flight = null;
-        this.cb.onCamera?.(this.cam);
-      }
+      if (t >= 1) this.flight = null;
     }
 
-    // intro choreography: ripple → fly to places → arcs
-    if (this.rippleAt >= 0 && this.rippleAt !== Infinity && this.arcsAt < 0) {
-      if (this.clock - this.rippleAt > INTRO_RIPPLE * 0.75 && !this.flight) {
-        this.flyTo(this.placesView(), 2.1);
-        this.arcsAt = this.clock + 1.7;
-      }
-    }
+    const it = this.introT;
+    if (it !== Infinity && it > this.introLength()) this.finishIntro();
 
-    // lens + hover easing
-    const lensTarget = this.pointer ? 1 : 0;
-    this.lensAmt += (lensTarget - this.lensAmt) * Math.min(1, dt * 10);
+    const ease = Math.min(1, dt * 9);
+    this.lensAmt += ((this.pointer ? 1 : 0) - this.lensAmt) * ease;
+    let focus = 0;
     for (const p of this.places) {
       const target = p.id === this.hovered || p.id === this.selected ? 1 : 0;
-      const cur = this.hoverAmt.get(p.id) ?? 0;
-      this.hoverAmt.set(p.id, cur + (target - cur) * Math.min(1, dt * 12));
+      const cur = this.emphasis.get(p.id) ?? 0;
+      const next = cur + (target - cur) * ease;
+      this.emphasis.set(p.id, next);
+      focus = Math.max(focus, next);
     }
+    this.focusAmt = focus;
   }
 
-  /* ── field (land dots for the current camera) ── */
+  private introLength() {
+    return RIPPLE * 0.55 + ARC_DRAW + ARC_STAGGER * this.routes.length + 0.5;
+  }
+
+  /* ── field ── */
 
   private buildField() {
     const land = this.land;
     if (!land || !this.w) return;
-    const pitch = this.w < 480 ? 5 : 6;
+    const pitch = this.w < 480 ? 5 : this.w > 1300 ? 7 : 6;
     const k = this.cam.k;
-    // world-anchored grid: dots slide with the map while panning
     const ox = (((this.w / 2 - this.cam.lng * k) % pitch) + pitch) % pitch;
     const oy = (((this.h / 2 + this.cam.lat * k) % pitch) + pitch) % pitch;
     const cols = Math.ceil(this.w / pitch) + 1;
@@ -552,23 +557,23 @@ export class AtlasEngine {
     const xs = new Float32Array(cap);
     const ys = new Float32Array(cap);
     const heat = new Float32Array(cap);
-    const delay = new Float32Array(cap);
+    const dist = new Float32Array(cap);
 
-    const homeS = this.project(this.home.lng, this.home.lat);
-    const far = Math.hypot(this.w, this.h);
+    const home = this.project(this.home.lng, this.home.lat);
     const marks = this.places.map((p) => this.project(p.lng, p.lat));
-    const sigma = clamp(k * 1.1, 9, 22);
+    const sigma = clamp(k * 0.9, 8, 18);
+    const cut = 9 * sigma * sigma;
+    let far = 1;
 
     let n = 0;
     for (let r = 0; r < rows; r++) {
       const y = oy + r * pitch;
-      if (y < 0 || y > this.h) continue;
+      if (y > this.h) break;
       const lat = this.cam.lat - (y - this.h / 2) / k;
       for (let c = 0; c < cols; c++) {
         const x = ox + c * pitch;
-        if (x < 0 || x > this.w) continue;
-        const lng = this.cam.lng + (x - this.w / 2) / k;
-        if (land(lng, lat) < 0.5) continue;
+        if (x > this.w) break;
+        if (land(this.cam.lng + (x - this.w / 2) / k, lat) < 0.5) continue;
         xs[n] = x;
         ys[n] = y;
         let hmax = 0;
@@ -576,17 +581,19 @@ export class AtlasEngine {
           const dx = m.x - x;
           const dy = m.y - y;
           const d2 = dx * dx + dy * dy;
-          if (d2 < 9 * sigma * sigma) {
+          if (d2 < cut) {
             const hv = Math.exp(-d2 / (2 * sigma * sigma));
             if (hv > hmax) hmax = hv;
           }
         }
         heat[n] = hmax;
-        delay[n] = (Math.hypot(x - homeS.x, y - homeS.y) / far) * INTRO_RIPPLE;
+        const d = Math.hypot(x - home.x, y - home.y);
+        dist[n] = d;
+        if (d > far) far = d;
         n++;
       }
     }
-    this.field = { xs, ys, heat, delay, count: n, pitch };
+    this.field = { xs, ys, heat, dist, count: n, pitch, far };
     this.fieldDirty = false;
   }
 
@@ -596,225 +603,139 @@ export class AtlasEngine {
     const theme = this.theme;
     if (!theme || !this.w) return;
     if (this.fieldDirty) this.buildField();
-
     const ctx = this.ctx;
-    const introing = this.rippleAt >= 0 && this.rippleAt !== Infinity && this.clock - this.rippleAt < INTRO_RIPPLE + 0.4;
+    const it = this.introT;
+    const revealing = it >= 0 && it < RIPPLE + 0.4;
 
-    if (introing || this.rippleAt < 0) {
-      // draw dots live (ripple reveal); nothing visible before the intro
+    if (it < 0 || revealing) {
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-      this.drawBase(ctx, theme, this.rippleAt < 0 ? -1 : this.clock - this.rippleAt);
+      this.drawDots(ctx, theme, it);
       this.cacheDirty = true;
     } else {
       if (this.cacheDirty) {
         this.cacheCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-        this.drawBase(this.cacheCtx, theme, Infinity);
+        this.drawDots(this.cacheCtx, theme, Infinity);
         this.cacheDirty = false;
       }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(this.cache, 0, 0);
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      this.drawPing(ctx, theme);
     }
 
-    if (!introing && this.rippleAt >= 0) this.drawSonar(ctx, theme);
-    if (this.lensAmt > 0.01 && this.pointer && this.field) this.drawLens(ctx, theme);
-    this.drawFocusCrosshair(ctx, theme);
-    this.drawArcs(ctx, theme);
+    if (this.opts.interactive && this.lensAmt > 0.01 && this.pointer) this.drawLens(ctx, theme);
+    this.drawRoutes(ctx, theme);
     this.drawMarkers(ctx, theme);
     this.drawLabels(ctx, theme);
-    this.drawHud(ctx, theme);
   }
 
-  /** Background, graticule and land dots. `t` = seconds since ripple start. */
-  private drawBase(ctx: CanvasRenderingContext2D, theme: AtlasTheme, t: number) {
-    ctx.fillStyle = rgba(theme.bg, 1);
-    ctx.fillRect(0, 0, this.w, this.h);
-    this.drawGraticule(ctx, theme);
-
-    const f = this.field;
-    if (!f || t < 0) return;
-    const size = f.pitch * 0.4;
-    const landC = theme.land;
-    const accent = theme.accent;
+  private dotStyles(theme: AtlasTheme) {
     const levels = 6;
     const styles: string[] = [];
     for (let i = 0; i < levels; i++) {
       const h = i / (levels - 1);
-      styles.push(rgba(mix(landC, accent, h * 0.9), lerp(theme.landAlpha, 0.85, h * h)));
+      styles.push(rgba(mix(theme.land, theme.accent, h * 0.75), lerp(theme.landAlpha, theme.dark ? 0.55 : 0.6, h)));
     }
-    let last = -1;
+    return styles;
+  }
+
+  /** Background + land dots. `t` = seconds into the intro (Infinity = settled). */
+  private drawDots(ctx: CanvasRenderingContext2D, theme: AtlasTheme, t: number) {
+    ctx.fillStyle = rgba(theme.bg, 1);
+    ctx.fillRect(0, 0, this.w, this.h);
+    const f = this.field;
+    if (!f || t < 0) return;
+    const size = f.pitch * 0.38;
+    const styles = this.dotStyles(theme);
+    const top = styles.length - 1;
     const live = t !== Infinity;
+    const front = (t / RIPPLE) * f.far;
+    let last = -1;
     for (let i = 0; i < f.count; i++) {
-      let s = size;
-      let a = 1;
-      let lv = Math.round(f.heat[i] * (levels - 1));
+      let s = size * (1 + f.heat[i] * 0.3);
+      let lv = Math.round(f.heat[i] * top);
       if (live) {
-        const local = t - f.delay[i];
-        if (local <= 0) continue;
-        a = clamp(local / 0.35, 0, 1);
-        // bright wavefront
-        const front = clamp(1 - Math.abs(local - 0.08) / 0.16, 0, 1);
-        if (front > 0) lv = Math.max(lv, Math.round(front * (levels - 1)));
-        s = size * (1 + front * 0.9);
+        const behind = front - f.dist[i];
+        if (behind <= 0) continue;
+        const a = clamp(behind / 90, 0, 1);
+        ctx.globalAlpha = a;
+        // a soft swell rides the wavefront
+        const crest = clamp(1 - behind / 60, 0, 1);
+        if (crest > 0) {
+          lv = Math.max(lv, Math.round(crest * top * 0.8));
+          s *= 1 + crest * 0.5;
+        }
       }
-      s *= 1 + f.heat[i] * 0.45;
       if (lv !== last) {
         ctx.fillStyle = styles[lv];
         last = lv;
       }
-      if (live) ctx.globalAlpha = a;
       ctx.fillRect(f.xs[i] - s / 2, f.ys[i] - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
   }
 
-  private gridStep() {
-    const steps = [1, 2, 5, 10, 15, 30, 60];
-    return steps.find((s) => s * this.cam.k >= 70) ?? 60;
-  }
-
-  private drawGraticule(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
-    const step = this.gridStep();
-    const tl = this.unproject(0, 0);
-    const br = this.unproject(this.w, this.h);
-    ctx.save();
-    ctx.strokeStyle = rgba(theme.text, theme.dark ? 0.045 : 0.06);
-    ctx.lineWidth = 1;
-    ctx.setLineDash([1, 3]);
-    ctx.beginPath();
-    for (let lng = Math.ceil(tl.lng / step) * step; lng <= br.lng; lng += step) {
-      const x = Math.round(this.project(lng, 0).x) + 0.5;
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.h);
-    }
-    for (let lat = Math.ceil(br.lat / step) * step; lat <= tl.lat; lat += step) {
-      const y = Math.round(this.project(0, lat).y) + 0.5;
-      ctx.moveTo(0, y);
-      ctx.lineTo(this.w, y);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // edge ticks
-    ctx.fillStyle = rgba(theme.faint, 0.9);
-    ctx.font = `9px ${theme.mono}`;
-    ctx.textBaseline = "top";
-    for (let lng = Math.ceil(tl.lng / step) * step; lng <= br.lng; lng += step) {
-      const x = this.project(lng, 0).x;
-      if (x < 24 || x > this.w - 24) continue;
-      const label = `${Math.abs(lng)}°${lng === 0 ? "" : lng > 0 ? "E" : "W"}`;
-      ctx.textAlign = "center";
-      ctx.fillText(label, x, 6);
-    }
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    for (let lat = Math.ceil(br.lat / step) * step; lat <= tl.lat; lat += step) {
-      const y = this.project(0, lat).y;
-      if (y < 22 || y > this.h - 22) continue;
-      const label = `${Math.abs(lat)}°${lat === 0 ? "" : lat > 0 ? "N" : "S"}`;
-      ctx.fillText(label, 6, y);
-    }
-
-    // blueprint corner crosshairs
-    ctx.strokeStyle = rgba(theme.faint, 0.6);
-    ctx.beginPath();
-    const m = 10;
-    const l = 4;
-    for (const [cx, cy] of [
-      [m, m],
-      [this.w - m, m],
-      [m, this.h - m],
-      [this.w - m, this.h - m],
-    ]) {
-      ctx.moveTo(cx - l, cy + 0.5);
-      ctx.lineTo(cx + l, cy + 0.5);
-      ctx.moveTo(cx + 0.5, cy - l);
-      ctx.lineTo(cx + 0.5, cy + l);
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  /** A soft ping that rolls out from home through the dot field. */
-  private drawSonar(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
+  /** A slow, faint breath that rolls out from home every few seconds. */
+  private drawPing(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
     const f = this.field;
     if (!f || this.reduced) return;
-    const period = 5.5;
-    const ph = ((this.clock - this.rippleAt) % period) / period;
-    const home = this.project(this.home.lng, this.home.lat);
-    const far = Math.hypot(Math.max(home.x, this.w - home.x), Math.max(home.y, this.h - home.y));
-    const r = smooth(ph) * far;
-    const band = 34;
-    const fade = 1 - ph;
-    if (fade <= 0.02) return;
-    const base = f.pitch * 0.4;
-    ctx.fillStyle = rgba(mix(theme.accent, theme.text, 0.25), 1);
+    const period = 7;
+    const ph = ((this.clock - Math.max(0, this.introAt)) % period) / period;
+    const r = easeOut(ph) * f.far;
+    const band = 46;
+    const fade = Math.pow(1 - ph, 1.5) * (1 - this.focusAmt * 0.7);
+    if (fade < 0.03) return;
+    const base = f.pitch * 0.38;
+    ctx.fillStyle = rgba(theme.accent, 1);
     for (let i = 0; i < f.count; i++) {
-      const d = Math.hypot(f.xs[i] - home.x, f.ys[i] - home.y);
-      const t = 1 - Math.abs(d - r) / band;
+      const t = 1 - Math.abs(f.dist[i] - r) / band;
       if (t <= 0) continue;
       const g = smooth(t) * fade;
-      const s = base * (1 + f.heat[i] * 0.45) * (1 + g * 0.6);
-      ctx.globalAlpha = g * (theme.dark ? 0.55 : 0.45);
+      const s = base * (1 + f.heat[i] * 0.3);
+      ctx.globalAlpha = g * (theme.dark ? 0.32 : 0.26);
       ctx.fillRect(f.xs[i] - s / 2, f.ys[i] - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
   }
 
-  /** Magnifying glass that follows the cursor: dots swell and push outward. */
+  /** Gentle magnifier: dots near the cursor swell and lean outward. */
   private drawLens(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
     const f = this.field;
     const p = this.pointer;
     if (!f || !p) return;
-    const R = LENS_R * this.lensAmt;
-    if (R < 2) return;
+    const R = LENS_R;
+    const amt = this.lensAmt;
+    const styles = this.dotStyles(theme);
+    const top = styles.length - 1;
+    const base = f.pitch * 0.38;
     ctx.save();
     ctx.beginPath();
-    ctx.arc(p.x, p.y, R + 2, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, R + f.pitch, 0, Math.PI * 2);
     ctx.clip();
-    ctx.fillStyle = rgba(mix(theme.bg, theme.accent, theme.dark ? 0.035 : 0.05), 1);
-    ctx.fillRect(p.x - R - 3, p.y - R - 3, R * 2 + 6, R * 2 + 6);
-
-    const base = f.pitch * 0.4;
+    ctx.fillStyle = rgba(theme.bg, 1);
+    ctx.fillRect(p.x - R - 10, p.y - R - 10, R * 2 + 20, R * 2 + 20);
+    let last = -1;
     for (let i = 0; i < f.count; i++) {
       const dx = f.xs[i] - p.x;
       const dy = f.ys[i] - p.y;
-      if (dx > R + 8 || dx < -R - 8 || dy > R + 8 || dy < -R - 8) continue;
+      if (dx > R + 10 || dx < -R - 10 || dy > R + 10 || dy < -R - 10) continue;
       const d = Math.hypot(dx, dy);
-      const g = smooth(clamp(1 - d / (R + 8), 0, 1));
-      const push = g * 6;
+      const g = smooth(clamp(1 - d / R, 0, 1)) * amt;
+      const push = g * 4;
       const nx = d > 0.001 ? dx / d : 0;
       const ny = d > 0.001 ? dy / d : 0;
-      const s = base * (1 + f.heat[i] * 0.45) * (1 + g * 1.5);
-      const c = mix(mix(theme.land, theme.accent, f.heat[i] * 0.9), theme.text, g * 0.35);
-      ctx.fillStyle = rgba(c, lerp(lerp(theme.landAlpha, 0.85, f.heat[i]), 0.95, g * 0.7));
+      const s = base * (1 + f.heat[i] * 0.3) * (1 + g * 0.9);
+      const lv = Math.min(top, Math.round(f.heat[i] * top + g * 2));
+      if (lv !== last) {
+        ctx.fillStyle = styles[lv];
+        last = lv;
+      }
       ctx.fillRect(f.xs[i] + nx * push - s / 2, f.ys[i] + ny * push - s / 2, s, s);
     }
     ctx.restore();
-
-    // lens rim
-    ctx.save();
-    ctx.strokeStyle = rgba(theme.text, 0.12 * this.lensAmt);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, R + 2, 0, Math.PI * 2);
-    ctx.stroke();
-    // centre reticle
-    ctx.strokeStyle = rgba(theme.accent, 0.7 * this.lensAmt);
-    ctx.beginPath();
-    ctx.moveTo(p.x - 5, p.y + 0.5);
-    ctx.lineTo(p.x - 2, p.y + 0.5);
-    ctx.moveTo(p.x + 2, p.y + 0.5);
-    ctx.lineTo(p.x + 5, p.y + 0.5);
-    ctx.moveTo(p.x + 0.5, p.y - 5);
-    ctx.lineTo(p.x + 0.5, p.y - 2);
-    ctx.moveTo(p.x + 0.5, p.y + 2);
-    ctx.lineTo(p.x + 0.5, p.y + 5);
-    ctx.stroke();
-    ctx.restore();
   }
 
-  private arcControl(a: { x: number; y: number }, b: { x: number; y: number }) {
+  private control(a: { x: number; y: number }, b: { x: number; y: number }) {
     const mx = (a.x + b.x) / 2;
     const my = (a.y + b.y) / 2;
     const dx = b.x - a.x;
@@ -822,362 +743,225 @@ export class AtlasEngine {
     const len = Math.hypot(dx, dy) || 1;
     let nx = -dy / len;
     let ny = dx / len;
-    // bend "up" on screen; mostly-vertical routes bend left
     if (Math.abs(dy) > Math.abs(dx) * 2.2 ? nx > 0 : ny > 0) {
       nx = -nx;
       ny = -ny;
     }
-    const lift = Math.min(len * 0.3, 160);
+    const lift = Math.min(len * 0.22, 120);
     return { x: mx + nx * lift, y: my + ny * lift };
   }
 
   private bez(a: { x: number; y: number }, c: { x: number; y: number }, b: { x: number; y: number }, t: number) {
     const u = 1 - t;
-    return {
-      x: u * u * a.x + 2 * u * t * c.x + t * t * b.x,
-      y: u * u * a.y + 2 * u * t * c.y + t * t * b.y,
-    };
+    return { x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: u * u * a.y + 2 * u * t * c.y + t * t * b.y };
   }
 
-  private arcProgress(i: number) {
-    if (this.arcsAt === Infinity) return 1;
-    if (this.arcsAt < 0) return 0;
-    return easeInOut(clamp((this.clock - this.arcsAt - i * ARC_STAGGER) / ARC_DRAW, 0, 1));
+  private routeProgress(i: number) {
+    const it = this.introT;
+    if (it === Infinity) return 1;
+    if (it < 0) return 0;
+    return easeInOut(clamp((it - RIPPLE * 0.55 - i * ARC_STAGGER) / ARC_DRAW, 0, 1));
   }
 
-  private drawArcs(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
+  private drawRoutes(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
     const a = this.project(this.home.lng, this.home.lat);
-    const others = this.places.filter((p) => !p.home);
     ctx.save();
     ctx.lineCap = "round";
-    others.forEach((p, i) => {
-      const prog = this.arcProgress(i);
+    this.routes.forEach((p, i) => {
+      const prog = this.routeProgress(i);
       if (prog <= 0) return;
       const b = this.project(p.lng, p.lat);
-      const c = this.arcControl(a, b);
-      const hl = this.hoverAmt.get(p.id) ?? 0;
-      const segs = 48;
+      const c = this.control(a, b);
+      const em = this.emphasis.get(p.id) ?? 0;
+      // when one place is in focus, the rest step back
+      const dim = 1 - this.focusAmt * 0.65 * (1 - em);
+      const segs = 40;
       const end = Math.max(1, Math.round(segs * prog));
-
-      // base route: soft glow underlay + crisp dashed flight path
-      const route = new Path2D();
-      route.moveTo(a.x, a.y);
+      const path = new Path2D();
+      path.moveTo(a.x, a.y);
       for (let s = 1; s <= end; s++) {
         const q = this.bez(a, c, b, s / segs);
-        route.lineTo(q.x, q.y);
+        path.lineTo(q.x, q.y);
       }
-      ctx.strokeStyle = rgba(theme.accent, lerp(0.1, 0.22, hl));
-      ctx.lineWidth = lerp(3, 5, hl);
-      ctx.stroke(route);
-      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.7 : 0.75, 1, hl));
-      ctx.lineWidth = lerp(1.25, 1.8, hl);
-      ctx.setLineDash([4, 4]);
-      ctx.lineDashOffset = this.reduced ? 0 : -this.clock * 6;
-      ctx.stroke(route);
-      ctx.setLineDash([]);
-      ctx.lineDashOffset = 0;
+      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.32 : 0.4, 0.85, em) * dim);
+      ctx.lineWidth = lerp(1, 1.6, em);
+      ctx.stroke(path);
 
-      // drawing head during intro
-      if (prog < 1) {
-        const q = this.bez(a, c, b, prog);
-        ctx.fillStyle = rgba(theme.accent, 1);
-        ctx.beginPath();
-        ctx.arc(q.x, q.y, 2.2, 0, Math.PI * 2);
-        ctx.fill();
-        return;
-      }
+      if (prog < 1 || this.reduced) return;
 
-      // travelling comet
-      if (this.reduced) return;
-      const speed = 0.38;
-      const phase = (this.clock * speed + i * 0.173) % 1;
-      const tail = 0.16;
-      const steps = 12;
+      // an occasional traveller, staggered so only a few are ever in flight
+      const local = (this.clock + i * (COMET_CYCLE / this.routes.length) * 1.7) % COMET_CYCLE;
+      if (local > COMET_TRAVEL) return;
+      const t = easeInOut(local / COMET_TRAVEL);
+      const tail = 0.18;
+      const steps = 10;
       for (let s = 0; s < steps; s++) {
-        const t0 = phase - tail * (1 - s / steps);
-        const t1 = phase - tail * (1 - (s + 1) / steps);
+        const k0 = s / steps;
+        const k1 = (s + 1) / steps;
+        const t0 = t - tail * (1 - k0);
+        const t1 = t - tail * (1 - k1);
         if (t1 <= 0) continue;
         const p0 = this.bez(a, c, b, clamp(t0, 0, 1));
         const p1 = this.bez(a, c, b, clamp(t1, 0, 1));
-        const k = (s + 1) / steps;
-        ctx.strokeStyle = rgba(mix(theme.accent, theme.text, k * 0.55), k);
-        ctx.lineWidth = 0.8 + k * 1.8;
+        ctx.strokeStyle = rgba(mix(theme.accent, theme.text, k1 * 0.4), k1 * 0.85 * dim);
+        ctx.lineWidth = 0.8 + k1 * 1.2;
         ctx.beginPath();
         ctx.moveTo(p0.x, p0.y);
         ctx.lineTo(p1.x, p1.y);
         ctx.stroke();
       }
-      // comet head
-      const head = this.bez(a, c, b, phase);
-      const fade = Math.min(1, phase * 8, (1 - phase) * 8);
-      const hg = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 7);
-      hg.addColorStop(0, rgba(mix(theme.accent, theme.text, 0.6), 0.9 * fade));
-      hg.addColorStop(1, rgba(theme.accent, 0));
-      ctx.fillStyle = hg;
-      ctx.beginPath();
-      ctx.arc(head.x, head.y, 7, 0, Math.PI * 2);
-      ctx.fill();
     });
     ctx.restore();
   }
 
-  private markerReveal(i: number, home: boolean) {
-    if (this.arcsAt === Infinity) return 1;
-    if (home) {
-      if (this.rippleAt < 0) return 0;
-      return clamp((this.clock - this.rippleAt) / 0.5, 0, 1);
-    }
-    if (this.arcsAt < 0) return 0;
-    const t = (this.clock - this.arcsAt - i * ARC_STAGGER - ARC_DRAW * 0.92) / 0.45;
-    return clamp(t, 0, 1);
+  private markerReveal(i: number) {
+    const it = this.introT;
+    if (it === Infinity) return 1;
+    if (it < 0) return 0;
+    if (i < 0) return clamp(it / 0.5, 0, 1); // home appears with the ripple
+    return clamp((it - RIPPLE * 0.55 - i * ARC_STAGGER - ARC_DRAW * 0.9) / 0.4, 0, 1);
   }
 
   private drawMarkers(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
-    let i = 0;
-    for (const p of this.places) {
-      const idx = p.home ? -1 : i++;
-      const rv = this.markerReveal(idx, !!p.home);
-      if (rv <= 0) continue;
-      const pop = easeOutBack(rv);
+    const drawOne = (p: AtlasPlace, i: number) => {
+      const rv = this.markerReveal(i);
+      if (rv <= 0) return;
       const s = this.project(p.lng, p.lat);
-      if (s.x < -20 || s.y < -20 || s.x > this.w + 20 || s.y > this.h + 20) continue;
-      const hl = this.hoverAmt.get(p.id) ?? 0;
+      if (s.x < -30 || s.y < -30 || s.x > this.w + 30 || s.y > this.h + 30) return;
+      const em = this.emphasis.get(p.id) ?? 0;
+      const dim = p.home ? 1 : 1 - this.focusAmt * 0.5 * (1 - em);
+      const pop = easeOutBack(rv);
 
-      // pulse rings
-      if (!this.reduced) {
-        const period = p.home ? 2.2 : 2.8;
-        for (let r = 0; r < (p.home ? 2 : 1); r++) {
-          const ph = ((this.clock + (idx + 2) * 0.37 + r * (period / 2)) % period) / period;
-          const rad = (p.home ? 6 : 4) + ph * (p.home ? 22 : 15) * (1 + hl * 0.4);
-          ctx.strokeStyle = rgba(theme.accent, (1 - ph) * (p.home ? 0.55 : 0.4) * rv);
+      // only home breathes
+      if (p.home && !this.reduced) {
+        const period = 2.6;
+        for (let r = 0; r < 2; r++) {
+          const ph = ((this.clock + r * (period / 2)) % period) / period;
+          ctx.strokeStyle = rgba(theme.accent, (1 - ph) * 0.45 * rv);
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.arc(s.x, s.y, rad, 0, Math.PI * 2);
+          ctx.arc(s.x, s.y, 5 + easeOut(ph) * 18, 0, Math.PI * 2);
           ctx.stroke();
         }
       }
 
-      // glow
-      const glowR = (p.home ? 16 : 11) * (1 + hl * 0.6) * pop;
+      const glowR = (p.home ? 14 : 9 + em * 6) * pop;
       const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
-      g.addColorStop(0, rgba(theme.accent, (theme.dark ? 0.45 : 0.35) * rv));
+      g.addColorStop(0, rgba(theme.accent, (theme.dark ? 0.4 : 0.3) * rv * dim));
       g.addColorStop(1, rgba(theme.accent, 0));
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      // core: home is a rotated square (diamond), places are squares
-      const core = ((p.home ? 4.2 : 3.2) + hl * 1.6) * pop;
+      const core = ((p.home ? 3.6 : 2.6) + em * 1.4) * pop;
       ctx.save();
       ctx.translate(s.x, s.y);
       if (p.home) ctx.rotate(Math.PI / 4);
+      ctx.globalAlpha = dim;
       ctx.fillStyle = rgba(theme.bg, 1);
       ctx.fillRect(-core - 1.5, -core - 1.5, core * 2 + 3, core * 2 + 3);
-      ctx.fillStyle = rgba(mix(theme.accent, theme.text, hl * 0.35), 1);
+      ctx.fillStyle = rgba(mix(theme.accent, theme.text, em * 0.3), 1);
       ctx.fillRect(-core, -core, core * 2, core * 2);
-      if (p.home) {
-        ctx.fillStyle = rgba(theme.bg, 1);
-        ctx.fillRect(-core * 0.38, -core * 0.38, core * 0.76, core * 0.76);
-      }
       ctx.restore();
-    }
+    };
+    this.routes.forEach((p, i) => drawOne(p, i));
+    drawOne(this.home, -1);
   }
 
-  private drawFocusCrosshair(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
-    for (const p of this.places) {
-      const hl = this.hoverAmt.get(p.id) ?? 0;
-      if (hl < 0.02) continue;
-      const s = this.project(p.lng, p.lat);
-      ctx.save();
-      ctx.strokeStyle = rgba(theme.accent, 0.32 * hl);
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 4]);
-      ctx.beginPath();
-      ctx.moveTo(0, Math.round(s.y) + 0.5);
-      ctx.lineTo(this.w, Math.round(s.y) + 0.5);
-      ctx.moveTo(Math.round(s.x) + 0.5, 0);
-      ctx.lineTo(Math.round(s.x) + 0.5, this.h);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // edge readouts, chipped so they sit cleanly over the graticule ticks
-      ctx.font = `9px ${theme.mono}`;
-      ctx.textBaseline = "middle";
-      const latText = `${p.lat.toFixed(2)}°N`;
-      const lngText = `${p.lng.toFixed(2)}°E`;
-      const lw = ctx.measureText(latText).width + 8;
-      const gw = ctx.measureText(lngText).width + 8;
-      const ly = clamp(s.y, 12, this.h - 12);
-      const gx = clamp(s.x, gw / 2 + 4, this.w - gw / 2 - 4);
-      ctx.globalAlpha = hl;
-      ctx.fillStyle = rgba(theme.bg, 1);
-      ctx.fillRect(2, ly - 7, lw, 14);
-      ctx.fillRect(gx - gw / 2, 3, gw, 14);
-      ctx.fillStyle = rgba(theme.accent, 0.95);
-      ctx.textAlign = "left";
-      ctx.fillText(latText, 6, ly + 0.5);
-      ctx.textAlign = "center";
-      ctx.fillText(lngText, gx, 10.5);
-      ctx.globalAlpha = 1;
-      ctx.restore();
-    }
-  }
-
+  /** Serif place names with a soft halo; greedy placement, no overlaps. */
   private drawLabels(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
-    const showAll = this.cam.k >= 9 && (this.arcsAt === Infinity || this.arcsAt >= 0);
-    const order = [...this.places].sort((a, b) => {
-      const pa = (this.hoverAmt.get(a.id) ?? 0) * 10 + (a.home ? 5 : 0);
-      const pb = (this.hoverAmt.get(b.id) ?? 0) * 10 + (b.home ? 5 : 0);
-      return pb - pa;
+    const ranked = [...this.places].sort((a, b) => {
+      const ea = this.emphasis.get(a.id) ?? 0;
+      const eb = this.emphasis.get(b.id) ?? 0;
+      if (ea !== eb) return eb - ea;
+      if (a.home !== b.home) return a.home ? -1 : 1;
+      return 0;
     });
-    const placed: { x: number; y: number; w: number; h: number }[] = [];
-    // marker footprints are obstacles too
-    for (const p of this.places) {
-      const s = this.project(p.lng, p.lat);
-      placed.push({ x: s.x - 6, y: s.y - 6, w: 12, h: 12 });
-    }
+    const boxes: { x: number; y: number; w: number; h: number }[] = [];
+    const markers = this.places.map((p) => ({ id: p.id, ...this.project(p.lng, p.lat) }));
+    let shown = 0;
     ctx.save();
-    ctx.font = `500 9.5px ${theme.mono}`;
     ctx.textBaseline = "middle";
-    let i = 0;
-    for (const p of order) {
-      const hl = this.hoverAmt.get(p.id) ?? 0;
-      const idx = p.home ? -1 : this.places.filter((q) => !q.home).indexOf(p);
-      const rv = this.markerReveal(idx, !!p.home);
+    ctx.lineJoin = "round";
+    for (const p of ranked) {
+      const idx = p.home ? -1 : this.routes.indexOf(p);
+      const rv = this.markerReveal(idx);
       if (rv <= 0) continue;
-      if (!showAll && hl < 0.05 && !p.home) continue;
-      i++;
-      const text = p.home ? `${p.name.toUpperCase()} · HOME` : p.name.toUpperCase();
-      const tw = ctx.measureText(text).width;
-      const bw = tw + 10;
-      const bh = 16;
+      const em = this.emphasis.get(p.id) ?? 0;
+      if (shown >= this.opts.maxLabels && em < 0.05) continue;
+      const size = p.home || em > 0.5 ? 15 : 13;
+      ctx.font = `${size}px ${theme.serif}`;
+      const tw = ctx.measureText(p.name).width;
+      const bh = size + 2;
       const s = this.project(p.lng, p.lat);
-      const gap = 10;
+      const gap = p.home ? 13 : 9;
       const cands = [
         { x: s.x + gap, y: s.y - bh / 2 },
-        { x: s.x - gap - bw, y: s.y - bh / 2 },
-        { x: s.x - bw / 2, y: s.y - gap - bh },
-        { x: s.x - bw / 2, y: s.y + gap },
+        { x: s.x - gap - tw, y: s.y - bh / 2 },
+        { x: s.x - tw / 2, y: s.y - gap - bh },
+        { x: s.x - tw / 2, y: s.y + gap },
       ];
       const fits = (r: { x: number; y: number }) =>
-        r.x > 4 &&
-        r.y > 4 &&
-        r.x + bw < this.w - 4 &&
-        r.y + bh < this.h - 4 &&
-        placed.every(
-          (o) =>
-            (o.x === s.x - 6 && o.y === s.y - 6) ||
-            r.x > o.x + o.w + 2 ||
-            r.x + bw < o.x - 2 ||
-            r.y > o.y + o.h + 2 ||
-            r.y + bh < o.y - 2,
+        r.x > 6 &&
+        r.y > 6 &&
+        r.x + tw < this.w - 6 &&
+        r.y + bh < this.h - 6 &&
+        boxes.every((o) => r.x > o.x + o.w + 4 || r.x + tw < o.x - 4 || r.y > o.y + o.h + 1 || r.y + bh < o.y - 1) &&
+        markers.every(
+          (m) => m.id === p.id || m.x < r.x - 5 || m.x > r.x + tw + 5 || m.y < r.y - 5 || m.y > r.y + bh + 5,
         );
-      const spot = cands.find(fits) ?? (hl > 0.5 ? cands[0] : null);
+      const spot = cands.find(fits) ?? (em > 0.5 ? cands[0] : null);
       if (!spot) continue;
-      placed.push({ x: spot.x, y: spot.y, w: bw, h: bh });
+      boxes.push({ x: spot.x, y: spot.y, w: tw, h: bh });
+      shown++;
 
-      const alpha = rv * lerp(showAll ? 0.9 : 0, 1, Math.max(hl, p.home ? 1 : 0));
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = rgba(theme.bg, 0.88);
-      ctx.strokeStyle = hl > 0.5 ? rgba(theme.accent, 0.6) : rgba(theme.text, 0.14);
-      ctx.lineWidth = 1;
-      roundRect(ctx, spot.x + 0.5, spot.y + 0.5, bw, bh, 3);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = hl > 0.5 ? rgba(theme.text, 1) : rgba(theme.text, 0.78);
-      ctx.textAlign = "left";
-      ctx.fillText(text, spot.x + 5.5, spot.y + bh / 2 + 1);
+      const dim = p.home ? 1 : 1 - this.focusAmt * 0.6 * (1 - em);
+      const color = mix(mix(theme.text, theme.bg, p.home ? 0.05 : 0.22), theme.accent, em * 0.6);
+      ctx.globalAlpha = rv * dim;
+      ctx.strokeStyle = rgba(theme.bg, 0.92);
+      ctx.lineWidth = 4;
+      ctx.strokeText(p.name, spot.x, spot.y + bh / 2);
+      ctx.fillStyle = rgba(color, 1);
+      ctx.fillText(p.name, spot.x, spot.y + bh / 2);
     }
     ctx.globalAlpha = 1;
     ctx.restore();
-    void i;
   }
-
-  /** Scale bar (bottom-left). */
-  private drawHud(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
-    const kmPerPx = (111.32 * Math.cos((this.cam.lat * Math.PI) / 180)) / this.cam.k;
-    const nice = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
-    const km = nice.find((n) => n / kmPerPx >= 44) ?? 5000;
-    const px = km / kmPerPx;
-    const x = 14;
-    const y = this.h - 14;
-    ctx.save();
-    ctx.strokeStyle = rgba(theme.faint, 0.9);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x + 0.5, y - 4);
-    ctx.lineTo(x + 0.5, y + 0.5);
-    ctx.lineTo(x + px + 0.5, y + 0.5);
-    ctx.lineTo(x + px + 0.5, y - 4);
-    ctx.stroke();
-    ctx.fillStyle = rgba(theme.faint, 1);
-    ctx.font = `9px ${theme.mono}`;
-    ctx.textBaseline = "bottom";
-    ctx.textAlign = "left";
-    ctx.fillText(`${km.toLocaleString()} KM`, x + px + 6, y + 3);
-    ctx.restore();
-  }
-}
-
-function roundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
 }
 
 /* ───────────────────────────── theme ───────────────────────────── */
 
-function parseColor(input: string): { rgb: RGB; a: number } {
+function parseColor(input: string): RGB {
   const s = input.trim();
   if (s.startsWith("#")) {
     let hex = s.slice(1);
     if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
     const n = parseInt(hex.slice(0, 6), 16);
-    return { rgb: [(n >> 16) & 255, (n >> 8) & 255, n & 255], a: 1 };
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
   }
   const m = s.match(/rgba?\(([^)]+)\)/);
   if (m) {
     const parts = m[1].split(/[,\s/]+/).filter(Boolean).map(Number);
-    return { rgb: [parts[0] | 0, parts[1] | 0, parts[2] | 0], a: parts[3] ?? 1 };
+    return [parts[0] | 0, parts[1] | 0, parts[2] | 0];
   }
-  return { rgb: [128, 128, 128], a: 1 };
+  return [128, 128, 128];
 }
 
-/** Reads the site's design tokens off the DOM so the map follows the theme. */
+/** Reads the site's design tokens so the map follows the theme. */
 export function readTheme(el: HTMLElement): AtlasTheme {
   const cs = getComputedStyle(el);
   const v = (name: string) => cs.getPropertyValue(name);
   const dark = document.documentElement.classList.contains("dark");
-  const bg = parseColor(v("--background")).rgb;
-  const fg = parseColor(v("--foreground")).rgb;
-  const faint = parseColor(v("--faint")).rgb;
-  // the sky-blue used by the contribution graph's highlighted numbers
-  const accent: RGB = dark ? [135, 187, 234] : [74, 144, 205];
-  const mono = v("--font-geist-mono").trim() || "ui-monospace, monospace";
+  const fg = parseColor(v("--foreground"));
   return {
-    bg,
+    bg: parseColor(v("--background")),
     land: fg,
-    landAlpha: dark ? 0.2 : 0.24,
-    accent,
+    landAlpha: dark ? 0.17 : 0.2,
+    // the sky blue the contribution graph uses for its highlighted numbers
+    accent: dark ? [135, 187, 234] : [74, 144, 205],
     text: fg,
-    faint,
     dark,
-    mono,
+    serif: v("--font-instrument-serif").trim() || "Georgia, serif",
   };
 }
