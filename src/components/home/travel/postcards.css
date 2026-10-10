@@ -46,6 +46,7 @@
 .pc-mango { fill: var(--pc-warm); opacity: 0.9; }
 .pc-lamp-on { fill: var(--pc-bulb); }
 .pc-halwa { stroke: var(--pc-halwa); fill: color-mix(in srgb, var(--pc-halwa) 28%, transparent); }
+.pc-glaze { stroke: color-mix(in srgb, var(--pc-halwa) 55%, white); opacity: 0.7; }
 
 /* ── sea, sky ── */
 .pc-wave { animation: pc-wave 3s linear infinite; will-change: transform; }
@@ -201,6 +202,18 @@
 }
 .pc-tail { transform-origin: 50% 0; animation: pc-tail 0.7s ease-in-out infinite alternate; }
 @keyframes pc-tail { from { transform: skewX(-14deg); } to { transform: skewX(14deg); } }
+
+/* ── performance ── */
+.pc svg { contain: strict; }
+/* off-screen: hold every loop */
+.pc--paused * { animation-play-state: paused !important; }
+/* lite (low-memory / low-core devices): keep each scene's signature motion,
+   drop the ambient extras */
+.pc--lite :is(.pc-extra, .pc-star, .pc-flap, .pc-idle, .pc-sparkle, .pc-tail, .pc-flame, .pc-glow) {
+  animation: none !important;
+}
+.pc--lite .pc-bulb { animation: none !important; opacity: 0.9; }
+.pc--lite .pc-card, .pc--lite { transition: none; }
 
 /* Infinite loops at a near-zero duration would strobe, so with reduced
    motion the postcards and glyphs simply hold still. */

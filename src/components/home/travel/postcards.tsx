@@ -1,8 +1,8 @@
 "use client";
 
-import { useId, useRef, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { CityGlyph } from "./city-glyphs";
+import { isLowEndDevice } from "./use-atlas";
 import "./postcards.css";
 
 /**
@@ -26,7 +26,7 @@ function wavePath(y: number, amp = 2.4) {
 function Waves({ y, dur = 3, o = 1, accent = false, amp }: { y: number; dur?: number; o?: number; accent?: boolean; amp?: number }) {
   return (
     <path
-      className={`pc-line pc-wave${accent ? " pc-accent" : ""}`}
+      className={`pc-line pc-wave${accent ? " pc-accent" : ""}${o < 1 ? " pc-extra" : ""}`}
       d={wavePath(y, amp)}
       style={{ animationDuration: `${dur}s`, opacity: o }}
     />
@@ -143,7 +143,7 @@ function Nagercoil({ uid }: SceneProps) {
       <Waves y={78} dur={2.8} />
       <Waves y={86} dur={2.2} o={0.5} />
       <path className="pc-line" d="M8 64q6-10 16-9q7 1 9 9" />
-      <path className="pc-line" d="M16 56v-5h7v5M17 51q2.5-4 5 0" />
+      <path className="pc-line" d="M14 56.5h11M15.5 56.5v-5M23.5 56.5v-5M19.5 56.5v-5M14.5 51.5h10M16 51.5q3.5-6 7 0M19.5 45.5v-1.5" />
       <Palm x={132} y={64} />
       <Palm x={148} y={66} s={0.75} delay={-0.7} />
     </>
@@ -344,9 +344,9 @@ function Kodaikanal() {
       {pine(126, 64)}
       {pine(138, 66, 0.85)}
       <path className="pc-line pc-accent" d="M54 80q26 7 52 0q-26-7-52 0z" />
-      <path className="pc-fog" d="M-30 40H90" style={{ animationDuration: "9s" }} />
-      <path className="pc-fog" d="M60 54H200" style={{ animationDuration: "12s", animationDelay: "-4s" }} />
-      <path className="pc-fog pc-fog--thin" d="M-10 30H120" style={{ animationDuration: "15s", animationDelay: "-8s" }} />
+      <path className="pc-fog" d="M-30 41q20-4 40 0t40 0t40 0" style={{ animationDuration: "9s" }} />
+      <path className="pc-fog" d="M60 55q20-4 40 0t40 0t40 0" style={{ animationDuration: "12s", animationDelay: "-4s" }} />
+      <path className="pc-fog pc-fog--thin pc-extra" d="M-10 31q20-3 40 0t40 0t40 0" style={{ animationDuration: "15s", animationDelay: "-8s" }} />
     </>
   );
 }
@@ -362,6 +362,8 @@ function Tirunelveli() {
       <path className="pc-line pc-accent pc-dim" d="M28 78h104" />
       <g className="pc-wobble">
         <path className="pc-line pc-halwa" d="M56 74v-16q0-4 4-4h40q4 0 4 4v16z" />
+        <path className="pc-line pc-halwa pc-dim" d="M72 55v18M88 55v18" />
+        <path className="pc-line pc-glaze" d="M60 57.5q20-2.5 40 0" />
         <path className="pc-line pc-shine" d="M66 58l-5 10" />
       </g>
       <path className="pc-sparkle" d="M110 50l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
@@ -431,7 +433,9 @@ function Pondicherry({ uid }: SceneProps) {
 function Mumbai() {
   const coach = (x: number) => (
     <g key={x}>
-      <rect className="pc-line" x={x} y="-10" width="30" height="10" rx="2" />
+      <rect className="pc-line" x={x} y="-10" width="30" height="9" rx="2" />
+      <circle className="pc-line" cx={x + 6} cy="0.5" r="1.3" />
+      <circle className="pc-line" cx={x + 24} cy="0.5" r="1.3" />
       {[4, 11, 18, 25].map((w) => (
         <rect key={w} className="pc-line pc-dim" x={x + w - 1.5} y="-7.5" width="3" height="3" rx="0.6" />
       ))}
@@ -510,13 +514,24 @@ export function hasPostcard(id: string) {
 /* ───────────────────────── frame ───────────────────────── */
 
 /**
- * The card: drops in like a postcard, tilts toward the pointer, carries a
- * stamp with the city's glyph.
+ * The card: drops in like a postcard and tilts toward the pointer.
+ * Low-end devices get a lite cut (signature motion only); loops pause off-screen.
  */
 export function Postcard({ id, name }: { id: string; name: string }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const card = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const [lite] = useState(isLowEndDevice);
+  const [onScreen, setOnScreen] = useState(true);
+
+  // freeze every loop while the card is scrolled away
+  useEffect(() => {
+    const el = card.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const Scene = scenes[id];
   if (!Scene) return null;
 
@@ -547,15 +562,13 @@ export function Postcard({ id, name }: { id: string; name: string }) {
         className="pc-card tactile relative rounded-xl p-1.5"
         style={{ "--rx": "0deg", "--ry": "0deg" } as CSSProperties}
       >
-        <div className="pc relative aspect-[5/3] overflow-hidden rounded-lg bg-background">
-          <div className="dotgrid absolute inset-0 opacity-60" />
+        <div
+          className={`pc relative aspect-[5/3] overflow-hidden rounded-lg bg-background${lite ? " pc--lite" : ""}${onScreen ? "" : " pc--paused"}`}
+        >
+          <div className="dotgrid absolute inset-0 opacity-50" />
           <svg viewBox="0 0 160 96" className="relative block size-full" role="img" aria-label={`Postcard from ${name}`}>
             <Scene uid={uid} />
           </svg>
-          {/* stamp */}
-          <div className="glyph-live absolute top-2 right-2 flex size-7 items-center justify-center rounded-[5px] border border-dashed border-edge-strong bg-background/80 p-1 text-muted">
-            <CityGlyph id={id} />
-          </div>
         </div>
       </div>
     </motion.div>
