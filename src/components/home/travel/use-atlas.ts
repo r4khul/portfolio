@@ -5,6 +5,13 @@ import { useReducedMotion } from "motion/react";
 import { places } from "@/data/travel";
 import { AtlasEngine, loadLand, readTheme, type AtlasOptions } from "./atlas-engine";
 
+/** Low-memory or low-core devices get lighter rendering everywhere. */
+export function isLowEndDevice() {
+  if (typeof navigator === "undefined") return false;
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  return (nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4;
+}
+
 /** Kick off the land-mask download/decode ahead of the first render. */
 export function warmAtlas() {
   if (typeof window !== "undefined") loadLand().catch(() => {});
@@ -45,8 +52,7 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady, onInt
     const canvas = canvasRef.current;
     if (!stage || !canvas) return;
 
-    const nav = navigator as Navigator & { deviceMemory?: number };
-    const lowEnd = (nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4;
+    const lowEnd = isLowEndDevice();
     const pins = places.map((p) => ({
       id: p.id,
       name: p.name,

@@ -756,7 +756,8 @@ export class AtlasEngine {
   /** A slow, faint breath that rolls out from home every few seconds. */
   private drawPing(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
     const f = this.field;
-    if (!f || this.reduced) return;
+    // skip entirely while a place is in focus: the panel has the stage then
+    if (!f || this.reduced || this.focusAmt > 0.6) return;
     const period = 7;
     const ph = ((this.clock - Math.max(0, this.introAt)) % period) / period;
     const r = easeOut(ph) * f.far;
