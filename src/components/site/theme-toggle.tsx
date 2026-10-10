@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, memo } from "react";
+import { memo } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion } from "motion/react";
@@ -9,6 +9,7 @@ import { flushSync } from "react-dom";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 import { haptic } from "@/lib/haptics";
+import { playSfx } from "@/lib/sfx";
 
 const emptySubscribe = () => () => {};
 
@@ -27,13 +28,7 @@ export const ThemeToggle = memo(({
   iconClassName?: string;
 } = {}) => {
   const { resolvedTheme, setTheme } = useTheme();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { isMuted } = useAudioContext();
-
-  useEffect(() => {
-    audioRef.current = new Audio("/sfx/switch.mp3");
-    audioRef.current.preload = "auto";
-  }, []);
 
   const mounted = useSyncExternalStore(
     emptySubscribe,
@@ -44,12 +39,8 @@ export const ThemeToggle = memo(({
   const toggleTheme = async (event: React.MouseEvent) => {
     // press + latch, like the switch sound
     haptic("toggle");
-    // Audio feedback - non-blocking
-    if (audioRef.current && !isMuted) {
-      const audio = audioRef.current;
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    }
+    // Audio feedback - instant, non-blocking (Web Audio)
+    if (!isMuted) playSfx("switch");
 
     const isDark = resolvedTheme === "dark";
     const nextTheme = isDark ? "light" : "dark";

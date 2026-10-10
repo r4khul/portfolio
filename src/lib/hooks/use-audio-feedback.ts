@@ -1,40 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 import { haptic } from "@/lib/haptics";
+import { playSfx } from "@/lib/sfx";
 
 /**
  * Reusable hook for tactile feedback.
- * Click sound on pointer devices, a crisp haptic tick on touch devices.
+ * An instant click sound (Web Audio, decoded once per page) on pointer
+ * devices, a crisp haptic tick on touch devices.
  */
 export function useAudioFeedback() {
-  const clickAudio = useRef<HTMLAudioElement | null>(null);
   const { isMuted } = useAudioContext();
-
-  useEffect(() => {
-    // Only initialize on client-side
-    if (typeof window !== "undefined") {
-      clickAudio.current = new Audio("/sfx/click.mp3");
-      clickAudio.current.preload = "auto";
-      clickAudio.current.volume = 0.45;
-    }
-  }, []);
 
   const playClick = useCallback(() => {
     // touch screens feel every press, even though they don't hear it
     haptic("tick");
-    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches || isMuted) {
-      return;
-    }
-
-    const audio = clickAudio.current;
-    if (!audio) return;
-
-    audio.currentTime = 0;
-    audio.play().catch(() => {
-      /* User hasn't interacted with DOM yet */
-    });
+    if (isMuted || window.matchMedia("(pointer: coarse)").matches) return;
+    playSfx("click", 0.45);
   }, [isMuted]);
 
   return { playClick };

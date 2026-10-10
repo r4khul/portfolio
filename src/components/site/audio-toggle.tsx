@@ -1,10 +1,11 @@
 "use client";
 
-import { memo, useCallback, useRef, useEffect } from "react";
+import { memo, useCallback } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion } from "motion/react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 import { haptic } from "@/lib/haptics";
+import { playSfx } from "@/lib/sfx";
 
 export const AudioToggle = memo(({
   className = "tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-90",
@@ -14,22 +15,10 @@ export const AudioToggle = memo(({
   iconClassName?: string;
 } = {}) => {
   const { isMuted, toggleMute } = useAudioContext();
-  const switchAudio = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      switchAudio.current = new Audio("/sfx/switch.mp3");
-      switchAudio.current.preload = "auto";
-    }
-  }, []);
-
   const handleClick = useCallback(() => {
     haptic("toggle");
     // Play switch sound before muting
-    if (switchAudio.current && !isMuted) {
-      switchAudio.current.currentTime = 0;
-      switchAudio.current.play().catch(() => {});
-    }
+    if (!isMuted) playSfx("switch");
     toggleMute();
   }, [isMuted, toggleMute]);
 
