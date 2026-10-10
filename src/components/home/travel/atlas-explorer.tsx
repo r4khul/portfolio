@@ -11,6 +11,7 @@ import { haversineKm, type AtlasEngine } from "./atlas-engine";
 import { useAtlas, warmAtlas } from "./use-atlas";
 import { CityButton } from "./city-glyphs";
 import { ScrollHint } from "./scroll-hint";
+import { Postcard } from "./postcards";
 
 // start fetching + decoding the land as soon as this chunk loads
 warmAtlas();
@@ -299,6 +300,7 @@ export function AtlasExplorer() {
                 <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5" />
                 All places
               </button>
+              <Postcard id={active.id} name={active.name} />
               <h1 className="font-serif text-[44px] leading-none tracking-tight min-[900px]:text-[52px]">
                 {active.name}
               </h1>
@@ -429,11 +431,11 @@ export function AtlasExplorer() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.18 }}
-              className="tactile flex h-9 cursor-pointer items-center gap-1.5 rounded-full pr-3.5 pl-3 font-mono text-[12px] text-muted transition-colors hover:text-foreground"
-              aria-label="Back to India"
+              className="tactile flex size-9 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:text-foreground"
+              aria-label="Recenter on India"
+              title="Recenter"
             >
-              <LocateFixed className="size-3.5" />
-              Recenter
+              <LocateFixed className="size-4" />
             </motion.button>
           )}
         </AnimatePresence>
