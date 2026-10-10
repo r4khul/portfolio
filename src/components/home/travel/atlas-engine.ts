@@ -890,7 +890,7 @@ export class AtlasEngine {
       if (rv <= 0) continue;
       const em = this.emphasis.get(p.id) ?? 0;
       if (shown >= this.opts.maxLabels && em < 0.05) continue;
-      const size = p.home || em > 0.5 ? 15 : 13;
+      const size = p.home || em > 0.5 ? 16 : 14;
       ctx.font = `${size}px ${theme.serif}`;
       const tw = ctx.measureText(p.name).width;
       const bh = size + 2;

@@ -245,7 +245,7 @@ export function AtlasExplorer() {
       {/* story panel */}
       <div
         ref={panelRef}
-        className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/95 to-transparent px-5 pt-16 pb-6 min-[900px]:inset-x-auto min-[900px]:bottom-10 min-[900px]:left-10 min-[900px]:w-[340px] min-[900px]:bg-none min-[900px]:p-0"
+        className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/95 to-transparent px-5 pt-16 pb-[max(1.5rem,env(safe-area-inset-bottom))] min-[900px]:inset-x-auto min-[900px]:bottom-10 min-[900px]:left-10 min-[900px]:w-[360px] min-[900px]:bg-none min-[900px]:p-0"
       >
         <AnimatePresence mode="wait" initial={false}>
           {active ? (
@@ -280,7 +280,7 @@ export function AtlasExplorer() {
               <p className="mt-3 max-w-[36ch] text-[14px] leading-relaxed text-muted">
                 Every line starts at home. A small map of where the road has taken me so far.
               </p>
-              <ul className="-mx-1 mt-6 flex gap-x-1 gap-y-0.5 overflow-x-auto pb-1 [scrollbar-width:none] min-[900px]:flex-wrap min-[900px]:overflow-visible">
+              <ul className="-mx-5 mt-6 flex gap-x-1 gap-y-0.5 overflow-x-auto px-4 pb-1 [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-24px),transparent)] [scrollbar-width:none] min-[900px]:mx-[-4px] min-[900px]:flex-wrap min-[900px]:overflow-visible min-[900px]:px-0 min-[900px]:[mask-image:none]">
                 {withKm.map((p) => (
                   <li key={p.id} className="shrink-0">
                     <button
@@ -288,7 +288,7 @@ export function AtlasExplorer() {
                       onClick={() => select(p.id)}
                       onMouseEnter={() => engineRef.current?.setHovered(p.id)}
                       onMouseLeave={() => engineRef.current?.setHovered(null)}
-                      className={`cursor-pointer rounded-md px-1 py-0.5 font-serif text-[19px] leading-tight transition-colors ${
+                      className={`cursor-pointer rounded-md px-1 py-0.5 font-serif text-[18px] leading-tight transition-colors ${
                         peek === p.id ? "text-[#87bbea]" : "text-foreground/70 hover:text-foreground"
                       }`}
                     >
