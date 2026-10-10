@@ -26,6 +26,7 @@ export type AtlasTheme = {
   bg: RGB;
   land: RGB;
   landAlpha: number;
+  heatAlpha: number;
   accent: RGB;
   text: RGB;
   dark: boolean;
@@ -37,6 +38,8 @@ export type AtlasOptions = {
   interactive?: boolean;
   /** cap on simultaneously visible place names (home always wins) */
   maxLabels?: number;
+  /** start in reduced-quality mode (low-memory / low-core devices) */
+  lowEnd?: boolean;
 };
 
 export type AtlasCallbacks = {
@@ -55,6 +58,12 @@ type Mask = {
 };
 
 type Field = {
+  /** grid cell -> dot index (-1 = sea); lets heat + lens touch only nearby dots */
+  grid: Int32Array;
+  cols: number;
+  rows: number;
+  ox: number;
+  oy: number;
   xs: Float32Array;
   ys: Float32Array;
   /** proximity to a visited place, 0..1 */
@@ -169,9 +178,9 @@ export function loadLand(): Promise<LandSampler> {
 
 /* ───────────────────────────── engine ───────────────────────────── */
 
-const RIPPLE = 1.4; // s for the reveal to cross the view
-const ARC_DRAW = 1.1; // s per route
-const ARC_STAGGER = 0.09; // s between routes
+const RIPPLE = 1.0; // s for the reveal to cross the view
+const ARC_DRAW = 0.85; // s per route
+const ARC_STAGGER = 0.05; // s between routes
 const LENS_R = 70; // px
 const COMET_CYCLE = 6.5; // s between comets on the same route
 const COMET_TRAVEL = 2.4; // s a comet takes to arrive
@@ -186,6 +195,12 @@ export class AtlasEngine {
   private routes: AtlasPlace[];
   private home: AtlasPlace;
   private opts: Required<AtlasOptions>;
+  private pitchBoost = 0;
+  private frameCost = 0; // EMA of ms spent drawing a frame
+  private slowFrames = 0;
+  private ambientSkip = false;
+  private styleCache: { theme: AtlasTheme; styles: string[] } | null = null;
+  private textWidth = new Map<string, number>();
   private cb: AtlasCallbacks;
   private land: LandSampler | null = null;
   private theme: AtlasTheme | null = null;
@@ -235,7 +250,15 @@ export class AtlasEngine {
     this.places = places;
     this.home = places.find((p) => p.home) ?? places[0];
     this.routes = places.filter((p) => p !== this.home);
-    this.opts = { interactive: opts.interactive ?? true, maxLabels: opts.maxLabels ?? 99 };
+    this.opts = {
+      interactive: opts.interactive ?? true,
+      maxLabels: opts.maxLabels ?? 99,
+      lowEnd: opts.lowEnd ?? false,
+    };
+    if (this.opts.lowEnd) {
+      this.pitchBoost = 1;
+      this.ambientSkip = true;
+    }
     this.cb = cb;
   }
 
@@ -248,6 +271,7 @@ export class AtlasEngine {
 
   setTheme(theme: AtlasTheme) {
     this.theme = theme;
+    this.textWidth.clear();
     this.cacheDirty = true;
     this.kick();
   }
@@ -402,7 +426,10 @@ export class AtlasEngine {
   }
 
   private get introT() {
-    return this.introAt < 0 ? -1 : this.introAt === Infinity ? Infinity : this.clock - this.introAt;
+    if (this.introAt < 0) return -1;
+    if (this.introAt === Infinity) return Infinity;
+    const t = this.clock - this.introAt;
+    return t > this.introLength() + 1 ? Infinity : t;
   }
 
   private finishIntro() {
@@ -489,14 +516,25 @@ export class AtlasEngine {
     this.kick();
   }
 
+  private frameToggle = false;
+
   private tick = (now: number) => {
     this.raf = 0;
     if (!this.running) return;
+    const idle = this.flight === null && this.pointer === null && this.introT === Infinity;
+    // on weak devices, ambient-only frames run at half rate
+    this.frameToggle = !this.frameToggle;
+    if (this.ambientSkip && idle && this.introNotified && this.frameToggle) {
+      this.raf = requestAnimationFrame(this.tick);
+      return;
+    }
     const dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
     this.clock += dt;
     this.step(dt);
+    const t0 = performance.now();
     this.draw();
+    this.adapt(performance.now() - t0);
     // ambient motion keeps the loop alive; with reduced motion we only
     // animate while something is actually changing
     const settling =
@@ -505,6 +543,21 @@ export class AtlasEngine {
       [...this.emphasis.values()].some((v) => v > 0.01 && v < 0.99);
     if (!this.reduced || settling) this.raf = requestAnimationFrame(this.tick);
   };
+
+  /** If frames keep running long, trade dot density for smoothness. */
+  private adapt(ms: number) {
+    this.frameCost = this.frameCost * 0.9 + ms * 0.1;
+    this.slowFrames = this.frameCost > 9 ? this.slowFrames + 1 : 0;
+    if (this.slowFrames > 45) {
+      this.slowFrames = 0;
+      this.frameCost = 0;
+      this.ambientSkip = true;
+      if (this.pitchBoost < 3) {
+        this.pitchBoost++;
+        this.invalidate();
+      }
+    }
+  }
 
   private step(dt: number) {
     if (this.flight) {
@@ -523,7 +576,9 @@ export class AtlasEngine {
     }
 
     const it = this.introT;
-    if (it !== Infinity && it > this.introLength()) this.finishIntro();
+    if (it === Infinity || it > this.introLength()) {
+      if (this.introAt >= 0) this.finishIntro();
+    }
 
     const ease = Math.min(1, dt * 9);
     this.lensAmt += ((this.pointer ? 1 : 0) - this.lensAmt) * ease;
@@ -547,53 +602,71 @@ export class AtlasEngine {
   private buildField() {
     const land = this.land;
     if (!land || !this.w) return;
-    const pitch = this.w < 480 ? 5 : this.w > 1300 ? 7 : 6;
+    const pitch = (this.w < 480 ? 5 : this.w > 1300 ? 7 : 6) + this.pitchBoost;
     const k = this.cam.k;
     const ox = (((this.w / 2 - this.cam.lng * k) % pitch) + pitch) % pitch;
     const oy = (((this.h / 2 + this.cam.lat * k) % pitch) + pitch) % pitch;
-    const cols = Math.ceil(this.w / pitch) + 1;
-    const rows = Math.ceil(this.h / pitch) + 1;
+    const cols = Math.floor((this.w - ox) / pitch) + 1;
+    const rows = Math.floor((this.h - oy) / pitch) + 1;
     const cap = cols * rows;
-    const xs = new Float32Array(cap);
-    const ys = new Float32Array(cap);
-    const heat = new Float32Array(cap);
-    const dist = new Float32Array(cap);
+    const prev = this.field;
+    const reuse = prev && prev.grid.length >= cap;
+    const grid = reuse ? prev.grid : new Int32Array(cap);
+    const xs = reuse ? prev.xs : new Float32Array(cap);
+    const ys = reuse ? prev.ys : new Float32Array(cap);
+    const heat = reuse ? prev.heat : new Float32Array(cap);
+    const dist = reuse ? prev.dist : new Float32Array(cap);
+    grid.fill(-1, 0, cap);
 
     const home = this.project(this.home.lng, this.home.lat);
-    const marks = this.places.map((p) => this.project(p.lng, p.lat));
-    const sigma = clamp(k * 0.9, 8, 18);
-    const cut = 9 * sigma * sigma;
+    const lng0 = this.cam.lng + (ox - this.w / 2) / k;
+    const dLng = pitch / k;
     let far = 1;
-
     let n = 0;
     for (let r = 0; r < rows; r++) {
       const y = oy + r * pitch;
-      if (y > this.h) break;
       const lat = this.cam.lat - (y - this.h / 2) / k;
+      if (lat < -58 || lat > 84) continue;
+      const dy = y - home.y;
       for (let c = 0; c < cols; c++) {
+        if (land(lng0 + c * dLng, lat) < 0.5) continue;
         const x = ox + c * pitch;
-        if (x > this.w) break;
-        if (land(this.cam.lng + (x - this.w / 2) / k, lat) < 0.5) continue;
+        grid[r * cols + c] = n;
         xs[n] = x;
         ys[n] = y;
-        let hmax = 0;
-        for (const m of marks) {
-          const dx = m.x - x;
-          const dy = m.y - y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < cut) {
-            const hv = Math.exp(-d2 / (2 * sigma * sigma));
-            if (hv > hmax) hmax = hv;
-          }
-        }
-        heat[n] = hmax;
-        const d = Math.hypot(x - home.x, y - home.y);
+        heat[n] = 0;
+        const dx = x - home.x;
+        const d = Math.sqrt(dx * dx + dy * dy);
         dist[n] = d;
         if (d > far) far = d;
         n++;
       }
     }
-    this.field = { xs, ys, heat, dist, count: n, pitch, far };
+
+    // stamp a soft glow around each on-screen place: O(places x r^2),
+    // independent of how big the viewport is
+    const sigma = clamp(k * 0.9, 8, 18);
+    const reach = sigma * 3;
+    const inv = 1 / (2 * sigma * sigma);
+    for (const p of this.places) {
+      const m = this.project(p.lng, p.lat);
+      if (m.x < -reach || m.y < -reach || m.x > this.w + reach || m.y > this.h + reach) continue;
+      const c0 = Math.max(0, Math.floor((m.x - reach - ox) / pitch));
+      const c1 = Math.min(cols - 1, Math.ceil((m.x + reach - ox) / pitch));
+      const r0 = Math.max(0, Math.floor((m.y - reach - oy) / pitch));
+      const r1 = Math.min(rows - 1, Math.ceil((m.y + reach - oy) / pitch));
+      for (let r = r0; r <= r1; r++) {
+        for (let c = c0; c <= c1; c++) {
+          const i = grid[r * cols + c];
+          if (i < 0) continue;
+          const dx = xs[i] - m.x;
+          const dy = ys[i] - m.y;
+          const hv = Math.exp(-(dx * dx + dy * dy) * inv);
+          if (hv > heat[i]) heat[i] = hv;
+        }
+      }
+    }
+    this.field = { grid, cols, rows, ox, oy, xs, ys, heat, dist, count: n, pitch, far };
     this.fieldDirty = false;
   }
 
@@ -630,12 +703,14 @@ export class AtlasEngine {
   }
 
   private dotStyles(theme: AtlasTheme) {
+    if (this.styleCache?.theme === theme) return this.styleCache.styles;
     const levels = 6;
     const styles: string[] = [];
     for (let i = 0; i < levels; i++) {
       const h = i / (levels - 1);
-      styles.push(rgba(mix(theme.land, theme.accent, h * 0.75), lerp(theme.landAlpha, theme.dark ? 0.55 : 0.6, h)));
+      styles.push(rgba(mix(theme.land, theme.accent, h * (theme.dark ? 0.75 : 0.9)), lerp(theme.landAlpha, theme.heatAlpha, h)));
     }
+    this.styleCache = { theme, styles };
     return styles;
   }
 
@@ -687,12 +762,16 @@ export class AtlasEngine {
     if (fade < 0.03) return;
     const base = f.pitch * 0.38;
     ctx.fillStyle = rgba(theme.accent, 1);
+    const lo = r - band;
+    const hi = r + band;
     for (let i = 0; i < f.count; i++) {
-      const t = 1 - Math.abs(f.dist[i] - r) / band;
+      const di = f.dist[i];
+      if (di < lo || di > hi) continue;
+      const t = 1 - Math.abs(di - r) / band;
       if (t <= 0) continue;
       const g = smooth(t) * fade;
       const s = base * (1 + f.heat[i] * 0.3);
-      ctx.globalAlpha = g * (theme.dark ? 0.32 : 0.26);
+      ctx.globalAlpha = g * (theme.dark ? 0.32 : 0.3);
       ctx.fillRect(f.xs[i] - s / 2, f.ys[i] - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
@@ -715,10 +794,16 @@ export class AtlasEngine {
     ctx.fillStyle = rgba(theme.bg, 1);
     ctx.fillRect(p.x - R - 10, p.y - R - 10, R * 2 + 20, R * 2 + 20);
     let last = -1;
-    for (let i = 0; i < f.count; i++) {
+    const c0 = Math.max(0, Math.floor((p.x - R - f.ox) / f.pitch));
+    const c1 = Math.min(f.cols - 1, Math.ceil((p.x + R - f.ox) / f.pitch));
+    const r0 = Math.max(0, Math.floor((p.y - R - f.oy) / f.pitch));
+    const r1 = Math.min(f.rows - 1, Math.ceil((p.y + R - f.oy) / f.pitch));
+    for (let rr = r0; rr <= r1; rr++) {
+      for (let cc = c0; cc <= c1; cc++) {
+      const i = f.grid[rr * f.cols + cc];
+      if (i < 0) continue;
       const dx = f.xs[i] - p.x;
       const dy = f.ys[i] - p.y;
-      if (dx > R + 10 || dx < -R - 10 || dy > R + 10 || dy < -R - 10) continue;
       const d = Math.hypot(dx, dy);
       const g = smooth(clamp(1 - d / R, 0, 1)) * amt;
       const push = g * 4;
@@ -731,6 +816,7 @@ export class AtlasEngine {
         last = lv;
       }
       ctx.fillRect(f.xs[i] + nx * push - s / 2, f.ys[i] + ny * push - s / 2, s, s);
+      }
     }
     ctx.restore();
   }
@@ -783,7 +869,7 @@ export class AtlasEngine {
         const q = this.bez(a, c, b, s / segs);
         path.lineTo(q.x, q.y);
       }
-      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.32 : 0.4, 0.85, em) * dim);
+      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.32 : 0.45, theme.dark ? 0.85 : 0.95, em) * dim);
       ctx.lineWidth = lerp(1, 1.6, em);
       ctx.stroke(path);
 
@@ -847,7 +933,7 @@ export class AtlasEngine {
 
       const glowR = (p.home ? 14 : 9 + em * 6) * pop;
       const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
-      g.addColorStop(0, rgba(theme.accent, (theme.dark ? 0.4 : 0.3) * rv * dim));
+      g.addColorStop(0, rgba(theme.accent, (theme.dark ? 0.4 : 0.22) * rv * dim));
       g.addColorStop(1, rgba(theme.accent, 0));
       ctx.fillStyle = g;
       ctx.beginPath();
@@ -892,28 +978,34 @@ export class AtlasEngine {
       if (shown >= this.opts.maxLabels && em < 0.05) continue;
       const size = p.home || em > 0.5 ? 16 : 14;
       ctx.font = `${size}px ${theme.serif}`;
-      const tw = ctx.measureText(p.name).width;
+      const key = `${size}|${p.name}`;
+      let tw = this.textWidth.get(key);
+      if (tw === undefined) {
+        tw = ctx.measureText(p.name).width;
+        this.textWidth.set(key, tw);
+      }
+      const width = tw;
       const bh = size + 2;
       const s = this.project(p.lng, p.lat);
       const gap = p.home ? 13 : 9;
       const cands = [
         { x: s.x + gap, y: s.y - bh / 2 },
-        { x: s.x - gap - tw, y: s.y - bh / 2 },
-        { x: s.x - tw / 2, y: s.y - gap - bh },
-        { x: s.x - tw / 2, y: s.y + gap },
+        { x: s.x - gap - width, y: s.y - bh / 2 },
+        { x: s.x - width / 2, y: s.y - gap - bh },
+        { x: s.x - width / 2, y: s.y + gap },
       ];
       const fits = (r: { x: number; y: number }) =>
         r.x > 6 &&
         r.y > 6 &&
-        r.x + tw < this.w - 6 &&
+        r.x + width < this.w - 6 &&
         r.y + bh < this.h - 6 &&
-        boxes.every((o) => r.x > o.x + o.w + 4 || r.x + tw < o.x - 4 || r.y > o.y + o.h + 1 || r.y + bh < o.y - 1) &&
+        boxes.every((o) => r.x > o.x + o.w + 4 || r.x + width < o.x - 4 || r.y > o.y + o.h + 1 || r.y + bh < o.y - 1) &&
         markers.every(
-          (m) => m.id === p.id || m.x < r.x - 5 || m.x > r.x + tw + 5 || m.y < r.y - 5 || m.y > r.y + bh + 5,
+          (m) => m.id === p.id || m.x < r.x - 5 || m.x > r.x + width + 5 || m.y < r.y - 5 || m.y > r.y + bh + 5,
         );
       const spot = cands.find(fits) ?? (em > 0.5 ? cands[0] : null);
       if (!spot) continue;
-      boxes.push({ x: spot.x, y: spot.y, w: tw, h: bh });
+      boxes.push({ x: spot.x, y: spot.y, w: width, h: bh });
       shown++;
 
       const dim = p.home ? 1 : 1 - this.focusAmt * 0.6 * (1 - em);
@@ -957,9 +1049,11 @@ export function readTheme(el: HTMLElement): AtlasTheme {
   return {
     bg: parseColor(v("--background")),
     land: fg,
-    landAlpha: dark ? 0.17 : 0.2,
-    // the sky blue the contribution graph uses for its highlighted numbers
-    accent: dark ? [135, 187, 234] : [74, 144, 205],
+    landAlpha: dark ? 0.17 : 0.13,
+    heatAlpha: dark ? 0.55 : 0.5,
+    // dark: the contribution graph's sky blue; light: the same hue, deeper,
+    // so thin lines and small dots keep their contrast on white
+    accent: dark ? [135, 187, 234] : [47, 128, 209],
     text: fg,
     dark,
     serif: v("--font-instrument-serif").trim() || "Georgia, serif",

@@ -5,6 +5,11 @@ import { useReducedMotion } from "motion/react";
 import { places } from "@/data/travel";
 import { AtlasEngine, loadLand, readTheme, type AtlasOptions } from "./atlas-engine";
 
+/** Kick off the land-mask download/decode ahead of the first render. */
+export function warmAtlas() {
+  if (typeof window !== "undefined") loadLand().catch(() => {});
+}
+
 type UseAtlasArgs = {
   stageRef: RefObject<HTMLDivElement | null>;
   canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -36,7 +41,9 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: Use
     const canvas = canvasRef.current;
     if (!stage || !canvas) return;
 
-    const engine = new AtlasEngine(canvas, places, options, {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowEnd = (nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4;
+    const engine = new AtlasEngine(canvas, places, { lowEnd, ...options }, {
       onHover: (id) => hoverRef.current?.(id),
     });
     engineRef.current = engine;
@@ -45,7 +52,7 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: Use
 
     const measure = () => {
       const r = stage.getBoundingClientRect();
-      engine.resize(Math.round(r.width), Math.round(r.height), Math.min(window.devicePixelRatio || 1, 2));
+      engine.resize(Math.round(r.width), Math.round(r.height), Math.min(window.devicePixelRatio || 1, lowEnd ? 1.5 : 2));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -71,7 +78,7 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: Use
         else engine.stop();
         maybeIntro();
       },
-      { threshold: 0.3 },
+      { threshold: 0.15 },
     );
     io.observe(stage);
 
@@ -81,6 +88,7 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: Use
     };
     document.addEventListener("visibilitychange", onVisibility);
 
+    // land starts loading immediately; the masks are tiny and cached per page
     loadLand()
       .then((land) => {
         engine.setLand(land);
