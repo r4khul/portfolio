@@ -291,8 +291,8 @@ export class AtlasEngine {
   }
 
   worldView(): Camera {
-    const k = Math.max(this.w / 360, this.h / 150);
-    return { lng: this.w / k >= 359 ? 0 : 40, lat: 14, k };
+    const k = Math.max(this.w / 360, this.h / 172);
+    return { lng: this.w / k >= 359 ? 0 : 22, lat: 16, k };
   }
 
   placesView(): Camera {
@@ -557,7 +557,7 @@ export class AtlasEngine {
     const homeS = this.project(this.home.lng, this.home.lat);
     const far = Math.hypot(this.w, this.h);
     const marks = this.places.map((p) => this.project(p.lng, p.lat));
-    const sigma = 30;
+    const sigma = clamp(k * 1.1, 9, 22);
 
     let n = 0;
     for (let r = 0; r < rows; r++) {
@@ -616,6 +616,7 @@ export class AtlasEngine {
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     }
 
+    if (!introing && this.rippleAt >= 0) this.drawSonar(ctx, theme);
     if (this.lensAmt > 0.01 && this.pointer && this.field) this.drawLens(ctx, theme);
     this.drawFocusCrosshair(ctx, theme);
     this.drawArcs(ctx, theme);
@@ -734,6 +735,32 @@ export class AtlasEngine {
     ctx.restore();
   }
 
+  /** A soft ping that rolls out from home through the dot field. */
+  private drawSonar(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
+    const f = this.field;
+    if (!f || this.reduced) return;
+    const period = 5.5;
+    const ph = ((this.clock - this.rippleAt) % period) / period;
+    const home = this.project(this.home.lng, this.home.lat);
+    const far = Math.hypot(Math.max(home.x, this.w - home.x), Math.max(home.y, this.h - home.y));
+    const r = smooth(ph) * far;
+    const band = 34;
+    const fade = 1 - ph;
+    if (fade <= 0.02) return;
+    const base = f.pitch * 0.4;
+    ctx.fillStyle = rgba(mix(theme.accent, theme.text, 0.25), 1);
+    for (let i = 0; i < f.count; i++) {
+      const d = Math.hypot(f.xs[i] - home.x, f.ys[i] - home.y);
+      const t = 1 - Math.abs(d - r) / band;
+      if (t <= 0) continue;
+      const g = smooth(t) * fade;
+      const s = base * (1 + f.heat[i] * 0.45) * (1 + g * 0.6);
+      ctx.globalAlpha = g * (theme.dark ? 0.55 : 0.45);
+      ctx.fillRect(f.xs[i] - s / 2, f.ys[i] - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   /** Magnifying glass that follows the cursor: dots swell and push outward. */
   private drawLens(ctx: CanvasRenderingContext2D, theme: AtlasTheme) {
     const f = this.field;
@@ -800,7 +827,7 @@ export class AtlasEngine {
       nx = -nx;
       ny = -ny;
     }
-    const lift = Math.min(len * 0.26, 140);
+    const lift = Math.min(len * 0.3, 160);
     return { x: mx + nx * lift, y: my + ny * lift };
   }
 
@@ -833,9 +860,9 @@ export class AtlasEngine {
       const end = Math.max(1, Math.round(segs * prog));
 
       // base route
-      ctx.strokeStyle = rgba(theme.accent, lerp(0.28, 0.75, hl));
-      ctx.lineWidth = lerp(1, 1.6, hl);
-      ctx.setLineDash([2, 3]);
+      ctx.strokeStyle = rgba(theme.accent, lerp(theme.dark ? 0.42 : 0.5, 0.9, hl));
+      ctx.lineWidth = lerp(1.1, 1.8, hl);
+      ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       for (let s = 1; s <= end; s++) {
@@ -868,13 +895,23 @@ export class AtlasEngine {
         const p0 = this.bez(a, c, b, clamp(t0, 0, 1));
         const p1 = this.bez(a, c, b, clamp(t1, 0, 1));
         const k = (s + 1) / steps;
-        ctx.strokeStyle = rgba(mix(theme.accent, theme.text, k * 0.5), k * 0.95);
-        ctx.lineWidth = 0.6 + k * 1.6;
+        ctx.strokeStyle = rgba(mix(theme.accent, theme.text, k * 0.55), k);
+        ctx.lineWidth = 0.8 + k * 1.8;
         ctx.beginPath();
         ctx.moveTo(p0.x, p0.y);
         ctx.lineTo(p1.x, p1.y);
         ctx.stroke();
       }
+      // comet head
+      const head = this.bez(a, c, b, phase);
+      const fade = Math.min(1, phase * 8, (1 - phase) * 8);
+      const hg = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 7);
+      hg.addColorStop(0, rgba(mix(theme.accent, theme.text, 0.6), 0.9 * fade));
+      hg.addColorStop(1, rgba(theme.accent, 0));
+      ctx.fillStyle = hg;
+      ctx.beginPath();
+      ctx.arc(head.x, head.y, 7, 0, Math.PI * 2);
+      ctx.fill();
     });
     ctx.restore();
   }
