@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Minus, Plus, RotateCcw } from "lucide-react";
+import { Minus, Pause, Plane, Plus, RotateCcw } from "lucide-react";
 import { places, type Place } from "@/data/travel";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import {
@@ -21,6 +21,15 @@ const withDistance = places.map((p) => ({
   ...p,
   km: p.home ? 0 : Math.round(haversineKm(home, p)),
 }));
+
+/** Tour order: hop outward from home, nearest first. */
+const tourOrder = withDistance
+  .filter((p) => !p.home)
+  .sort((a, b) => a.km - b.km)
+  .map((p) => p.id);
+
+const TOUR_HOP = 1.5; // s flight
+const TOUR_DWELL = 1300; // ms on each city
 
 /**
  * Travel atlas: a hand-drawn dot-matrix map of everywhere I've been.
@@ -41,6 +50,8 @@ export function TravelAtlas() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [cursor, setCursor] = useState<{ lng: number; lat: number } | null>(null);
+  const [touring, setTouring] = useState(false);
+  const tourTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const states = useMemo(() => new Set(places.map((p) => p.state)).size, []);
   const routeKm = useMemo(() => withDistance.reduce((s, p) => s + p.km, 0), []);
@@ -134,23 +145,72 @@ export function TravelAtlas() {
   }, [selected]);
 
   /* ── controls ── */
+  const stopTour = useCallback(() => {
+    if (tourTimer.current) clearTimeout(tourTimer.current);
+    tourTimer.current = null;
+    setTouring(false);
+  }, []);
+
+  useEffect(() => stopTour, [stopTour]);
+
+  const revealStage = useCallback(() => {
+    const r = stageRef.current?.getBoundingClientRect();
+    if (r && (r.top < 0 || r.bottom > window.innerHeight)) {
+      stageRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
+  const startTour = useCallback(() => {
+    const e = engineRef.current;
+    if (!e) return;
+    playClick();
+    if (tourTimer.current) {
+      stopTour();
+      return;
+    }
+    setTouring(true);
+    setView("india");
+    revealStage();
+    let i = 0;
+    const hop = () => {
+      const eng = engineRef.current;
+      if (!eng) return;
+      if (i >= tourOrder.length) {
+        setSelected(null);
+        eng.flyTo(eng.placesView(), 1.8);
+        tourTimer.current = null;
+        setTouring(false);
+        return;
+      }
+      const id = tourOrder[i++];
+      setSelected(id);
+      const cam = eng.focusView(id);
+      if (cam) eng.flyTo(cam, TOUR_HOP);
+      tourTimer.current = setTimeout(hop, TOUR_HOP * 1000 + TOUR_DWELL);
+    };
+    hop();
+  }, [playClick, revealStage, stopTour]);
+
   const goTo = useCallback(
     (v: View) => {
       const e = engineRef.current;
       if (!e) return;
+      stopTour();
       playClick();
       setView(v);
       setSelected(null);
       e.flyTo(v === "world" ? e.worldView() : e.placesView(), 1.8);
     },
-    [playClick],
+    [playClick, stopTour],
   );
 
   const focusPlace = useCallback(
-    (id: string) => {
+    (id: string, fromList = false) => {
       const e = engineRef.current;
       if (!e) return;
+      stopTour();
       playClick();
+      if (fromList) revealStage();
       if (selected === id) {
         setSelected(null);
         e.flyTo(e.placesView(), 1.4);
@@ -161,15 +221,16 @@ export function TravelAtlas() {
       const cam = e.focusView(id);
       if (cam) e.flyTo(cam, 1.5);
     },
-    [playClick, selected],
+    [playClick, selected, stopTour, revealStage],
   );
 
   const replay = useCallback(() => {
+    stopTour();
     playClick();
     setSelected(null);
     setView("india");
     engineRef.current?.playIntro();
-  }, [playClick]);
+  }, [playClick, stopTour]);
 
   const zoom = useCallback(
     (f: number) => {
@@ -190,6 +251,7 @@ export function TravelAtlas() {
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if (tourTimer.current) stopTour();
     const p = localPoint(e);
     pinch.current.set(e.pointerId, p);
     if (pinch.current.size === 2) {
@@ -268,28 +330,6 @@ export function TravelAtlas() {
   return (
     <div ref={wrapRef} className="select-none">
       <div className="tactile relative flex flex-col gap-4 overflow-hidden rounded-xl p-4 sm:gap-5 sm:p-5">
-        {/* HUD - anchored top centre, same language as the contribution graph */}
-        <AnimatePresence>
-          {activePlace && (
-            <motion.div
-              key={activePlace.id}
-              initial={{ opacity: 0, y: -4, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: -4, x: "-50%" }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="pointer-events-none absolute top-4 left-1/2 z-20 flex items-center gap-2 rounded-md border border-edge-strong bg-surface/95 px-2 py-1 font-mono text-[10px] whitespace-nowrap shadow-xl backdrop-blur-sm sm:top-5"
-            >
-              <span className="font-bold text-foreground">{activePlace.name}</span>
-              <span className="h-3 w-px bg-edge-strong" />
-              <span className="text-muted">{activePlace.state}</span>
-              <span className="h-3 w-px bg-edge-strong" />
-              <span className="text-[#87bbea]">
-                {activePlace.home ? "home" : `${activePlace.km.toLocaleString()} km`}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1.5">
@@ -329,6 +369,18 @@ export function TravelAtlas() {
             </div>
             <button
               type="button"
+              onClick={startTour}
+              className={`tactile flex h-7 cursor-pointer items-center gap-1.5 rounded-lg px-2 font-mono text-[10px] tracking-wider uppercase transition ${
+                touring ? "text-[#87bbea]" : "text-faint hover:text-foreground"
+              }`}
+              aria-label={touring ? "Stop tour" : "Tour every place"}
+              aria-pressed={touring}
+            >
+              {touring ? <Pause className="size-3" /> : <Plane className="size-3" />}
+              <span className="hidden sm:inline">{touring ? "Stop" : "Tour"}</span>
+            </button>
+            <button
+              type="button"
               onClick={replay}
               className="tactile flex size-7 cursor-pointer items-center justify-center rounded-lg text-faint transition hover:text-foreground"
               aria-label="Replay map animation"
@@ -365,6 +417,28 @@ export function TravelAtlas() {
                 exit={{ opacity: 0 }}
                 className="dotgrid absolute inset-0 animate-pulse"
               />
+            )}
+          </AnimatePresence>
+
+          {/* HUD - same language as the contribution graph's hover readout */}
+          <AnimatePresence>
+            {activePlace && (
+              <motion.div
+                key={activePlace.id}
+                initial={{ opacity: 0, y: 4, x: "-50%" }}
+                animate={{ opacity: 1, y: 0, x: "-50%" }}
+                exit={{ opacity: 0, y: 4, x: "-50%" }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="pointer-events-none absolute bottom-3 left-1/2 z-20 flex items-center gap-2 rounded-md border border-edge-strong bg-surface/95 px-2 py-1 font-mono text-[10px] whitespace-nowrap shadow-xl backdrop-blur-sm"
+              >
+                <span className="font-bold text-foreground">{activePlace.name}</span>
+                <span className="h-3 w-px bg-edge-strong" />
+                <span className="text-muted">{activePlace.state}</span>
+                <span className="h-3 w-px bg-edge-strong" />
+                <span className="text-[#87bbea]">
+                  {activePlace.home ? "home" : `${activePlace.km.toLocaleString()} km`}
+                </span>
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -421,7 +495,7 @@ export function TravelAtlas() {
             active={active === p.id}
             onEnter={() => engineRef.current?.setHovered(p.id)}
             onLeave={() => engineRef.current?.setHovered(null)}
-            onClick={() => focusPlace(p.id)}
+            onClick={() => focusPlace(p.id, true)}
           />
         ))}
       </ul>
