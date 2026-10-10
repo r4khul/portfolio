@@ -4,6 +4,7 @@ import { memo, useCallback, useRef, useEffect } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion } from "motion/react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
+import { haptic } from "@/lib/haptics";
 
 export const AudioToggle = memo(({
   className = "tactile flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground active:scale-90",
@@ -23,6 +24,7 @@ export const AudioToggle = memo(({
   }, []);
 
   const handleClick = useCallback(() => {
+    haptic("toggle");
     // Play switch sound before muting
     if (switchAudio.current && !isMuted) {
       switchAudio.current.currentTime = 0;

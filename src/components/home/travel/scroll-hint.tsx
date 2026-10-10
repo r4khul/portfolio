@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { haptic } from "@/lib/haptics";
 
 /**
  * A scroll container that tells you it scrolls without saying so:
@@ -13,6 +14,8 @@ export function ScrollHint({ children, className = "" }: { children: ReactNode; 
   const [edges, setEdges] = useState({ top: false, bottom: false, overflow: false });
   const [thumb, setThumb] = useState({ size: 1, offset: 0 });
   const frame = useRef(0);
+  const nudging = useRef(false);
+  const wasAtEnd = useRef({ top: true, bottom: false });
 
   const measure = useCallback(() => {
     frame.current = 0;
@@ -20,11 +23,16 @@ export function ScrollHint({ children, className = "" }: { children: ReactNode; 
     if (!el) return;
     const { scrollTop, scrollHeight, clientHeight } = el;
     const overflow = scrollHeight > clientHeight + 2;
-    setEdges({
-      overflow,
-      top: overflow && scrollTop > 2,
-      bottom: overflow && scrollTop + clientHeight < scrollHeight - 2,
-    });
+    const top = overflow && scrollTop > 2;
+    const bottom = overflow && scrollTop + clientHeight < scrollHeight - 2;
+    // a small bump when a real scroll reaches either end
+    if (overflow && !nudging.current) {
+      const atTop = !top;
+      const atBottom = !bottom;
+      if ((atTop && !wasAtEnd.current.top) || (atBottom && !wasAtEnd.current.bottom)) haptic("edge");
+      wasAtEnd.current = { top: atTop, bottom: atBottom };
+    }
+    setEdges({ overflow, top, bottom });
     if (overflow) {
       const size = clientHeight / scrollHeight;
       setThumb({ size, offset: (scrollTop / (scrollHeight - clientHeight)) * (1 - size) });
@@ -54,8 +62,12 @@ export function ScrollHint({ children, className = "" }: { children: ReactNode; 
         if (el.scrollHeight <= el.clientHeight + 2 || el.scrollTop > 0) return;
         nudged = true;
         t1 = setTimeout(() => {
+          nudging.current = true;
           el.scrollTo({ top: 36, behavior: "smooth" });
-          t2 = setTimeout(() => el.scrollTo({ top: 0, behavior: "smooth" }), 520);
+          t2 = setTimeout(() => {
+            el.scrollTo({ top: 0, behavior: "smooth" });
+            setTimeout(() => (nudging.current = false), 600);
+          }, 520);
         }, 900);
       },
       { threshold: [0, 0.5, 1] },

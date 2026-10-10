@@ -7,6 +7,7 @@ import { ArrowLeft, ChevronUp, LocateFixed, Minus, Plus } from "lucide-react";
 import { homePlace as home, nativePlace, nowPlace, places, roleLabel } from "@/data/travel";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
+import { haptic } from "@/lib/haptics";
 import { haversineKm, type AtlasEngine } from "./atlas-engine";
 import { useAtlas, warmAtlas } from "./use-atlas";
 import { CityButton } from "./city-glyphs";
@@ -52,6 +53,7 @@ export function AtlasExplorer() {
   const [selected, setSelected] = useState<string | null>(null);
   const [away, setAway] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const expectLanding = useRef(false);
   const headRef = useRef<HTMLDivElement>(null);
 
   const applyInsets = useCallback((engine: AtlasEngine) => {
@@ -76,6 +78,14 @@ export function AtlasExplorer() {
     onHover: setHovered,
     onReady: applyInsets,
     onIntroDone: () => openFromUrl(),
+    // a soft landing pulse when a flight the visitor asked for arrives
+    onArrive: () => {
+      if (expectLanding.current) {
+        expectLanding.current = false;
+        haptic("land");
+      }
+    },
+    onEdge: () => haptic("edge"),
   });
 
   // keep the resting framing honest when the panel or viewport changes size
@@ -110,7 +120,9 @@ export function AtlasExplorer() {
     (id: string | null) => {
       const e = engineRef.current;
       if (!e) return;
+      haptic("select");
       playClick();
+      expectLanding.current = true;
       setSelected(id);
       setSheetOpen(false);
       if (!id) {
@@ -139,6 +151,7 @@ export function AtlasExplorer() {
     const e = engineRef.current;
     if (!e) return;
     playClick();
+    expectLanding.current = true;
     setSelected(null);
     e.flyTo(e.homeView(), 1.2);
   }, [engineRef, playClick]);
@@ -165,7 +178,7 @@ export function AtlasExplorer() {
 
   /* ── gestures: drag to pan, wheel / pinch to zoom, tap a place ── */
   const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const gesture = useRef({ moved: 0, pinch: 0 });
+  const gesture = useRef({ moved: 0, pinch: 0, detent: 0, over: null as string | null });
 
   const local = (e: { clientX: number; clientY: number }) => {
     const r = stageRef.current!.getBoundingClientRect();
@@ -194,6 +207,12 @@ export function AtlasExplorer() {
         const d = Math.hypot(a.x - b.x, a.y - b.y);
         if (gesture.current.pinch > 0) {
           engine.zoomBy(d / gesture.current.pinch, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+          // detents every ~35% of zoom, felt like the clicks of a dial
+          const detent = Math.floor(Math.log(engine.cam.k) / Math.log(1.35));
+          if (detent !== gesture.current.detent) {
+            gesture.current.detent = detent;
+            haptic("notch");
+          }
         }
         gesture.current.pinch = d;
         gesture.current.moved += 10;
@@ -203,6 +222,12 @@ export function AtlasExplorer() {
       const dy = p.y - prev.y;
       gesture.current.moved += Math.abs(dx) + Math.abs(dy);
       if (gesture.current.moved > 4) engine.panBy(dx, dy);
+      // dragging a finger across the map, each city is a little bump
+      if (e.pointerType !== "mouse") {
+        const over = engine.hitTest(p.x, p.y);
+        if (over && over !== gesture.current.over) haptic("notch");
+        gesture.current.over = over;
+      }
     }
     if (e.pointerType === "mouse") engine.setPointer(p);
   };

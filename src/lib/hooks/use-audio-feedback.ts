@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
+import { haptic } from "@/lib/haptics";
 
 /**
- * Reusable hook for tactile audio feedback.
- * Provides click sound for premium, minimal interface interactions.
+ * Reusable hook for tactile feedback.
+ * Click sound on pointer devices, a crisp haptic tick on touch devices.
  */
 export function useAudioFeedback() {
   const clickAudio = useRef<HTMLAudioElement | null>(null);
@@ -21,6 +22,8 @@ export function useAudioFeedback() {
   }, []);
 
   const playClick = useCallback(() => {
+    // touch screens feel every press, even though they don't hear it
+    haptic("tick");
     if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches || isMuted) {
       return;
     }

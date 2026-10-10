@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import Link from "next/link";
+import { haptic } from "@/lib/haptics";
 
 /**
  * Tiny hand-drawn glyphs that give each city in a sentence a little life.
@@ -163,7 +164,15 @@ export function CityLink({
   const ref = useTouchReveal<HTMLAnchorElement>();
   useIdleWhileVisible(ref, live);
   return (
-    <Link ref={ref} href={`/travels?place=${id}`} onClick={onClick} className={tokenClass}>
+    <Link
+      ref={ref}
+      href={`/travels?place=${id}`}
+      onClick={() => {
+        haptic("tick");
+        onClick?.();
+      }}
+      className={tokenClass}
+    >
       <TokenBody id={id}>{children}</TokenBody>
     </Link>
   );

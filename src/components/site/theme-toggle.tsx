@@ -8,6 +8,7 @@ import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { useAudioContext } from "@/lib/contexts/audio-context";
+import { haptic } from "@/lib/haptics";
 
 const emptySubscribe = () => () => {};
 
@@ -41,6 +42,8 @@ export const ThemeToggle = memo(({
   );
 
   const toggleTheme = async (event: React.MouseEvent) => {
+    // press + latch, like the switch sound
+    haptic("toggle");
     // Audio feedback - non-blocking
     if (audioRef.current && !isMuted) {
       const audio = audioRef.current;
@@ -101,6 +104,8 @@ export const ThemeToggle = memo(({
 
       // Wait for animation to finish
       await animation.finished;
+      // the reveal lands: a soft settle under the finger
+      haptic("land");
     } finally {
       // Re-enable transitions
       document.documentElement.classList.remove("no-transitions");
