@@ -1256,7 +1256,12 @@ export class AtlasEngine {
       if (ea !== eb) return eb - ea;
       const ra = a.home ? 2 : a.now ? 1 : 0;
       const rb = b.home ? 2 : b.now ? 1 : 0;
-      return rb - ra;
+      if (ra !== rb) return rb - ra;
+      // far-flung places are isolated and always have room for a name; the
+      // dense cluster near home then fills in whatever space is left
+      const da = (a.lat - this.home.lat) ** 2 + (a.lng - this.home.lng) ** 2;
+      const db = (b.lat - this.home.lat) ** 2 + (b.lng - this.home.lng) ** 2;
+      return db - da;
     });
     const boxes: { x: number; y: number; w: number; h: number }[] = [];
     const markers = this.places.map((p) => ({ id: p.id, ...this.project(p.lng, p.lat) }));
