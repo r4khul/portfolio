@@ -1001,15 +1001,25 @@ export class AtlasEngine {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // edge readouts
+      // edge readouts, chipped so they sit cleanly over the graticule ticks
       ctx.font = `9px ${theme.mono}`;
-      ctx.fillStyle = rgba(theme.accent, 0.9 * hl);
-      ctx.textBaseline = "bottom";
+      ctx.textBaseline = "middle";
+      const latText = `${p.lat.toFixed(2)}°N`;
+      const lngText = `${p.lng.toFixed(2)}°E`;
+      const lw = ctx.measureText(latText).width + 8;
+      const gw = ctx.measureText(lngText).width + 8;
+      const ly = clamp(s.y, 12, this.h - 12);
+      const gx = clamp(s.x, gw / 2 + 4, this.w - gw / 2 - 4);
+      ctx.globalAlpha = hl;
+      ctx.fillStyle = rgba(theme.bg, 1);
+      ctx.fillRect(2, ly - 7, lw, 14);
+      ctx.fillRect(gx - gw / 2, 3, gw, 14);
+      ctx.fillStyle = rgba(theme.accent, 0.95);
       ctx.textAlign = "left";
-      ctx.fillText(`${p.lat.toFixed(2)}°N`, 6, s.y - 3);
+      ctx.fillText(latText, 6, ly + 0.5);
       ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(`${p.lng.toFixed(2)}°E`, s.x, this.h - 6);
+      ctx.fillText(lngText, gx, 10.5);
+      ctx.globalAlpha = 1;
       ctx.restore();
     }
   }
