@@ -16,7 +16,10 @@ export type AtlasPlace = {
   name: string;
   lng: number;
   lat: number;
+  /** every route starts here */
   home?: boolean;
+  /** where I am right now: gets a steady ring */
+  now?: boolean;
 };
 
 export type Camera = { lng: number; lat: number; k: number };
@@ -931,6 +934,14 @@ export class AtlasEngine {
         }
       }
 
+      if (p.now) {
+        ctx.strokeStyle = rgba(theme.accent, 0.75 * rv * dim);
+        ctx.lineWidth = 1.25;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, (7.5 + em * 2) * pop, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
       const glowR = (p.home ? 14 : 9 + em * 6) * pop;
       const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
       g.addColorStop(0, rgba(theme.accent, (theme.dark ? 0.4 : 0.22) * rv * dim));
@@ -961,8 +972,9 @@ export class AtlasEngine {
       const ea = this.emphasis.get(a.id) ?? 0;
       const eb = this.emphasis.get(b.id) ?? 0;
       if (ea !== eb) return eb - ea;
-      if (a.home !== b.home) return a.home ? -1 : 1;
-      return 0;
+      const ra = a.home ? 2 : a.now ? 1 : 0;
+      const rb = b.home ? 2 : b.now ? 1 : 0;
+      return rb - ra;
     });
     const boxes: { x: number; y: number; w: number; h: number }[] = [];
     const markers = this.places.map((p) => ({ id: p.id, ...this.project(p.lng, p.lat) }));
@@ -976,7 +988,7 @@ export class AtlasEngine {
       if (rv <= 0) continue;
       const em = this.emphasis.get(p.id) ?? 0;
       if (shown >= this.opts.maxLabels && em < 0.05) continue;
-      const size = p.home || em > 0.5 ? 16 : 14;
+      const size = p.home || p.now || em > 0.5 ? 16 : 14;
       ctx.font = `${size}px ${theme.serif}`;
       const key = `${size}|${p.name}`;
       let tw = this.textWidth.get(key);
@@ -987,7 +999,7 @@ export class AtlasEngine {
       const width = tw;
       const bh = size + 2;
       const s = this.project(p.lng, p.lat);
-      const gap = p.home ? 13 : 9;
+      const gap = p.home ? 13 : p.now ? 12 : 9;
       const cands = [
         { x: s.x + gap, y: s.y - bh / 2 },
         { x: s.x - gap - width, y: s.y - bh / 2 },

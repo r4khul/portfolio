@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ChevronUp, LocateFixed, Minus, Plus } from "lucide-react";
-import { places } from "@/data/travel";
+import { homePlace as home, nativePlace, nowPlace, places, roleLabel } from "@/data/travel";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { haversineKm, type AtlasEngine } from "./atlas-engine";
@@ -13,8 +13,7 @@ import { useAtlas, warmAtlas } from "./use-atlas";
 // start fetching + decoding the land as soon as this chunk loads
 warmAtlas();
 
-const home = places.find((p) => p.home) ?? places[0];
-const withKm = places.map((p) => ({ ...p, km: p.home ? 0 : Math.round(haversineKm(home, p)) }));
+const withKm = places.map((p) => ({ ...p, km: p === home ? 0 : Math.round(haversineKm(home, p)) }));
 
 /** Places grouped by state, home's state first, then by size, then A–Z. */
 const groups = (() => {
@@ -292,7 +291,9 @@ export function AtlasExplorer() {
                 {active.note}
               </p>
               <p className="mt-6 font-mono text-[11px] tracking-wider text-faint">
-                {active.home ? "where every line begins" : `${active.km.toLocaleString()} km from home`}
+                {active.role === "home"
+                  ? "where every line begins"
+                  : `${active.km.toLocaleString()} km from home`}
               </p>
             </motion.div>
           ) : (
@@ -302,7 +303,10 @@ export function AtlasExplorer() {
                   Places I&apos;ve been
                 </h1>
                 <p className="mt-3 max-w-[38ch] text-[14px] leading-relaxed text-muted">
-                  Every line starts at home. A small map of where the road has taken me so far.
+                  Born and raised in {home.name}
+                  {nativePlace ? <>, with roots in {nativePlace.name}</> : null}
+                  {nowPlace ? <>, working out of {nowPlace.name} for now</> : null}. Every line starts at
+                  home.
                 </p>
                 <button
                   type="button"
@@ -351,6 +355,11 @@ export function AtlasExplorer() {
                                 }`}
                               >
                                 {p.name}
+                                {p.role ? (
+                                  <sup className="ml-1 font-mono text-[9px] tracking-wider text-faint uppercase not-italic">
+                                    {roleLabel[p.role]}
+                                  </sup>
+                                ) : null}
                               </button>
                             </li>
                           ))}

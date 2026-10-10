@@ -43,7 +43,15 @@ export function useAtlas({ stageRef, canvasRef, options, onHover, onReady }: Use
 
     const nav = navigator as Navigator & { deviceMemory?: number };
     const lowEnd = (nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4;
-    const engine = new AtlasEngine(canvas, places, { lowEnd, ...options }, {
+    const pins = places.map((p) => ({
+      id: p.id,
+      name: p.name,
+      lat: p.lat,
+      lng: p.lng,
+      home: p.role === "home",
+      now: p.role === "now",
+    }));
+    const engine = new AtlasEngine(canvas, pins, { lowEnd, ...options }, {
       onHover: (id) => hoverRef.current?.(id),
     });
     engineRef.current = engine;
