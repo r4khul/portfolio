@@ -1,0 +1,215 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   TRAVEL ATLAS - living postcards
+   Every animation is transform / opacity so it stays on the compositor.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.pc {
+  --pc-accent: #2f80d1;
+  --pc-warm: #f59e0b;
+  --pc-bulb: #f5b942;
+  --pc-halwa: #c8612b;
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+}
+.dark .pc {
+  --pc-accent: #87bbea;
+  --pc-halwa: #e8834a;
+}
+
+:where(.pc svg *) {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pc-card {
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* ── paint ── */
+.pc-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pc-accent { stroke: var(--pc-accent); }
+.pc-warm { stroke: var(--pc-warm); }
+.pc-dim { opacity: 0.4; }
+.pc-fill-soft { fill: color-mix(in srgb, var(--pc-accent) 18%, transparent); }
+.pc-fill-accent { fill: var(--pc-accent); }
+.pc-dash { stroke-dasharray: 6 6; }
+.pc-dash-fine { stroke-dasharray: 1.5 2; }
+.pc-glow { fill: var(--pc-warm); opacity: 0.12; }
+.pc-star { fill: currentColor; animation: pc-twinkle 2.4s ease-in-out infinite alternate; }
+.pc-mango { fill: var(--pc-warm); opacity: 0.9; }
+.pc-lamp-on { fill: var(--pc-bulb); }
+.pc-halwa { stroke: var(--pc-halwa); fill: color-mix(in srgb, var(--pc-halwa) 28%, transparent); }
+
+/* ── sea, sky ── */
+.pc-wave { animation: pc-wave 3s linear infinite; will-change: transform; }
+@keyframes pc-wave { to { transform: translateX(-16px); } }
+
+.pc-rise { animation: pc-rise 2.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes pc-rise { from { transform: translateY(12px); } to { transform: translateY(0); } }
+
+.pc-bob { animation: pc-bob 2.2s ease-in-out infinite alternate; }
+@keyframes pc-bob {
+  from { transform: translateY(0) rotate(-3deg); }
+  to { transform: translateY(-1.6px) rotate(3deg); }
+}
+
+.pc-fly { animation: pc-fly 16s linear infinite; }
+@keyframes pc-fly { from { transform: translateX(-40px); } to { transform: translateX(200px); } }
+.pc-flap { animation: pc-flap 0.45s ease-in-out infinite alternate; }
+@keyframes pc-flap { to { transform: scaleY(0.35); } }
+
+.pc-sway { animation: pc-sway 3s ease-in-out infinite; }
+@keyframes pc-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(6deg); }
+}
+
+@keyframes pc-twinkle { from { opacity: 0.12; } to { opacity: 0.9; } }
+
+/* ── Bangalore traffic ── */
+.pc-idle { animation: pc-idle 0.3s steps(2) infinite; }
+@keyframes pc-idle { to { transform: translateY(-0.5px); } }
+.pc-inch { animation: pc-inch 3s ease-in-out infinite; }
+@keyframes pc-inch {
+  0%, 82% { transform: translateX(0); }
+  89% { transform: translateX(3.5px); }
+  100% { transform: translateX(0); }
+}
+.pc-brake { fill: #ef4444; animation: pc-brake 3s steps(1, end) infinite; }
+@keyframes pc-brake {
+  0% { opacity: 0.9; }
+  82% { opacity: 0.15; }
+  90% { opacity: 0.9; }
+}
+.pc-honk { opacity: 0; animation: pc-honk 3s ease-out infinite; }
+@keyframes pc-honk {
+  0%, 18% { opacity: 0; transform: scale(0.8); }
+  24% { opacity: 1; transform: scale(1); }
+  40%, 100% { opacity: 0; transform: scale(1.1); }
+}
+.pc-lamp { fill: currentColor; opacity: 0.2; }
+.pc-lamp--r { fill: #ef4444; animation: glyph-lamp-red 3s steps(1, end) infinite; }
+.pc-lamp--a { fill: #f59e0b; animation: glyph-lamp-amber 3s steps(1, end) infinite; }
+.pc-lamp--g { fill: #22c55e; animation: glyph-lamp-green 3s steps(1, end) infinite; }
+
+/* ── Mysore palace ── */
+.pc-bulb { fill: var(--pc-bulb); opacity: 0.12; animation: pc-bulb 5s ease-out infinite; }
+@keyframes pc-bulb {
+  0% { opacity: 0.12; }
+  6% { opacity: 1; }
+  78% { opacity: 0.95; }
+  88%, 100% { opacity: 0.12; }
+}
+
+/* ── coast ── */
+.pc-leap { opacity: 0; animation: pc-leap 3.4s ease-in-out infinite; }
+@keyframes pc-leap {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-35deg); }
+  4% { opacity: 1; }
+  20% { transform: translate(10px, -13px) rotate(0deg); }
+  34% { opacity: 1; transform: translate(20px, 0) rotate(35deg); }
+  38%, 100% { opacity: 0; transform: translate(20px, 0) rotate(35deg); }
+}
+.pc-beam { fill: var(--pc-bulb); opacity: 0; animation: pc-beam 4s ease-in-out infinite; }
+.pc-beam--r { animation-delay: -2s; }
+@keyframes pc-beam {
+  0%, 45%, 100% { opacity: 0; }
+  20% { opacity: 0.32; }
+}
+
+/* ── hills ── */
+.pc-spin { animation: pc-spin 3s linear infinite; }
+@keyframes pc-spin { to { transform: rotate(360deg); } }
+
+.pc-drop { animation: pc-drop 4.2s infinite; }
+@keyframes pc-drop {
+  0% { opacity: 0; transform: translateY(0); }
+  6%, 34% { opacity: 1; transform: translateY(0); animation-timing-function: ease-in; }
+  46% { transform: translateY(17px); animation-timing-function: ease-out; }
+  52% { transform: translateY(13px); animation-timing-function: ease-in; }
+  58% { transform: translateY(17px); }
+  84% { opacity: 1; transform: translateY(17px); }
+  94%, 100% { opacity: 0; transform: translateY(17px); }
+}
+
+.pc-fog {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0.06;
+  animation: pc-fog 10s ease-in-out infinite alternate;
+}
+.pc-fog--thin { stroke-width: 4; }
+@keyframes pc-fog { from { transform: translateX(-16px); } to { transform: translateX(16px); } }
+
+/* ── kitchens ── */
+.pc-steam { opacity: 0; animation: pc-steam 2.4s ease-out infinite; }
+@keyframes pc-steam {
+  0% { opacity: 0; transform: translateY(5px) scaleX(0.8); }
+  30% { opacity: 0.75; }
+  100% { opacity: 0; transform: translateY(-9px) scaleX(1.25); }
+}
+.pc-lid { animation: pc-lid 1.3s ease-in-out infinite; }
+@keyframes pc-lid {
+  0%, 58%, 100% { transform: translateY(0) rotate(0); }
+  64% { transform: translateY(-1.3px) rotate(-3deg); }
+  70% { transform: translateY(0) rotate(0); }
+  76% { transform: translateY(-1px) rotate(2.5deg); }
+  82% { transform: translateY(0) rotate(0); }
+}
+.pc-flame {
+  fill: var(--pc-warm);
+  transform-origin: 50% 100%;
+  animation: pc-flame 0.38s ease-in-out infinite alternate;
+}
+@keyframes pc-flame { from { transform: scaleY(0.75); } to { transform: scaleY(1.2); } }
+
+.pc-wobble { transform-origin: 50% 100%; animation: pc-wobble 1.5s ease-in-out infinite; }
+@keyframes pc-wobble {
+  0%, 100% { transform: skewX(0) scaleY(1); }
+  20% { transform: skewX(-5deg) scaleY(0.96); }
+  45% { transform: skewX(4deg) scaleY(1.03); }
+  70% { transform: skewX(-2deg) scaleY(0.99); }
+}
+.pc-shine { stroke: #fff; opacity: 0; animation: pc-shine 2.8s ease-in-out infinite; }
+@keyframes pc-shine {
+  0% { opacity: 0; transform: translateX(0); }
+  20% { opacity: 0.75; }
+  60%, 100% { opacity: 0; transform: translateX(30px); }
+}
+.pc-sparkle { fill: var(--pc-bulb); animation: pc-twinkle 1.3s ease-in-out infinite alternate; }
+
+/* ── on the move ── */
+.pc-glide { animation: pc-glide 7s ease-in-out infinite alternate; }
+@keyframes pc-glide { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+.pc-roll { animation: pc-roll 0.7s linear infinite; }
+@keyframes pc-roll { to { transform: translateX(-12px); } }
+.pc-train { animation: pc-train 5.5s linear infinite; }
+@keyframes pc-train { from { transform: translateX(-110px); } to { transform: translateX(175px); } }
+.pc-kite { animation: pc-kite 3.4s ease-in-out infinite; }
+@keyframes pc-kite {
+  0%, 100% { transform: translate(0, 0) rotate(-8deg); }
+  50% { transform: translate(2px, -2.5px) rotate(7deg); }
+}
+.pc-tail { transform-origin: 50% 0; animation: pc-tail 0.7s ease-in-out infinite alternate; }
+@keyframes pc-tail { from { transform: skewX(-14deg); } to { transform: skewX(14deg); } }
+
+/* Infinite loops at a near-zero duration would strobe, so with reduced
+   motion the postcards and glyphs simply hold still. */
+@media (prefers-reduced-motion: reduce) {
+  .pc *,
+  .glyph * {
+    animation: none !important;
+  }
+  .pc-card {
+    transform: none;
+  }
+}
