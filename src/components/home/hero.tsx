@@ -13,6 +13,7 @@ import { profile, socials } from "@/data/profile";
 import { LocalTime } from "@/components/site/local-time";
 import { OpenToWorkBadge } from "@/components/ui/open-to-work-badge";
 import { GitHubContributionGraph } from "@/components/home/github-graph";
+import { LivingBanner } from "@/components/home/banner/living-banner";
 import { Reveal } from "@/components/ui/reveal";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
@@ -21,18 +22,10 @@ export function Hero() {
 
   return (
     <section aria-label="Intro">
-      {/* Cover banner */}
+      {/* Cover banner: a living rooftop scene (sky, type, pigeons) */}
       <Reveal>
         <div className="relative h-40 overflow-hidden sm:h-52">
-          <Image
-            src="/images/site/pfp-banner.png"
-            alt=""
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 768px"
-            className="object-cover object-[90%_center] sm:object-center"
-            aria-hidden
-          />
+          <LivingBanner />
         </div>
       </Reveal>
 

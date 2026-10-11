@@ -1,0 +1,113 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   LIVING BANNER
+   Clouds are soft radial gradients (no blur filters) that drift with
+   transform only, so they live entirely on the compositor.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.living-banner {
+  touch-action: pan-y;
+  cursor: default;
+  /* lets the type size itself from the banner's height, like the old image */
+  container-type: size;
+}
+
+/* "surprisingly / Boring": right-aligned against the building, sized from
+   the banner height so it scales exactly like the original artwork */
+.lb-type {
+  position: absolute;
+  top: 33%;
+  right: calc(var(--lb-building, 140px) + 4%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: #fff;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  line-height: 0.86;
+  letter-spacing: -0.012em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.lb-type__s {
+  font-size: 40px;
+  font-size: min(25cqh, 11cqw);
+  margin-right: 14%;
+}
+.lb-type__b {
+  font-size: 78px;
+  font-size: min(49cqh, 20cqw);
+  margin-top: -0.5cqh;
+  -webkit-text-stroke: 0.6px rgba(70, 118, 170, 0.35);
+}
+.lb-moon {
+  position: absolute;
+  width: 20px;
+  width: 13cqh;
+  height: 20px;
+  height: 13cqh;
+  right: 1%;
+  top: 22%;
+}
+
+.lb-cloud {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+  animation: lb-drift 46s ease-in-out infinite alternate;
+}
+
+/* the big soft bank top-left, as in the original */
+.lb-cloud--a {
+  left: -8%;
+  top: -42%;
+  width: 46%;
+  height: 150%;
+  background:
+    radial-gradient(38% 34% at 34% 44%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.72) 42%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(30% 28% at 58% 32%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.55) 45%, rgba(255, 255, 255, 0) 75%),
+    radial-gradient(34% 30% at 20% 70%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.45) 45%, rgba(255, 255, 255, 0) 75%),
+    radial-gradient(26% 22% at 46% 66%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+/* a wisp high in the middle */
+.lb-cloud--b {
+  left: 34%;
+  top: -24%;
+  width: 26%;
+  height: 58%;
+  opacity: 0.75;
+  animation-duration: 58s;
+  animation-delay: -12s;
+  background:
+    radial-gradient(42% 36% at 40% 55%, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(30% 28% at 66% 45%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 72%);
+}
+
+/* low cloud drifting under the type, toward the building */
+.lb-cloud--c {
+  left: 44%;
+  bottom: -46%;
+  width: 40%;
+  height: 90%;
+  animation-duration: 64s;
+  animation-delay: -30s;
+  background:
+    radial-gradient(34% 34% at 40% 50%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(28% 26% at 66% 42%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(24% 22% at 20% 58%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 72%);
+}
+
+@keyframes lb-drift {
+  from {
+    transform: translate3d(-3%, 0, 0);
+  }
+  to {
+    transform: translate3d(4%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lb-cloud {
+    animation: none;
+  }
+}
