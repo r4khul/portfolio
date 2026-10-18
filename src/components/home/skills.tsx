@@ -1,7 +1,19 @@
 import { memo } from "react";
+import type { IconType } from "react-icons";
+import { FaJava } from "react-icons/fa6";
+import { SiC, SiCplusplus, SiDart, SiJavascript, SiPython } from "react-icons/si";
 import { skills } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
+
+const languageIcons: Record<string, IconType> = {
+  Dart: SiDart,
+  JavaScript: SiJavascript,
+  C: SiC,
+  "C++": SiCplusplus,
+  Java: FaJava,
+  Python: SiPython,
+};
 
 export const SkillsSection = memo(() => {
   return (
@@ -14,14 +26,18 @@ export const SkillsSection = memo(() => {
                 {group.label}
               </h3>
               <ul className="flex flex-wrap gap-1.5">
-                {group.items.map((item) => (
-                  <li
-                    key={item}
-                    className="rounded-md border border-edge bg-surface px-2 py-1 font-mono text-[12px] text-muted transition-colors hover:border-edge-strong hover:text-foreground"
-                  >
-                    {item}
-                  </li>
-                ))}
+                {group.items.map((item) => {
+                  const Icon = group.label === "Languages" ? languageIcons[item] : undefined;
+                  return (
+                    <li
+                      key={item}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-edge bg-surface px-2 py-1 font-mono text-[12px] text-muted transition-colors hover:border-edge-strong hover:text-foreground"
+                    >
+                      {Icon && <Icon aria-hidden="true" focusable="false" className="size-3.5 shrink-0" />}
+                      {item}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </Reveal>
