@@ -88,8 +88,8 @@ export const skills: SkillGroup[] = [
   { label: "Databases & Cloud", items: ["Firebase", "Supabase", "MongoDB", "Google Cloud"] },
   { label: "Tools & Workflow", items: ["Git", "GitHub", "Android Studio", "Postman"] },
   {
-    label: "Editors & AI Tools",
-    items: ["VS Code", "Antigravity", "Windsurf", "Cursor", "Claude Code", "OpenCode", "Gemini CLI"],
+    label: "AI Tools",
+    items: ["Antigravity", "Cursor", "Claude Code", "OpenCode", "Codex"],
   },
 ];
 
