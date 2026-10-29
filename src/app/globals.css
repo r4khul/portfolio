@@ -261,12 +261,16 @@ body {
   left: 0;
   z-index: 40;
   display: none; /* hidden on mobile - shown at xl */
-  height: 100%;
+  /* Follow the current viewport, including browser chrome expanding/collapsing. */
+  height: 100dvh;
   /* Width = half of the space between viewport edge and content rail (max-w-3xl = 48rem) */
   width: calc((100vw - 48rem) / 2);
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
+  /* Reserve bottom clearance for the vertical brand, outside the flex stack. */
+  padding-top: 1.5rem;
+  padding-bottom: 5rem;
   pointer-events: none; /* only interactive children get events */
   /* Promote to its own compositing layer - prevents scroll repaints */
   will-change: transform;
@@ -279,12 +283,22 @@ body {
   }
 }
 
-/* Nav list */
+/* Only destinations scroll. The controls below remain part of the fixed stack. */
 .side-nav__list {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0;
+  flex: 0 1 auto;
+  /* Without this, the intrinsic link height would prevent the list shrinking. */
+  min-height: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* A scrollbar on unusually short windows makes hidden destinations discoverable. */
+  scrollbar-width: thin;
+  padding-left: 0.75rem;
   padding-right: 1.5rem;
   pointer-events: auto;
   /* Contain style recalcs to this subtree */
@@ -296,8 +310,10 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 0;
+  gap: 8px;
+  /* Preserve individual row geometry; the list scrolls instead of squeezing links. */
+  flex-shrink: 0;
+  padding: 7px 0;
   text-align: right;
   text-decoration: none;
   cursor: pointer;
@@ -310,30 +326,30 @@ body {
     gap 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Idle - shrunk, faded, shifted right */
+/* Keep compact inactive labels legible; reserve strong emphasis for the active row. */
 .side-nav__item--idle {
-  opacity: 0.28;
-  transform: scale(0.86) translateX(8px) translateZ(0);
+  opacity: 0.75;
+  transform: scale(0.94) translateX(4px) translateZ(0);
 }
 .side-nav__item--idle:hover {
-  opacity: 0.6;
-  transform: scale(0.93) translateX(4px) translateZ(0);
+  opacity: 1;
+  transform: scale(0.98) translateX(2px) translateZ(0);
 }
 
 /* Active - full size, full opacity */
 .side-nav__item--active {
   opacity: 1;
   transform: scale(1) translateX(0) translateZ(0);
-  gap: 18px; /* Increased by 4px as requested */
+  gap: 12px;
 }
 
-/* Icon container - fixed 18×18 box prevents layout shifts */
+/* Icon container - fixed size prevents layout shifts. */
 .side-nav__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   color: var(--faint);
   transition: color 220ms ease;
@@ -346,14 +362,12 @@ body {
   color: var(--foreground);
 }
 
-/* Label - Instrument Serif.
-   Fixed font-size of 16px (25% bigger than old 13px).
-   Active scale(1.25) gives the visual "bigger" feel with zero layout reflow.
-   transform-origin: right center so it scales outward toward the content rail. */
+/* Compact labels leave room for every destination and the reading controls.
+   Active emphasis uses a restrained transform without changing row height. */
 .side-nav__label {
   font-family: var(--font-instrument-serif);
-  font-size: 16px;
-  color: var(--faint);
+  font-size: 14px;
+  color: var(--muted);
   white-space: nowrap;
   line-height: 1;
   letter-spacing: -0.015em;
@@ -366,23 +380,25 @@ body {
 }
 .side-nav__label--active {
   color: var(--foreground);
-  /* Scale 25% in-place - pure compositor, zero layout reflow */
-  transform: scale(1.25) translateZ(0);
+  transform: scale(1.1) translateZ(0);
 }
 
-/* Theme toggle anchored below the nav list */
-.side-nav__toggle {
-  margin-top: 1.5rem;
+/* A single control row never shrinks or overlaps the scrollable destinations.
+   Its top gap belongs to the flex layout, so adding links cannot paint over it. */
+.side-nav__controls {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  margin-top: 1rem;
   padding-right: 1.5rem;
   pointer-events: auto;
 }
 
-/* Rotated moniker at the bottom of the gutter */
+/* The aside's bottom padding reserves this separate brand slot. */
 .side-nav__brand {
   position: absolute;
-  bottom: 2.5rem;
-  right: 20px;
-  padding-right: 1.5rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.22em;

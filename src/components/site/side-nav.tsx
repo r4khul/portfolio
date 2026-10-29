@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState, useCallback } from "react";
+import { memo, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -18,6 +18,8 @@ import { ThemeToggle } from "./theme-toggle";
 import { AudioToggle } from "./audio-toggle";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 
+// Keep these hashes aligned with the home-page section IDs. They also remain
+// real links when the sidebar is rendered on a blog or project detail page.
 const nav = [
   { label: "About",       href: "/#about",       icon: User },
   { label: "Experience",  href: "/#experience",  icon: Briefcase },
@@ -43,6 +45,8 @@ export const SideNav = memo(() => {
       const id = href.replace("/#", "");
       const el = document.getElementById(id);
       if (el) {
+        // A local section can scroll directly. When it does not exist, let Link
+        // navigate home with the hash instead of swallowing the user's click.
         e.preventDefault();
         el.scrollIntoView({ behavior: "smooth", block: "start" });
         // Optimistically set active on click - observer will correct if needed
@@ -116,7 +120,8 @@ export const SideNav = memo(() => {
 
   return (
     <aside aria-label="Site navigation" className="side-nav">
-      {/* Vertical nav list - wheel-picker style */}
+      {/* The link list can yield height on short screens. Keeping controls out
+          of this scroll region means sound/theme are reachable at every height. */}
       <nav className="side-nav__list" aria-label="Primary">
         {nav.map((item) => {
           const id = item.href.replace("/#", "");
@@ -145,13 +150,10 @@ export const SideNav = memo(() => {
         })}
       </nav>
 
-      {/* Theme toggle */}
-      <div className="side-nav__toggle">
+      {/* One nonshrinking row gives both controls their own stable hit areas;
+          adding destinations above cannot push either button off screen. */}
+      <div className="side-nav__controls">
         <ThemeToggle />
-      </div>
-
-      {/* Audio toggle */}
-      <div className="side-nav__toggle">
         <AudioToggle />
       </div>
 
