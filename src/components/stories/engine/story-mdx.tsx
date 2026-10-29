@@ -12,6 +12,7 @@ import {
 } from "./story-components";
 import { StoryReveal } from "./story-reveal";
 import { StoryEffect } from "./story-effect";
+import { MillionaireEffect } from "./millionaire-effect";
 
 // Every prose block is wrapped in a scroll-gated StoryReveal.
 // Custom components handle their own reveal internally via StoryReveal.
@@ -69,6 +70,7 @@ const components = {
   CinematicImage,
   Chapter,
   StoryEffect,
+  MillionaireEffect,
 };
 
 export function StoryMdxContent({ source }: { source: string }) {

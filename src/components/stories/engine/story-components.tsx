@@ -64,18 +64,18 @@ export function CinematicImage({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-export function Chapter({ title, number }: { title: string; number?: number }) {
+export function Chapter({ title, number }: { title: string; number?: number | string }) {
   return (
     <header className="mt-24 mb-12 story-fade-in text-center">
       {number !== undefined && (
-        <span className="block font-mono text-[11px] uppercase tracking-[0.2em] text-story-faint mb-4">
+        <span className="block font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--story-faint)] mb-4">
           Chapter {number}
         </span>
       )}
       <h2 className="font-serif text-3xl sm:text-4xl text-story-text m-0 tracking-tight">
         {title}
       </h2>
-      <div className="w-12 h-px bg-story-border mx-auto mt-6" />
+      <div className="w-12 h-px bg-[var(--story-border)] mx-auto mt-6" />
     </header>
   );
 }

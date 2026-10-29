@@ -1,40 +1,61 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
+import { primeStoryAudio, warmStoryAudio } from "@/lib/story-audio";
+import { playSfx } from "@/lib/sfx";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export function AudioPrompt() {
   const { isMuted, toggleMute } = useAudioContext();
-  const [show, setShow] = useState(false);
-  const switchAudio = useRef<HTMLAudioElement | null>(null);
+  const [show, setShow] = useState(true);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Fetch/decode while the reader considers the card. This produces no audio;
+  // browser output stays locked until a real entry/unmute gesture below.
+  useEffect(() => { void warmStoryAudio(); }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      switchAudio.current = new Audio("/sfx/switch.mp3");
-      switchAudio.current.preload = "auto";
-    }
-  }, []);
+    if (!show) return;
+    // Preserve an existing overflow rule instead of blindly clearing another
+    // surface's scroll lock when the entry card closes or the layout unmounts.
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    // Focus the dialog, not its last button. Focusing Enter would scroll a tall
+    // card past its title on short landscape screens before it had been read.
+    dialogRef.current?.focus({ preventScroll: true });
+    return () => { document.body.style.overflow = previous; };
+  }, [show]);
 
   useEffect(() => {
-    // Only show if the user is currently muted on landing
-    if (isMuted) {
-      setShow(true);
-    }
-  }, []); // Run only on initial mount
-
-  if (!show) return null;
+    if (isMuted) return;
+    // The card is the only visible sound control in story mode. Once dismissed,
+    // trusted gestures can still recover audio after a phone/OS interruption.
+    // Observing a scene or returning to the tab never resumes audio by itself.
+    const unlock = () => { void primeStoryAudio(); };
+    window.addEventListener("pointerdown", unlock, { capture: true, passive: true });
+    window.addEventListener("keydown", unlock, true);
+    return () => {
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+    };
+  }, [isMuted]);
 
   const handleToggleClick = () => {
-    if (switchAudio.current && isMuted) {
-      switchAudio.current.currentTime = 0;
-      switchAudio.current.play().catch(() => {});
+    // Share the saved mute preference with the portfolio navigation's control.
+    // An explicit unmute is also a valid gesture for unlocking Web Audio.
+    if (isMuted) {
+      void primeStoryAudio();
+      playSfx("switch", 0.45);
     }
     toggleMute();
   };
 
   const handleEnter = () => {
+    // A reader may enter with audio muted. Only an enabled entry unlocks output;
+    // there is no extra top-of-page button or second consent step in the chapter.
+    if (!isMuted) void primeStoryAudio();
     setShow(false);
   };
 
@@ -42,18 +63,25 @@ export function AudioPrompt() {
     <AnimatePresence>
       {show && (
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          tabIndex={-1}
+          aria-modal="true"
+          aria-labelledby="story-audio-title"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0c0c]/98 backdrop-blur-md px-6 text-center select-none"
+          className="fixed inset-0 z-50 flex flex-col items-center overflow-y-auto bg-[#0d0c0c]/98 backdrop-blur-md px-6 py-6 text-center select-none"
         >
+          {/* Auto margins center a fitting card and become zero on short screens.
+              The outer scroll area then keeps Enter Story reachable in landscape. */}
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ delay: 0.1, duration: 0.45, ease: "easeOut" }}
-            className="w-full max-w-[440px] rounded-2xl border border-story-border bg-[#0d0c0c] p-8 md:p-12 shadow-2xl relative overflow-hidden"
+            className="my-auto w-full max-w-[440px] shrink-0 rounded-2xl border border-story-border bg-[#0d0c0c] p-8 md:p-12 shadow-2xl relative overflow-hidden"
           >
             {/* Subtle overlay matching the story mode styling */}
             <div className="story-grain absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay" />
@@ -63,7 +91,7 @@ export function AudioPrompt() {
                 Cinematic Reading
               </span>
               
-              <h2 className="mb-4 font-serif text-3xl md:text-4xl font-normal text-[#e8e6e3]">
+              <h2 id="story-audio-title" className="mb-4 font-serif text-3xl md:text-4xl font-normal text-[#e8e6e3]">
                 Immersive Audio
               </h2>
 
