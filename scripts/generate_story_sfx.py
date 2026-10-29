@@ -182,17 +182,19 @@ def bank(ffmpeg: str) -> list[float]:
 
 
 def watch() -> list[float]:
-    """Two exposed ticks, then an original three-second mystery composition.
+    """Two exposed ticks, then an original five-second crime/mystery composition.
 
     0.08/0.57s remain the two mechanical contacts shared with the SVG timeline.
-    At 0.60s the clue has landed: a low D pedal and two sparse, softly struck tonal
-    hints enter underneath its implication. The added score is a short unresolved
-    phrase, not a recurring musical loop or an effect imitating wind. Its pitches
-    are fixed; only the performance envelope develops. All its sound comes from
-    the original additive instrument definitions below, without sampled music,
-    random noise, a pitch ramp, or a borrowed composition.
+    At 0.60s the clue has landed: a low D pedal establishes the room beneath it.
+    Inner string voices then darken that pedal, and the felt motif climbs toward
+    a late, unresolved E-flat against D. The extra time develops the harmony and
+    motif instead of simply holding one note longer. This is a composed phrase,
+    not a recurring musical loop or an effect imitating wind. Every instrument
+    keeps fixed pitches; energy grows through voicing, articulation, and level.
+    All its sound comes from the original additive instrument definitions below,
+    without sampled music, random noise, a pitch ramp, or a borrowed composition.
     """
-    duration = 3.6
+    duration = 5.6
     samples = silence(duration)
     # Two very short escapement contacts, aligned with the SVG at .08s and .57s.
     # No recording, hiss, bell tail, ambience or sustained tone is shared with chips.
@@ -216,12 +218,12 @@ def watch() -> list[float]:
         )
         return smooth(age / 0.012) * partials
 
-    # The score occupies exactly 0.60–3.60s. Its lower-middle harmonics carry the
+    # The score occupies exactly 0.60–5.60s. Its lower-middle harmonics carry the
     # pedal on laptop speakers instead of relying on sub-bass. A very small fixed
     # detuning and slow level variation suggest a held/bowed instrument; neither
     # changes pitch or introduces the broad noise texture used by a whoosh.
     music_start = 0.60
-    music_duration = 3.0
+    music_duration = 5.0
     pedal = 146.8324  # D3, with audible D4/A4 body in the additive instrument.
     for index in range(round(music_start * RATE), len(samples)):
         time = index / RATE - music_start
@@ -232,28 +234,60 @@ def watch() -> list[float]:
             + 0.07 * math.sin(TAU * pedal * 4.0 * time)
             + 0.09 * math.sin(TAU * (pedal + 0.31) * time + 0.6)
         )
-        held *= 0.13 * (0.96 + 0.04 * math.sin(TAU * 0.72 * time))
+        # The upper-string partials open gently toward the late revelation while
+        # the D pedal stays fixed. A quiet A2 instrument adds a darker foundation
+        # through its audible 220/330Hz harmonics, not an inaudible sub-bass swell.
+        bow_energy = 0.96 + 0.04 * math.sin(TAU * 0.72 * time)
+        held *= 0.13 * bow_energy
+        lower_strings = (
+            math.sin(TAU * 110.0 * time) * 0.45
+            + math.sin(TAU * 220.0 * time) * 0.34
+            + math.sin(TAU * 330.0 * time) * 0.14
+        ) * 0.038 * smooth((time - 0.45) / 0.6)
 
-        # A quiet A-flat against D introduces an unresolved tritone gradually.
-        # Two widely spaced A4 / E-flat5 contacts answer it without forming a
-        # melodic cadence or a triumphant/jingle-like resolution. Their reflected
-        # copies are very low-level tonal tails, not a wash of synthetic air.
+        # 0.8–2.6s into the score: A-flat's tritone enters first, then the F minor
+        # third. These fixed bowed-like inner voices give the held D a darker
+        # crime-score character while leaving space for individual felt notes.
         tension = math.sin(TAU * 207.6523 * time) * 0.030 * smooth((time - 0.8) / 0.6)
+        minor_strings = (
+            math.sin(TAU * 174.6141 * time)
+            + 0.24 * math.sin(TAU * 349.2282 * time)
+        ) * 0.042 * smooth((time - 1.7) / 0.75)
+
+        # 2.45–4.05s: the F4–A-flat4–E-flat5 motif rises in separate articulations,
+        # rather than a pitch glide or a repeated arpeggio. The final E-flat
+        # recalls the first high hint, now with greater weight: recognition has
+        # arrived, but its minor-ninth relationship to D keeps the ending open.
+        # Quiet, short reflected copies seat these notes within the string room.
         notes = (
             felt_note(time - 0.30, 440.0) * 0.085
             + felt_note(time - 1.45, 622.2540) * 0.070
             + felt_note(time - 0.365, 440.0) * 0.010
             + felt_note(time - 1.535, 622.2540) * 0.008
+            + felt_note(time - 2.45, 349.2282) * 0.095
+            + felt_note(time - 3.25, 415.3047) * 0.110
+            + felt_note(time - 4.05, 622.2540) * 0.125
+            + felt_note(time - 3.325, 415.3047) * 0.012
+            + felt_note(time - 4.135, 622.2540) * 0.014
         )
 
+        # At the late crest, a bowed E-flat4 joins rather than resolving the D.
+        # The added harmonic weight makes this a revealing dramatic turn without
+        # a jump-scare impact, a cymbal/noise riser, or a triumphant final chord.
+        revelation = (
+            math.sin(TAU * 311.1270 * time)
+            + 0.16 * math.sin(TAU * 622.2540 * time)
+        ) * 0.040 * smooth((time - 3.35) / 0.65)
+
         # A 240ms entry follows the second tick without covering its attack. The
-        # slow amplitude-only crescendo is restrained beneath the tick peaks.
-        # The final 420ms withdraw decisively to digital silence at 3.60s, leaving
+        # five-second arc develops toward 4.1s rather than peaking immediately;
+        # all strings and notes remain restrained beneath the exposed tick peak.
+        # The final 500ms withdraw decisively to digital silence at 5.60s, leaving
         # the officer's failure to speak as the last dramatic beat.
         entrance = smooth(time / 0.24)
-        development = 0.50 + 0.50 * smooth(time / 2.25)
-        ending = smooth((music_duration - time) / 0.42)
-        samples[index] += (held + tension + notes) * entrance * development * ending
+        development = 0.50 + 0.50 * smooth(time / 4.1)
+        ending = smooth((music_duration - time) / 0.50)
+        samples[index] += (held + lower_strings + tension + minor_strings + notes + revelation) * entrance * development * ending
     return samples
 
 
@@ -279,10 +313,19 @@ def main() -> None:
     args = parser.parse_args()
     if not args.ffmpeg:
         parser.error("ffmpeg is required to regenerate the cues; it is not a site/runtime dependency")
-    write("rewind.wav", rewind(), 0.18)
-    write("fortune.wav", fortune(args.ffmpeg), 0.15)
-    write("bank.wav", bank(args.ffmpeg), 0.10)
-    write("watch-reveal.wav", watch(), 0.14)
+    # These are final playback peaks, calibrated against Chapter 1 after its
+    # HTMLAudioElement volume settings. Chapter 3 plays these masters at unity,
+    # so its WAV previews and the reader share one level instead of two reductions.
+    # The strongest contact stays below Chapter 1's .55 time-skip peak, leaving
+    # over 5dB of digital headroom without compression or changing the timbres.
+    write("rewind.wav", rewind(), 0.54)
+    write("fortune.wav", fortune(args.ffmpeg), 0.48)
+    # Room activity is sustained for six seconds, so its peak ceiling is lower
+    # than the brief contacts. This keeps the space present without masking text.
+    write("bank.wav", bank(args.ffmpeg), 0.20)
+    # Raising the entire reveal equally preserves the tick/music relationship
+    # and exposes the quiet score while leaving its five-second arc intact.
+    write("watch-reveal.wav", watch(), 0.45)
 
 
 if __name__ == "__main__":

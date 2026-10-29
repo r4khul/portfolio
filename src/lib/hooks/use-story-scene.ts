@@ -47,7 +47,7 @@ export function useStoryScene(sound: StorySound) {
         // Start the SVG phrase at the same software origin as the decoded sound.
         // This also handles a late download/unlock: the watch's two hand steps
         // still match the contacts authored at .08s and .57s before the ending's
-        // three-second musical bed. Both run once rather than restarting on a loop.
+        // five-second musical bed. Both run once rather than restarting on a loop.
         container.getAnimations({ subtree: true }).forEach((animation) => {
           animation.currentTime = 0;
         });

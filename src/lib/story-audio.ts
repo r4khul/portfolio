@@ -9,15 +9,16 @@
 export type StorySound = "rewind" | "fortune" | "bank" | "watch";
 export type StoryPlayback = { stop: () => void };
 
-// The files already have conservative peak levels. This final reader gain keeps
-// close Foley beneath the prose rather than turning each illustration into an alert.
-const LEVEL = 0.55;
+// The rendered files are mastered against Chapter 1's effective playback levels.
+// Unity gain keeps the reader and standalone file previews at that same level;
+// each cue's mix retains its own headroom and balance in the generator.
+const LEVEL = 1;
 const SOURCES: Record<StorySound, string> = {
   rewind: "/sfx/stories/rewind.wav",
   fortune: "/sfx/stories/fortune.wav",
   bank: "/sfx/stories/bank.wav",
   // A distinct filename also invalidates the earlier dry-tick asset in browser
-  // caches. The reveal now contains those contacts followed by its scored ending.
+  // caches. The reveal contains those contacts followed by its five-second score.
   watch: "/sfx/stories/watch-reveal.wav",
 };
 
