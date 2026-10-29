@@ -8,8 +8,9 @@ The website ships only the rendered WAVs and schedules them with Web Audio.
 
 The four cues have different jobs: the rewind is a short internal impact, chips
 are close object contacts, the bank is a six-second inhabited interior, and the
-watch returns to two exposed ticks and silence. Times below are seconds; levels
-inside each scene are relative to its final peak, set explicitly in main().
+watch moves from two exposed ticks into a brief unresolved musical phrase. Times
+below are seconds; levels inside each scene are relative to its final peak, set
+explicitly in main().
 """
 
 from __future__ import annotations
@@ -181,7 +182,18 @@ def bank(ffmpeg: str) -> list[float]:
 
 
 def watch() -> list[float]:
-    samples = silence(1.3)
+    """Two exposed ticks, then an original three-second mystery composition.
+
+    0.08/0.57s remain the two mechanical contacts shared with the SVG timeline.
+    At 0.60s the clue has landed: a low D pedal and two sparse, softly struck tonal
+    hints enter underneath its implication. The added score is a short unresolved
+    phrase, not a recurring musical loop or an effect imitating wind. Its pitches
+    are fixed; only the performance envelope develops. All its sound comes from
+    the original additive instrument definitions below, without sampled music,
+    random noise, a pitch ramp, or a borrowed composition.
+    """
+    duration = 3.6
+    samples = silence(duration)
     # Two very short escapement contacts, aligned with the SVG at .08s and .57s.
     # No recording, hiss, bell tail, ambience or sustained tone is shared with chips.
     for start, level, pitch in [(0.08, 1.0, 1.0), (0.57, 0.7, 0.87)]:
@@ -189,6 +201,59 @@ def watch() -> list[float]:
         catch = modes(0.027, [(457 * pitch, 0.5, 0.004), (1270 * pitch, 0.2, 0.002)], attack=0.0003)
         mix(samples, tick, start, level)
         mix(samples, catch, start + 0.006, level * 0.45)
+
+    def felt_note(age: float, frequency: float) -> float:
+        """A soft hammer contact with fast-fading, mildly inharmonic overtones."""
+        if age <= 0:
+            return 0.0
+        # The fundamental outlasts its upper partials, giving a rounded felt-like
+        # body rather than a bright UI chime. The tiny fixed inharmonicity makes
+        # the exposed upper notes less sterile while retaining a stable pitch.
+        partials = (
+            math.sin(TAU * frequency * age) * math.exp(-age / 0.72)
+            + 0.22 * math.sin(TAU * frequency * 2.003 * age) * math.exp(-age / 0.30)
+            + 0.075 * math.sin(TAU * frequency * 3.009 * age) * math.exp(-age / 0.16)
+        )
+        return smooth(age / 0.012) * partials
+
+    # The score occupies exactly 0.60–3.60s. Its lower-middle harmonics carry the
+    # pedal on laptop speakers instead of relying on sub-bass. A very small fixed
+    # detuning and slow level variation suggest a held/bowed instrument; neither
+    # changes pitch or introduces the broad noise texture used by a whoosh.
+    music_start = 0.60
+    music_duration = 3.0
+    pedal = 146.8324  # D3, with audible D4/A4 body in the additive instrument.
+    for index in range(round(music_start * RATE), len(samples)):
+        time = index / RATE - music_start
+        held = (
+            math.sin(TAU * pedal * time)
+            + 0.38 * math.sin(TAU * pedal * 2.0 * time)
+            + 0.17 * math.sin(TAU * pedal * 3.0 * time)
+            + 0.07 * math.sin(TAU * pedal * 4.0 * time)
+            + 0.09 * math.sin(TAU * (pedal + 0.31) * time + 0.6)
+        )
+        held *= 0.13 * (0.96 + 0.04 * math.sin(TAU * 0.72 * time))
+
+        # A quiet A-flat against D introduces an unresolved tritone gradually.
+        # Two widely spaced A4 / E-flat5 contacts answer it without forming a
+        # melodic cadence or a triumphant/jingle-like resolution. Their reflected
+        # copies are very low-level tonal tails, not a wash of synthetic air.
+        tension = math.sin(TAU * 207.6523 * time) * 0.030 * smooth((time - 0.8) / 0.6)
+        notes = (
+            felt_note(time - 0.30, 440.0) * 0.085
+            + felt_note(time - 1.45, 622.2540) * 0.070
+            + felt_note(time - 0.365, 440.0) * 0.010
+            + felt_note(time - 1.535, 622.2540) * 0.008
+        )
+
+        # A 240ms entry follows the second tick without covering its attack. The
+        # slow amplitude-only crescendo is restrained beneath the tick peaks.
+        # The final 420ms withdraw decisively to digital silence at 3.60s, leaving
+        # the officer's failure to speak as the last dramatic beat.
+        entrance = smooth(time / 0.24)
+        development = 0.50 + 0.50 * smooth(time / 2.25)
+        ending = smooth((music_duration - time) / 0.42)
+        samples[index] += (held + tension + notes) * entrance * development * ending
     return samples
 
 
@@ -217,7 +282,7 @@ def main() -> None:
     write("rewind.wav", rewind(), 0.18)
     write("fortune.wav", fortune(args.ffmpeg), 0.15)
     write("bank.wav", bank(args.ffmpeg), 0.10)
-    write("watch.wav", watch(), 0.14)
+    write("watch-reveal.wav", watch(), 0.14)
 
 
 if __name__ == "__main__":

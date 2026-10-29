@@ -221,23 +221,28 @@ export function MillionaireEffect({ type, height = "38vh", label }: MillionaireE
         .millionaire-transfer { animation: millionaire-breathe 4.5s ease-in-out infinite; }
         .millionaire-bank-wait { animation: millionaire-wait 8s ease-in-out infinite; }
         .millionaire-bank-passage { animation: millionaire-passage 4s ease-in-out infinite; }
-        .millionaire-empty-setting { animation: millionaire-breathe 6s ease-in-out infinite; }
-        .millionaire-watch-glint { animation: millionaire-glint 7s ease-in-out infinite; }
-        /* These two step offsets map to .08s and .57s in the 1.3-second WAV.
+        /* The closing drawing settles with its scored phrase. Its single glint
+           draws attention to the missing stone, then holds as the music recedes. */
+        .millionaire-empty-setting { animation: millionaire-reveal 3.6s ease-in-out both; }
+        .millionaire-watch-glint { animation: millionaire-glint 3.6s ease-in-out both; }
+        /* The two contacts remain at .08s and .57s in a 3.6-second phrase. The
+           three-second musical bed begins at .60s; these smaller percentage
+           offsets preserve the physical tick timing while that ending unfolds.
            useStoryScene resets both timelines together on an audible entrance. */
         .millionaire-watch-second {
           transform-origin: 320px 160px;
-          animation: millionaire-watch-tick 1.3s steps(1, end) both;
+          animation: millionaire-watch-tick 3.6s steps(1, end) both;
         }
         @keyframes millionaire-rewind { to { transform: rotate(-360deg); } }
         @keyframes millionaire-breathe { 0%, 100% { opacity: .35; } 50% { opacity: .75; } }
         @keyframes millionaire-chips { 0%, 41.6667% { opacity: 1; } 88.8889%, 100% { opacity: .65; } }
         @keyframes millionaire-market { 0%, 41.6667% { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .4; } 88.8889%, 100% { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: .9; } }
         @keyframes millionaire-tip { 0% { opacity: 0; } 88.8889%, 100% { opacity: .85; } }
-        @keyframes millionaire-watch-tick { 0% { transform: rotate(20deg); } 6.1538% { transform: rotate(26deg); } 43.8462%, 100% { transform: rotate(32deg); } }
+        @keyframes millionaire-watch-tick { 0% { transform: rotate(20deg); } 2.2222% { transform: rotate(26deg); } 15.8333%, 100% { transform: rotate(32deg); } }
         @keyframes millionaire-wait { 0%, 100% { opacity: .65; } 50% { opacity: .9; } }
         @keyframes millionaire-passage { 0%, 10% { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .3; } 60%, 85% { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: .8; } 100% { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: .3; } }
-        @keyframes millionaire-glint { 0%, 35%, 65%, 100% { opacity: .1; } 50% { opacity: .8; } }
+        @keyframes millionaire-reveal { 0% { opacity: .35; } 25% { opacity: .75; } 100% { opacity: .5; } }
+        @keyframes millionaire-glint { 0%, 17%, 100% { opacity: .1; } 42% { opacity: .8; } 72% { opacity: .25; } }
         @media (prefers-reduced-motion: reduce) {
           /* Retain the complete drawing, including the clue, as a static image. */
           .story-effect-container.millionaire-effect { display: block; }

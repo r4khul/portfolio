@@ -12,4 +12,6 @@ The bank cue uses the 30.0–36.0 second excerpt of **Office with Typing.wav**, 
 - Author's upload: https://opengameart.org/content/54-casino-sound-effects-cards-dice-chips
 - License: https://creativecommons.org/publicdomain/zero/1.0/
 
-The rewind impact/ring and watch escapement contacts are original synthesis, without borrowed recordings. All generation, trimming, and mixing steps are retained in `scripts/generate_story_sfx.py`; source excerpts, original Kenney OGGs, and their provenance/license notices are retained under `scripts/audio-sources/`.
+The rewind impact/ring and watch escapement contacts are original synthesis, without borrowed recordings. The watch reveal (`watch-reveal.wav`) also contains an original three-second mystery composition, beginning at 0.60 seconds after the two ticks: a fixed D3 resonant/bowed-like pedal, a quiet unresolved A-flat tension, and sparse A4 / E-flat5 felt-like tonal contacts. The instruments and composition are synthesized directly by `scripts/generate_story_sfx.py`; no recorded music, third-party melody, noise bed, or pitch-sweep effect is used. The phrase ends at 3.60 seconds with a short clean fade.
+
+All generation, trimming, and mixing steps are retained in `scripts/generate_story_sfx.py`; source excerpts, original Kenney OGGs, and their provenance/license notices are retained under `scripts/audio-sources/`.

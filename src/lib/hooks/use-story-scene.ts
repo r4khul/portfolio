@@ -17,6 +17,10 @@ export function useStoryScene(sound: StorySound) {
     if (!container) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // The watch's face sits near the drawing's center. Wait until that face and
+    // the empty setting are visible before its closing music begins; a strap
+    // entering at the bottom of the screen should not spend the reveal's beat.
+    const entryThreshold = sound === "watch" ? 0.55 : 0.25;
     let inView = false;
     // Consume the phrase once per visit. Tab visibility changes alone do not
     // replay it; a deliberate departure and return to the scene begins a new visit.
@@ -42,7 +46,8 @@ export function useStoryScene(sound: StorySound) {
         played = true;
         // Start the SVG phrase at the same software origin as the decoded sound.
         // This also handles a late download/unlock: the watch's two hand steps
-        // still match the contacts authored at .08s and .57s in its WAV.
+        // still match the contacts authored at .08s and .57s before the ending's
+        // three-second musical bed. Both run once rather than restarting on a loop.
         container.getAnimations({ subtree: true }).forEach((animation) => {
           animation.currentTime = 0;
         });
@@ -50,13 +55,13 @@ export function useStoryScene(sound: StorySound) {
     };
 
     const observer = new IntersectionObserver(([entry]) => {
-      // Enter at 25% and leave below 10%. This hysteresis prevents small scroll
-      // movements at the viewport edge from repeatedly firing the same contact.
-      const visible = entry.isIntersecting && entry.intersectionRatio >= (inView ? 0.1 : 0.25);
+      // Use a lower departure threshold than entry. This hysteresis prevents
+      // small scroll movements from repeatedly firing the same authored phrase.
+      const visible = entry.isIntersecting && entry.intersectionRatio >= (inView ? 0.1 : entryThreshold);
       if (!visible && inView) played = false;
       inView = visible;
       update();
-    }, { threshold: [0, 0.1, 0.25] });
+    }, { threshold: [0, 0.1, entryThreshold] });
 
     observer.observe(container);
     // Readiness covers both completed decoding and browser/OS audio state changes.

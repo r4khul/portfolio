@@ -16,7 +16,9 @@ const SOURCES: Record<StorySound, string> = {
   rewind: "/sfx/stories/rewind.wav",
   fortune: "/sfx/stories/fortune.wav",
   bank: "/sfx/stories/bank.wav",
-  watch: "/sfx/stories/watch.wav",
+  // A distinct filename also invalidates the earlier dry-tick asset in browser
+  // caches. The reveal now contains those contacts followed by its scored ending.
+  watch: "/sfx/stories/watch-reveal.wav",
 };
 
 let context: AudioContext | null = null;
