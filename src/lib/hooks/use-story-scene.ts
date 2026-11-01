@@ -17,10 +17,12 @@ export function useStoryScene(sound: StorySound) {
     if (!container) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // The watch's face sits near the drawing's center. Wait until that face and
-    // the empty setting are visible before its closing music begins; a strap
-    // entering at the bottom of the screen should not spend the reveal's beat.
-    const entryThreshold = sound === "watch" ? 0.55 : 0.25;
+    // The overhead encounter needs both curbs in view. A quarter of the frame
+    // only exposes the road's lower edge on a phone, spending the approach sound
+    // before the car reaches the screen. Closing clues likewise wait for their
+    // central detail; the quieter memory/fortune scenes can enter earlier.
+    const entryThreshold = sound === "roadside" ? 0.7
+      : sound === "watch" || sound === "opportunity" ? 0.55 : 0.25;
     let inView = false;
     // Consume the phrase once per visit. Tab visibility changes alone do not
     // replay it; a deliberate departure and return to the scene begins a new visit.

@@ -6,7 +6,7 @@
  * and plays those phrases. Keeping synthesis and decoding out of scene entry
  * lets the first audible contact and the SVG's entrance share one browser task.
  */
-export type StorySound = "rewind" | "fortune" | "bank" | "watch";
+export type StorySound = "rewind" | "fortune" | "bank" | "watch" | "roadside" | "surveillance" | "opportunity";
 export type StoryPlayback = { stop: () => void };
 
 // The rendered files are mastered against Chapter 1's effective playback levels.
@@ -20,11 +20,21 @@ const SOURCES: Record<StorySound, string> = {
   // A distinct filename also invalidates the earlier dry-tick asset in browser
   // caches. The reveal contains those contacts followed by its five-second score.
   watch: "/sfx/stories/watch-reveal.wav",
+  // Chapter 4 has its own places, remembered patterns and musical ending. These
+  // phrases share scheduling/cleanup with Chapter 3, never its sound textures.
+  // Replace the earlier ambient draft in browser caches. This phrase contains
+  // only a quiet approaching/stopping car, with silence after its brief idle.
+  roadside: "/sfx/stories/roadside-arrival.wav",
+  // A new filename replaces the earlier pencil draft in browser caches. Grahan
+  // holds the observations in his head; the phrase is musical, without writing.
+  surveillance: "/sfx/stories/surveillance-memory.wav",
+  opportunity: "/sfx/stories/opportunity.wav",
 };
 
 let context: AudioContext | null = null;
 // AudioBuffers can be reused by a replacement context after the OS closes audio.
-// The four decoded phrases are the entire cache; leaving a scene adds no entries.
+// These seven authored phrases are the entire cache; leaving a scene adds no
+// entries. Even decoded at 48kHz they use about 6MB, with no streaming or timers.
 const buffers = new Map<StorySound, AudioBuffer>();
 let warming: Promise<void> | null = null;
 const readinessListeners = new Set<() => void>();

@@ -18,14 +18,67 @@ export function AudioPrompt() {
 
   useEffect(() => {
     if (!show) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previousFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     // Preserve an existing overflow rule instead of blindly clearing another
     // surface's scroll lock when the entry card closes or the layout unmounts.
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     // Focus the dialog, not its last button. Focusing Enter would scroll a tall
     // card past its title on short landscape screens before it had been read.
-    dialogRef.current?.focus({ preventScroll: true });
-    return () => { document.body.style.overflow = previous; };
+    dialog.focus({ preventScroll: true });
+
+    const trapTab = (event: KeyboardEvent) => {
+      // Browser tab/window shortcuts keep their normal behavior. Plain Tab and
+      // Shift+Tab stay inside this modal, including its initially focused shell.
+      if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
+      // Resolve the current controls for each keypress so a disabled or hidden
+      // element never becomes a stale boundary. Restrict the search to this card;
+      // the story links behind the overlay must not enter its tab sequence.
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href], area[href], button, input:not([type="hidden"]), select, textarea, [tabindex], [contenteditable="true"]',
+      )).filter((element) => {
+        if (element.tabIndex < 0 || element.matches(":disabled")
+          || element.getAttribute("aria-disabled") === "true"
+          || element.closest('[hidden], [inert], [aria-hidden="true"]')
+          || !element.getClientRects().length) return false;
+        const visibility = window.getComputedStyle(element).visibility;
+        return visibility !== "hidden" && visibility !== "collapse";
+      });
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      const active = document.activeElement;
+
+      if (!first) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+        return;
+      }
+      const atShellOrOutside = active === dialog || !dialog.contains(active);
+      if (event.shiftKey ? atShellOrOutside || active === first : atShellOrOutside || active === last) {
+        event.preventDefault();
+        // Unlike the initial shell focus, keyboard navigation may scroll the
+        // selected control into view. This keeps Enter reachable in landscape.
+        (event.shiftKey ? last : first).focus();
+      }
+    };
+    document.addEventListener("keydown", trapTab, true);
+
+    return () => {
+      document.removeEventListener("keydown", trapTab, true);
+      document.body.style.overflow = previous;
+      // A route change can remove the original control. Restore only a connected
+      // target outside the disappearing dialog, without moving the reading page;
+      // focusing an unfocusable body is a harmless fallback when no target remains.
+      if (previousFocus?.isConnected && !dialog.contains(previousFocus)) {
+        previousFocus.focus({ preventScroll: true });
+      } else {
+        document.body.focus({ preventScroll: true });
+      }
+    };
   }, [show]);
 
   useEffect(() => {

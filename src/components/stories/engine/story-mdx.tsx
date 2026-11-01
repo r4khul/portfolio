@@ -13,6 +13,7 @@ import {
 import { StoryReveal } from "./story-reveal";
 import { StoryEffect } from "./story-effect";
 import { MillionaireEffect } from "./millionaire-effect";
+import { GreedyEffect } from "./greedy-effect";
 
 // Every prose block is wrapped in a scroll-gated StoryReveal.
 // Custom components handle their own reveal internally via StoryReveal.
@@ -71,6 +72,7 @@ const components = {
   Chapter,
   StoryEffect,
   MillionaireEffect,
+  GreedyEffect,
 };
 
 export function StoryMdxContent({ source }: { source: string }) {
