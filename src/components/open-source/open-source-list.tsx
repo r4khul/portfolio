@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  ChevronDown,
   GitMerge,
   GitPullRequest,
   Search,
@@ -16,7 +15,6 @@ import {
 import { openSource, type OssContribution } from "@/data/profile";
 import { Reveal } from "@/components/ui/reveal";
 import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
-import { PullRequestDescription } from "@/components/open-source/pull-request-description";
 
 interface OpenSourceListProps {
   contributions?: OssContribution[];
@@ -28,17 +26,8 @@ export function OpenSourceList({
   limitPrsPerCard = true,
 }: OpenSourceListProps) {
   const { playClick } = useAudioFeedback();
-  const [expandedPrs, setExpandedPrs] = useState<Record<string, boolean>>({});
   const [statusFilter, setStatusFilter] = useState<"all" | "merged" | "review">("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const togglePr = (prUrl: string) => {
-    playClick();
-    setExpandedPrs((prev) => ({
-      ...prev,
-      [prUrl]: !prev[prUrl],
-    }));
-  };
 
   // Filter contributions and PRs based on user search and filter tab
   const filteredContributions = useMemo(() => {
@@ -184,16 +173,11 @@ export function OpenSourceList({
                   {/* Pull Requests List */}
                   <div className="divide-y divide-edge">
                     {visiblePrs.map((pr) => {
-                      const isExpanded = !!expandedPrs[pr.url];
                       const isReview = pr.status === "review";
 
                       return (
                         <div key={pr.url} className="group transition-colors hover:bg-surface/40">
-                          {/* Row Item Header */}
-                          <div
-                            onClick={() => togglePr(pr.url)}
-                            className="flex cursor-pointer items-start justify-between gap-3 p-4 sm:px-5 sm:py-4"
-                          >
+                          <div className="flex items-start justify-between gap-3 p-4 sm:px-5 sm:py-4">
                             <div className="flex items-start gap-3 flex-1 min-w-0">
                               {/* Status Badge */}
                               <span className="mt-0.5 inline-flex items-center gap-1 shrink-0 rounded px-2 py-0.5 font-mono text-[10.5px]">
@@ -223,65 +207,21 @@ export function OpenSourceList({
                               </div>
                             </div>
 
-                            {/* Actions & Accordion Toggle */}
+                            {/* GitHub Link */}
                             <div className="flex items-center gap-2 shrink-0 pt-0.5">
                               <a
                                 href={pr.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  playClick();
-                                }}
+                                onClick={playClick}
                                 className="rounded p-1 text-faint transition-colors hover:bg-surface hover:text-foreground"
                                 title="Open on GitHub"
+                                aria-label={`Open pull request ${pr.title} on GitHub`}
                               >
                                 <ArrowUpRight className="size-4" />
                               </a>
-                              <button
-                                type="button"
-                                aria-label="Toggle details"
-                                className="rounded p-1 text-faint transition-colors hover:bg-surface hover:text-foreground"
-                              >
-                                <ChevronDown
-                                  className={`size-4 transition-transform duration-200 ${
-                                    isExpanded ? "rotate-180 text-foreground" : ""
-                                  }`}
-                                />
-                              </button>
                             </div>
                           </div>
-
-                          {/* Accordion / Dropdown Expanded Content */}
-                          {isExpanded && (
-                            <div className="border-t border-edge/60 bg-surface/70 px-4 py-4 sm:px-5 sm:py-4.5">
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
-                                    Overview & Impact
-                                  </span>
-                                  <span className="font-mono text-[11px] text-muted">
-                                    {contribution.repo}
-                                  </span>
-                                </div>
-                                <div className="font-sans">
-                                  <PullRequestDescription markdown={pr.description} />
-                                </div>
-                                <div className="pt-2">
-                                  <a
-                                    href={pr.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={playClick}
-                                    className="tactile inline-flex items-center gap-1.5 rounded border border-edge bg-background px-3 py-1.5 font-mono text-[11.5px] text-foreground hover:border-edge-strong"
-                                  >
-                                    View Pull Request on GitHub
-                                    <ArrowUpRight className="size-3.5 text-faint" />
-                                  </a>
-                                </div>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
