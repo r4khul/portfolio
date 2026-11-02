@@ -120,7 +120,7 @@ export const enteOpenSource: OssContribution = {
   slug: "ente",
   repo: "ente/ente",
   repoUrl: "https://github.com/ente/ente",
-  stats: { users: "400k+", stars: "27k+", contributions: "40+" },
+  stats: { users: "520k+", stars: "29k+", contributions: "40+" },
   context: "Fully open-source, end-to-end encrypted photo backup & locker",
   prs: [
     {

@@ -30,6 +30,8 @@ type GitHubSearchItem = {
 };
 
 type GitHubSearchResponse = {
+  total_count: number;
+  incomplete_results: boolean;
   items: GitHubSearchItem[];
 };
 
@@ -81,18 +83,31 @@ export async function GET(
   }
 
   try {
-    const response = await fetch(endpoint, {
-      headers,
-      next: { revalidate: 900 },
-    });
+    const items: GitHubSearchItem[] = [];
+    let totalCount: number;
+    let page = 1;
+    do {
+      endpoint.searchParams.set("page", String(page));
+      const response = await fetch(endpoint.toString(), {
+        headers,
+        next: { revalidate: 900 },
+      });
 
-    if (!response.ok) {
-      console.error("GitHub contribution watcher failed:", response.status);
-      return NextResponse.json({ error: "GitHub watcher could not load contributions." }, { status: 502 });
-    }
+      if (!response.ok) throw new Error(`GitHub search failed: ${response.status}`);
 
-    const result = (await response.json()) as GitHubSearchResponse;
-    const pullRequests = result.items
+      const result = (await response.json()) as GitHubSearchResponse;
+      if (result.incomplete_results || result.total_count > 1_000) {
+        throw new Error("GitHub search did not return a complete result set");
+      }
+      totalCount = result.total_count;
+      items.push(...result.items);
+      if (result.items.length === 0 && items.length < totalCount) {
+        throw new Error("GitHub search ended before all results were returned");
+      }
+      page++;
+    } while (items.length < totalCount);
+
+    const pullRequests = items
       // Closed PRs are deliberately excluded unless GitHub marks them as merged.
       .filter((item) => item.state === "open" || Boolean(item.pull_request?.merged_at))
       .map((item) => {
@@ -111,11 +126,10 @@ export async function GET(
     return NextResponse.json(
       {
         pullRequests,
-        syncedAt: new Date().toISOString(),
       },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600",
+          "Cache-Control": "no-store",
         },
       },
     );

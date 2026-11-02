@@ -12,7 +12,6 @@ type WatchedPullRequest = OssPr & {
 
 type WatcherResponse = {
   pullRequests: WatchedPullRequest[];
-  syncedAt: string;
 };
 
 type WatchState = "loading" | "live" | "fallback";
@@ -22,11 +21,10 @@ const REFRESH_INTERVAL = 15 * 60 * 1000;
 export function LiveWorkRecord({ contribution }: { contribution: OssContribution }) {
   const [pullRequests, setPullRequests] = useState(contribution.prs);
   const [watchState, setWatchState] = useState<WatchState>("loading");
-  const [syncedAt, setSyncedAt] = useState<string | null>(null);
 
   const sync = useCallback(async (signal?: AbortSignal) => {
     try {
-      const response = await fetch(`/api/open-source/${contribution.slug}`, { signal });
+      const response = await fetch(`/api/open-source/${contribution.slug}`, { signal, cache: "no-store" });
       if (!response.ok) throw new Error("Watcher response was not successful.");
 
       const data = (await response.json()) as WatcherResponse;
@@ -38,7 +36,6 @@ export function LiveWorkRecord({ contribution }: { contribution: OssContribution
       }));
 
       setPullRequests(freshPullRequests);
-      setSyncedAt(data.syncedAt);
       setWatchState("live");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
@@ -64,9 +61,6 @@ export function LiveWorkRecord({ contribution }: { contribution: OssContribution
   );
   const mergedPullRequests = pullRequests.filter((pr) => pr.status !== "review").length;
   const reviewPullRequests = pullRequests.length - mergedPullRequests;
-  const lastSyncedLabel = syncedAt
-    ? new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(syncedAt))
-    : null;
 
   return (
     <>
@@ -119,7 +113,7 @@ export function LiveWorkRecord({ contribution }: { contribution: OssContribution
         <p className="inline-flex items-center gap-1.5 font-mono text-[10px] text-faint">
           <Radio className={`size-3 ${watchState === "live" ? "text-emerald-500" : "text-faint"}`} />
           {watchState === "live"
-            ? `Watching GitHub. Updated ${lastSyncedLabel || "now"}.`
+            ? "Watching GitHub. Refreshes every 15 minutes."
             : watchState === "loading"
               ? "Checking GitHub for new work."
               : "Showing the saved record until GitHub is available."}
