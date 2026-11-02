@@ -1,0 +1,54 @@
+/*
+ * The faint room or street behind a scene: two whole-layer drawings that
+ * drift at different depths as the scene scrolls. Only layer transforms
+ * change per frame, so scrolling never repaints the line work.
+ */
+.memory-environment {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: inherit;
+  opacity: .24;
+  pointer-events: none;
+}
+
+.memory-environment__layer {
+  position: absolute;
+  inset: -3% -5%;
+  width: 110%;
+  height: 106%;
+  display: block;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.memory-environment__layer--back {
+  transform: translate3d(calc((var(--scene-progress, .5) - .5) * -14px), 0, 0);
+}
+
+.memory-environment__layer--front {
+  transform: translate3d(calc((var(--scene-progress, .5) - .5) * -38px), calc((var(--scene-progress, .5) - .5) * 6px), 0);
+}
+
+.memory-environment--interior .memory-environment__layer--front {
+  transform: translate3d(calc((var(--scene-progress, .5) - .5) * -16px), 0, 0);
+}
+
+.memory-environment__far { opacity: .52; }
+.memory-environment__near { opacity: .9; }
+.memory-environment__light { opacity: .85; }
+.memory-environment__bulb-rays { opacity: .22; }
+
+/* On phones, slide the near furniture and shopfronts into the narrow frame. */
+@media (max-width: 700px) {
+  .memory-environment--interior .memory-environment__near { transform: translate(-280px, 120px); }
+  .memory-environment--street .memory-environment__near { transform: translateX(-210px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-environment__layer--back,
+  .memory-environment__layer--front,
+  .memory-environment--interior .memory-environment__layer--front {
+    transform: none;
+  }
+}

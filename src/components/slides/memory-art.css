@@ -1,0 +1,97 @@
+.memory-art {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.memory-art__cover-console {
+  transform-origin: 540px 278px;
+  transform: translateY(calc((var(--scene-progress, .5) - .5) * -8px)) rotate(calc((var(--scene-progress, .5) - .5) * 1.2deg));
+}
+
+.memory-art__cover-sleeves {
+  transform-origin: 762px 330px;
+  transform: translateY(calc((var(--scene-progress, .5) - .5) * 7px)) rotate(calc((var(--scene-progress, .5) - .5) * 1.5deg));
+}
+
+.memory-art__shutter {
+  transform: translateY(calc((.5 - var(--scene-progress, .5)) * 54px));
+}
+
+.memory-art__screen-glow {
+  opacity: calc(.025 + var(--scene-progress, .5) * .065);
+}
+
+.memory-art__game {
+  opacity: calc(.4 + var(--scene-progress, .5) * .4);
+  transform: translateX(calc((var(--scene-progress, .5) - .5) * 3px));
+}
+
+.memory-art__pouch {
+  transform-origin: 600px 350px;
+}
+
+.memory-art__pouch--outer-left {
+  transform: rotate(calc((var(--scene-progress, .5) - .5) * -5deg));
+}
+
+.memory-art__pouch--inner-left {
+  transform: rotate(calc((var(--scene-progress, .5) - .5) * -2.5deg));
+}
+
+.memory-art__pouch--inner-right {
+  transform: rotate(calc((var(--scene-progress, .5) - .5) * 2.5deg));
+}
+
+.memory-art__pouch--outer-right {
+  transform: rotate(calc((var(--scene-progress, .5) - .5) * 5deg));
+}
+
+.memory-art__condensation {
+  opacity: calc(.12 + var(--scene-progress, .5) * .28);
+  transform: translateY(calc(var(--scene-progress, .5) * 10px));
+}
+
+/*
+ * The last shot, on the scene's scroll. The bicycle and the three of us fade
+ * out around the ice tubes (.30–.46) while the sleeves glide into the fan
+ * (moved in script, .44–.72), and the console slides in from the left (.58–.76).
+ */
+.memory-art--finale .memory-bicycle { transform: none; }
+.memory-art--finale [data-bike-pace],
+.memory-art--finale .memory-bicycle__road,
+.memory-art__finale-fist { opacity: calc(1 - clamp(0, (var(--scene-progress, 0) - .3) / .16, 1)); }
+.memory-art--finale .memory-pouch__detail { opacity: clamp(0, (var(--scene-progress, 0) - .22) / .14, 1); }
+.memory-art__finale-console {
+  opacity: clamp(0, (var(--scene-progress, 0) - .58) / .14, 1);
+  translate: calc((1 - clamp(0, (var(--scene-progress, 0) - .58) / .18, 1)) * -36px) 0;
+}
+
+/* The console he described, as my thought: it fills in as he talks, and fades at the price. */
+.memory-art__wish { opacity: calc(.25 + .75 * clamp(0, (var(--scene-progress, 0) - .05) / .3, 1)); }
+.memory-art__wish--fading { opacity: calc(1 - .62 * clamp(0, (var(--scene-progress, 0) - .2) / .4, 1)); }
+.memory-art__wish-tag { opacity: clamp(0, (var(--scene-progress, 0) - .12) / .15, 1); }
+
+/* the cursor on the laptop, waiting for the next cheat code */
+.memory-art__caret { animation: memory-caret 1.1s steps(1) infinite; }
+@keyframes memory-caret { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-art__caret { animation: none; }
+  .memory-art__finale-console { translate: none; }
+  .memory-art__cover-console,
+  .memory-art__cover-sleeves,
+  .memory-art__shutter,
+  .memory-art__game,
+  .memory-art__pouch,
+  .memory-art__pouch--outer-left,
+  .memory-art__pouch--inner-left,
+  .memory-art__pouch--inner-right,
+  .memory-art__pouch--outer-right,
+  .memory-art__condensation {
+    transform: none;
+  }
+  .memory-art__screen-glow { opacity: .06; }
+  .memory-art__game { opacity: .6; }
+  .memory-art__condensation { opacity: .3; }
+}
