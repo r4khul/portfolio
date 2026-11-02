@@ -1,0 +1,32 @@
+/* The bicycle drifts across the frame as the scene scrolls; the wheels,
+   cranks and legs are turned in step by pedalBicycle(). */
+.memory-bicycle--rush {
+  transform: translateX(calc((var(--scene-progress, .5) - .5) * 80px));
+}
+/* homeward, easing to a stop where the remembered ride takes over, which holds still */
+.memory-bicycle--ride {
+  transform: translateX(calc((1 - var(--scene-progress, 1)) * 24px));
+}
+
+.memory-bicycle__road {
+  transform: translateX(calc((var(--scene-progress, .5) - .5) * -24px));
+}
+
+/* A bead of melt gathers and drops from the ice tubes, again and again. */
+.memory-bicycle__drip {
+  animation: memory-drip 2.8s ease-in infinite;
+}
+@keyframes memory-drip {
+  0%, 55% { transform: translateY(0); opacity: 0; }
+  62% { opacity: .55; }
+  100% { transform: translateY(46px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-bicycle--rush,
+  .memory-bicycle--ride,
+  .memory-bicycle__road {
+    transform: none;
+  }
+  .memory-bicycle__drip { animation: none; opacity: 0; }
+}
