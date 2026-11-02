@@ -5,7 +5,7 @@ import { homePlace, nativePlace, nowPlace } from "@/data/travel";
 
 export function TravelsSection() {
   return (
-    <Section id="travels" index="08" title="Travels">
+    <Section id="travels" index="09" title="Travels">
       <p className="mb-6 max-w-prose text-[15px] leading-[1.8] text-muted">
         Born and raised in <CityLink live id={homePlace.id}>{homePlace.name}</CityLink>
         {nativePlace ? (

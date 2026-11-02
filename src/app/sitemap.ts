@@ -66,6 +66,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${profile.url}/slides`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${profile.url}/slides/game-console-and-ice-tubes`,
+      lastModified: new Date("2026-11-03T00:00:00+05:30"),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    },
+    {
       url: `${profile.url}/travels`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,

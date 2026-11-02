@@ -13,6 +13,7 @@ import {
   Library,
   Mail,
   Earth,
+  GalleryVerticalEnd,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { AudioToggle } from "./audio-toggle";
@@ -28,6 +29,7 @@ const nav = [
   { label: "Open Source", href: "/#open-source", icon: GitMerge },
   { label: "Blogs",       href: "/#blogs",       icon: BookOpen },
   { label: "Stories",     href: "/#stories",     icon: Library },
+  { label: "Slides",      href: "/#slides",      icon: GalleryVerticalEnd },
   { label: "Travels",     href: "/#travels",     icon: Earth },
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
@@ -64,6 +66,8 @@ export const SideNav = memo(() => {
         setActive("blogs");
       } else if (pathname.startsWith("/stories")) {
         setActive("stories");
+      } else if (pathname.startsWith("/slides")) {
+        setActive("slides");
       } else {
         setActive("");
       }
