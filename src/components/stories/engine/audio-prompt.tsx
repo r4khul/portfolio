@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 import { primeStoryAudio, warmStoryAudio } from "@/lib/story-audio";
 import { playSfx } from "@/lib/sfx";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-export function AudioPrompt() {
+/**
+ * `onUnlock` replaces the chapters' scene sounds with a page's own audio: it
+ * runs inside the same trusted gestures that would have unlocked them.
+ */
+export function AudioPrompt({ onUnlock }: { onUnlock?: () => void } = {}) {
   const { isMuted, toggleMute } = useAudioContext();
+  const unlockAudio = useCallback(() => {
+    if (onUnlock) onUnlock();
+    else void primeStoryAudio();
+  }, [onUnlock]);
   const [show, setShow] = useState(true);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   // Fetch/decode while the reader considers the card. This produces no audio;
   // browser output stays locked until a real entry/unmute gesture below.
-  useEffect(() => { void warmStoryAudio(); }, []);
+  useEffect(() => { if (!onUnlock) void warmStoryAudio(); }, [onUnlock]);
 
   useEffect(() => {
     if (!show) return;
@@ -86,20 +94,20 @@ export function AudioPrompt() {
     // The card is the only visible sound control in story mode. Once dismissed,
     // trusted gestures can still recover audio after a phone/OS interruption.
     // Observing a scene or returning to the tab never resumes audio by itself.
-    const unlock = () => { void primeStoryAudio(); };
+    const unlock = () => unlockAudio();
     window.addEventListener("pointerdown", unlock, { capture: true, passive: true });
     window.addEventListener("keydown", unlock, true);
     return () => {
       window.removeEventListener("pointerdown", unlock, true);
       window.removeEventListener("keydown", unlock, true);
     };
-  }, [isMuted]);
+  }, [isMuted, unlockAudio]);
 
   const handleToggleClick = () => {
     // Share the saved mute preference with the portfolio navigation's control.
     // An explicit unmute is also a valid gesture for unlocking Web Audio.
     if (isMuted) {
-      void primeStoryAudio();
+      unlockAudio();
       playSfx("switch", 0.45);
     }
     toggleMute();
@@ -108,7 +116,7 @@ export function AudioPrompt() {
   const handleEnter = () => {
     // A reader may enter with audio muted. Only an enabled entry unlocks output;
     // there is no extra top-of-page button or second consent step in the chapter.
-    if (!isMuted) void primeStoryAudio();
+    if (!isMuted) unlockAudio();
     setShow(false);
   };
 
