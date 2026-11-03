@@ -479,6 +479,7 @@ export function MemoryStory() {
                     <div className="memory-paragraphs">
                       {scene.paragraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
                     </div>
+                    {isFinale && <Link href="/slides" className="memory-end"><ArrowLeft size={13} aria-hidden="true" />Return to Slides</Link>}
                   </div>
                 </div>
                 <div className="memory-world" aria-hidden="true">

@@ -32,6 +32,10 @@
   mask-image: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent), linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
   mask-composite: intersect;
 }
+.memory-end { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 14px; color: var(--faint); font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; transition: color .2s; }
+.memory-end:hover, .memory-end:focus-visible { color: var(--foreground); }
+.memory-end svg { transition: translate .2s; }
+.memory-end:hover svg { translate: -2px 0; }
 .memory-kicker { margin: 0 0 18px; color: var(--faint); font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
 
 /* Only the shots on screen are painted, and only they hold GPU layers. */
