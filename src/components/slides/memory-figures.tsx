@@ -59,12 +59,39 @@ export function capsule(p: Point, q: Point, w1: number, w2: number): string {
 export const place = ([x, y]: Point, degrees = 0, scale = 1) =>
   `translate(${r1(x)} ${r1(y)})${degrees ? ` rotate(${r1(degrees)})` : ""}${scale !== 1 ? ` scale(${scale})` : ""}`;
 
+/** Where each head's outline ends at the neck, behind and in front, in head units. */
+const NECK_ENDS: Record<"kid" | "man" | "amma", readonly [Point, Point]> = { kid: [[-12, 40], [8, 42]], man: [[-13, 46], [7, 48]], amma: [[-12, 44], [8, 45]] };
+const neckEnds = (role: Role) => NECK_ENDS[role === "narrator" ? "kid" : role === "amma" ? "amma" : "man"];
+
+/**
+ * The neck under a head placed with `place(at, degrees, scale)`. Its sides
+ * carry on from the ends of the head's outline down to `back` and `front`,
+ * which sit inside the shirt, so it bends with the head instead of breaking.
+ * Draw it, then the head, then the shirt: they cover its two ends.
+ * `mirror` matches a head flipped in place to look the other way.
+ */
+export function Neck({ role = "adult", at, degrees = 0, scale = 1, mirror = false, back, front }: { role?: Role; at: Point; degrees?: number; scale?: number; mirror?: boolean; back: Point; front: Point }) {
+  const radians = (degrees * Math.PI) / 180;
+  const [behind, ahead] = neckEnds(role).map(([ex, y]): Point => [ex * (mirror ? -1 : 1), y]).map(([x, y]): Point => [
+    at[0] + (x * Math.cos(radians) - y * Math.sin(radians)) * scale,
+    at[1] + (x * Math.sin(radians) + y * Math.cos(radians)) * scale,
+  ]);
+  // flipped, the head's back is on the other side, so its outline meets the other bottom corner
+  const d = [behind, ...(mirror ? [front, back] : [back, front]), ahead].map(([x, y], index) => `${index ? "L" : "M"}${r1(x)} ${r1(y)}`).join("");
+  return (
+    <g>
+      <path d={d} fill={paper} strokeWidth={2.2 * scale} />
+      <path d={d} fill="currentColor" stroke="none" opacity=".06" />
+    </g>
+  );
+}
+
 const KID_SKIN =
-  "M-12 40C-14 32-22 26-27 16C-36-2-30-28-8-34C12-39 26-26 28-12C29-8 30-5 29-2C31 2 34 5 35 7C34 10 31 10 29 11C30 13 31 15 29 17C30 19 30 21 28 22C27 27 24 31 17 33C12 34 9 35 8 42Z";
+  "M-12 40C-14 32-22 26-27 16C-36-2-30-28-8-34C12-39 26-26 28-12C29-8 30-5 29-2C31 2 34 5 35 7C34 10 31 10 29 11C30 13 31 15 29 17C30 19 30 21 28 22C27 27 24 31 17 33C12 34 9 35 8 42";
 const MAN_SKIN =
-  "M-13 46C-16 36-24 28-28 18C-36-2-30-30-6-36C14-40 28-28 29-14C30-10 31-6 30-3C33 2 37 7 38 10C37 13 33 13 30 14C31 16 32 18 30 20C31 22 31 24 29 25C28 31 25 36 17 38C11 39 8 40 7 48Z";
+  "M-13 46C-16 36-24 28-28 18C-36-2-30-30-6-36C14-40 28-28 29-14C30-10 31-6 30-3C33 2 37 7 38 10C37 13 33 13 30 14C31 16 32 18 30 20C31 22 31 24 29 25C28 31 25 36 17 38C11 39 8 40 7 48";
 const AMMA_SKIN =
-  "M-12 44C-15 34-23 26-27 16C-35-2-30-30-6-35C14-39 27-27 28-13C29-9 30-6 29-3C31 1 34 5 35 8C34 11 31 11 29 12C30 14 31 16 29 18C30 20 30 22 28 23C27 29 24 33 17 35C12 36 9 37 8 45Z";
+  "M-12 44C-15 34-23 26-27 16C-35-2-30-30-6-35C14-39 27-27 28-13C29-9 30-6 29-3C31 1 34 5 35 8C34 11 31 11 29 12C30 14 31 16 29 18C30 20 30 22 28 23C27 29 24 33 17 35C12 36 9 37 8 45";
 
 const HAIR: Record<Role, string> = {
   narrator: "M-24 14L-32.9 0.0Q-39.4 -2.8 -36.3 -8.7Q-43.1 -13.0 -36.8 -18.0Q-40.5 -23.6 -34.5 -27.0Q-37.6 -34.1 -29.3 -35.0Q-29.2 -41.7 -21.9 -41.3Q-20.5 -49.1 -12.8 -45.4Q-8.7 -51.1 -2.8 -47.0Q3.1 -52.9 7.3 -45.9Q14.1 -48.5 16.5 -42.1Q24.8 -43.9 24.3 -36.1Q31.3 -34.8 29.8 -28.4Q37.5 -25.6 32.7 -19.5Q37 -12 31 -13Q28 -9 24 -13Q21 -9 17 -13Q14 -10 10 -14Q6 -17 2 -13C-1 -9 -2 -4 -2 1L-6 4L-12 -3C-16 3 -20 10 -24 14Z",
@@ -170,6 +197,7 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
   const skin = kid ? KID_SKIN : amma ? AMMA_SKIN : MAN_SKIN;
   const eye: Point = kid ? [19, -2] : amma ? [19, -3] : [20, -1];
   const mouth: Point = kid ? [28, 19] : amma ? [28, 20] : [29, 22];
+  const [behind, ahead] = neckEnds(role);
   return (
     <g strokeLinecap="round" strokeLinejoin="round">
       {amma && (
@@ -183,8 +211,8 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
         </g>
       )}
       <path d={skin} fill={paper} strokeWidth="2.2" />
-      {/* tone under the skull and down the back of the neck */}
-      <path d="M-27 16C-22 26-14 32-12 40L8 42C9 36 4 30-4 30C-14 30-20 24-27 16Z" fill="currentColor" stroke="none" opacity=".06" />
+      {/* tone under the skull and down the back of the neck, meeting the Neck's */}
+      <path d={`M-27 16C-22 26-14 32 ${behind[0]} ${behind[1]}L${ahead[0]} ${ahead[1]}C${ahead[0] + 1} ${ahead[1] - 6} 4 30-4 30C-14 30-20 24-27 16Z`} fill="currentColor" stroke="none" opacity=".06" />
       <path d="M-9-1C-4-8 5-4 3 4C2 10-4 12-8 9Z" fill={paper} strokeWidth="1.7" />
       <path d="M-4 1q3 2 0 5" strokeWidth="1.1" opacity=".7" />
       <path d={HAIR[role]} fill="currentColor" stroke="none" />

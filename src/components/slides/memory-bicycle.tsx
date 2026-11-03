@@ -1,4 +1,4 @@
-import { Head, capsule, joint, paper, place, polar, type Mood, type Point } from "./memory-figures";
+import { Head, Neck, capsule, joint, paper, place, polar, type Mood, type Point } from "./memory-figures";
 import { HELD_ANGLES, Pouch, heldSleeve } from "./memory-props";
 
 /**
@@ -245,7 +245,6 @@ function Arm({ shoulder, hand, upper, fore, width, sleeve = "solid", bend = 1 }:
 function BrotherTorso({ pace }: { pace: Pace }) {
   return (
     <g transform={place(HIP, LEAN[pace], TORSO)}>
-      <path d={capsule([3, -146], [8, -176], 22, 20)} fill={paper} strokeWidth="1.9" />
       {pace === "rush" && <path d="M-32 2C-44 4-56 0-64-6C-52-10-44-16-38-26Z" fill="currentColor" stroke={paper} strokeWidth="1.6" />}
       <path d="M-31 8C-40-40-38-112-28-143C-14-161 18-161 31-145C37-112 33-40 29 8C10 14-14 14-31 8Z" fill="currentColor" stroke={paper} strokeWidth="2.4" />
       <path d="M-4-150q8 6 16 0" stroke={paper} strokeWidth="1.6" />
@@ -266,11 +265,10 @@ const kidAt = (pace: Pace, local: Point): Point => {
 function KidTorso({ pace }: { pace: Pace }) {
   return (
     <g transform={place(KID_HIP[pace], KID_LEAN[pace])}>
-      <path d={capsule([2, -108], [5, -128], 18, 17)} fill={paper} strokeWidth="1.8" />
-      <path d="M-27 6C-34-32-32-84-23-110C-12-124 14-124 25-111C31-84 28-34 23 6C6 11-12 11-27 6Z" fill={paper} strokeWidth="2.2" />
+      <path d="M-27 6C-34-32-32-84-23-110C-12-117 14-117 25-111C31-84 28-34 23 6C6 11-12 11-27 6Z" fill={paper} strokeWidth="2.2" />
       <path d="M-31-64C-14-60 12-60 29-66L29-54C12-48-14-48-31-52Z" fill="currentColor" stroke="none" />
       <path d="M-24-96q-4 20-2 30M12-30q4 12 2 24" strokeWidth="1" opacity=".45" />
-      <path d="M-4-117q7 5 14 0" strokeWidth="1.6" />
+      <path d="M-4-114q7 5 14 0" strokeWidth="1.6" />
       <path d="M-30-4C-10 2 12 2 26-4L28 14C10 20-12 20-31 14Z" fill="currentColor" stroke={paper} strokeWidth="1.4" />
     </g>
   );
@@ -313,6 +311,9 @@ export function MemoryBicycle({ pace = "rush", held = true }: { pace?: Pace; hel
   const kidShoulder = kidAt(pace, [5, -100]);
   const kidHand = fistFor(pace);
   const kidHead = kidAt(pace, [4, -152]);
+  // remembered, my head comes down to rest against his back
+  const kidHeadAt: Point = pace === "reflection" ? [kidHead[0] + 6, kidHead[1] + 4] : kidHead;
+  const brotherNeck = [fromHip(pace, [0, -150]), fromHip(pace, [24, -148])] as const;
   const kidMood: Mood = pace === "rush" ? "excited" : pace === "ride" ? "down" : "soft";
   const kidTilt = pace === "rush" ? -18 : pace === "ride" ? 22 : 12;
   // Both rides home, the real one and the remembered one, face the way we came.
@@ -329,12 +330,14 @@ export function MemoryBicycle({ pace = "rush", held = true }: { pace?: Pace; hel
           <Crank side="far" degrees={180} />
           <Leg side="far" degrees={180} />
           <Bicycle />
-          <KidTorso pace={pace} />
+          {/* my neck and head go under my T-shirt's collar */}
+          <Neck role="narrator" at={kidHeadAt} degrees={kidTilt} scale={1.06} back={kidAt(pace, [-6, -102])} front={kidAt(pace, [18, -104])} />
           {pace !== "reflection" && (
             <g transform={place(kidHead, kidTilt, 1.06)}>
               <Head role="narrator" mood={kidMood} />
             </g>
           )}
+          <KidTorso pace={pace} />
           {pace === "rush" && (
             <path d={`M${kidHead[0] - 44} ${kidHead[1] - 22}h-30M${kidHead[0] - 48} ${kidHead[1] - 6}h-20M${kidHead[0] - 42} ${kidHead[1] + 10}h-14`} strokeWidth="2" opacity=".5" />
           )}
@@ -345,19 +348,26 @@ export function MemoryBicycle({ pace = "rush", held = true }: { pace?: Pace; hel
               <Slipper />
             </g>
           </g>
+          {/* his neck and head, under his collar */}
+          <g data-bike="look-ahead">
+            <Neck role="brother" at={head} degrees={LEAN[pace] * 0.35} scale={1.04} back={brotherNeck[0]} front={brotherNeck[1]} />
+            <g transform={place(head, LEAN[pace] * 0.35, 1.04)}>
+              <Head role="brother" mood={pace === "rush" ? "focus" : "calm"} />
+            </g>
+          </g>
+          {pace === "ride" && (
+            <g data-bike="look-back" opacity="0">
+              <Neck role="brother" at={[head[0] - 4, head[1] + 2]} scale={1.04} mirror back={brotherNeck[0]} front={brotherNeck[1]} />
+              <g transform={`${place([head[0] - 4, head[1] + 2])} scale(-1.04 1.04)`}>
+                <Head role="brother" mood="worried" />
+              </g>
+            </g>
+          )}
           <BrotherTorso pace={pace} />
           {pace === "reflection" && (
             // remembered, my head rests against his back
-            <g transform={place([kidHead[0] + 6, kidHead[1] + 4], kidTilt, 1.06)}>
+            <g transform={place(kidHeadAt, kidTilt, 1.06)}>
               <Head role="narrator" mood={kidMood} />
-            </g>
-          )}
-          <g data-bike="look-ahead" transform={place(head, LEAN[pace] * 0.35, 1.04)}>
-            <Head role="brother" mood={pace === "rush" ? "focus" : "calm"} />
-          </g>
-          {pace === "ride" && (
-            <g data-bike="look-back" opacity="0" transform={`${place([head[0] - 4, head[1] + 2])} scale(-1.04 1.04)`}>
-              <Head role="brother" mood="worried" />
             </g>
           )}
           <Crank side="near" degrees={0} />

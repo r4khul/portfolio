@@ -1,4 +1,4 @@
-import { Head, capsule, joint, paper, place, type Mood, type Point, type Role } from "./memory-figures";
+import { Head, Neck, capsule, joint, paper, place, type Mood, type Point, type Role } from "./memory-figures";
 
 /**
  * The cast, drawn from one rig so each person stays the same person in every
@@ -282,8 +282,7 @@ export function Person({ who, x, y, facing = 1, pose = "stand", scale = 1, lean 
   const shoulderNear = toWorld([-0.04 * d, -torso + 0.045 * H]);
   const shoulderFar = add(shoulderNear, [-0.06 * d, 0.01 * H]);
   const headAt = toWorld([2 * k, -torso - 44 * k]);
-  const neckFrom = toWorld([0.05 * d, -torso + 0.02 * H]);
-  const neckTo = toWorld([0.08 * d, -torso - 12 * k]);
+  const headTurn = lean * 0.4 + tilt;
   const saree = m.build.bottom === "saree";
   const nearArm = <Arm m={m} shoulder={shoulderNear} hand={handAt(near, m, pose, pelvis, shoulderNear)} />;
   if (part === "arm") return <g transform={`translate(${x} ${y}) scale(${facing} 1)`}>{nearArm}</g>;
@@ -291,14 +290,14 @@ export function Person({ who, x, y, facing = 1, pose = "stand", scale = 1, lean 
     <g transform={`translate(${x} ${y}) scale(${facing} 1)`}>
       {farArm && <Arm m={m} shoulder={shoulderFar} hand={handAt(far, m, pose, pelvis, shoulderFar)} far />}
       {!saree && <Legs m={m} pose={pose} pelvis={pelvis} side="far" />}
-      <path d={capsule(neckFrom, neckTo, 22 * k, 20 * k)} fill={paper} strokeWidth="1.5" />
+      <Neck role={m.build.role} at={headAt} degrees={headTurn} scale={k} back={toWorld([-9 * k, -torso + 0.03 * H])} front={toWorld([0.05 * d + 9 * k, -torso + 0.03 * H])} />
+      <g transform={place(headAt, headTurn, k)}>
+        <Head role={m.build.role} mood={mood} spectacles={m.build.spectacles} />
+      </g>
       <g transform={place(pelvis, lean)}>
         <Shirt m={m} />
       </g>
       {saree ? <Saree m={m} pelvis={pelvis} torsoTop={pelvis[1] - torso} /> : <Legs m={m} pose={pose} pelvis={pelvis} side="near" />}
-      <g transform={place(headAt, lean * 0.4 + tilt, k)}>
-        <Head role={m.build.role} mood={mood} spectacles={m.build.spectacles} />
-      </g>
       {part === "all" && nearArm}
     </g>
   );
