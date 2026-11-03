@@ -26,7 +26,7 @@ export const gameConsoleMemory: MemoryScene[] = [
     id: "the-amma-laptop",
     art: "laptop",
     paragraphs: [
-      "In those days, that laptop felt like the most powerful machine in the world. Spider-Man 1, 2 and 3, all cracked copies. GTA Vice City. Those were our everyday games.",
+      "In those days, that laptop felt like the most powerful machine in the world. Spider-Man 1, 2 and 3, all cracked copies. GTA San Andreas. Cricket 07. Those were our everyday games.",
       "We typed cheat codes and went crazy. I must have typed HESOYAM a thousand times. When I was there, that was all the joy I needed. That was life.",
     ],
   },
