@@ -124,9 +124,9 @@ function Shop({ empty = false }: { empty?: boolean }) {
     </g>
     <g opacity=".5" strokeWidth="1">
       {/* A toy car, a small bear, and a ball on the shelf. */}
-      <path d="M514 300h61v-18h-10l-10-12h-21l-10 12h-10Zm14-18h34m-23-12v12" /><circle cx="529" cy="302" r="5" fill={paper} /><circle cx="561" cy="302" r="5" fill={paper} />
+      <path d="M514 305h61v-18h-10l-10-12h-21l-10 12h-10Zm14-18h34m-23-12v12" /><circle cx="529" cy="307" r="5" fill={paper} /><circle cx="561" cy="307" r="5" fill={paper} />
       <path d="M603 284q-14-12-8-18 5-5 11 4 8-6 13 0 5 6-6 14 14 10 7 24h-24q-6-14 7-24Zm-4 20-7 8m23-8 7 8m-18-32h7m-4-6v5" />
-      <circle cx="652" cy="293" r="14" /><path d="m640 286 23 15m-23 0 23-15m-12-7v28" opacity=".5" />
+      <circle cx="642" cy="298" r="14" /><path d="m630 291 23 15m-23 0 23-15m-12-7v28" opacity=".5" />
     </g>
     {/* toys strung from the ceiling: a balloon bunch, a toy gun, a cricket bat */}
     <g opacity=".42" strokeWidth=".9">
@@ -147,14 +147,13 @@ function Shop({ empty = false }: { empty?: boolean }) {
     {empty && (
       // where the one he meant had stood: a clean patch in the dust
       <g strokeWidth=".9">
-        <path d="M612 268h34v30h-34Z" strokeDasharray="3 4" opacity=".4" />
-        <path d="M614 300h30" opacity=".25" />
+        <path d="M596 320h34v13h-34Z" strokeDasharray="3 4" opacity=".4" />
         {/* the other console, the kind that plugs into a TV, with two pads */}
-        <g transform="translate(458 268)" opacity=".75">
+        <g transform="translate(458 278)" opacity=".75">
           <path d="M0 4h44v26H0Z" fill={paper} /><path d="M4 8h36v10H4Z" opacity=".5" />
           <path d="M8 23h6m4 0h6" opacity=".6" />
-          <path d="M-22 34q-4-8 4-9h14q8 1 4 9Z" fill={paper} /><path d="M48 34q-4-8 4-9h14q8 1 4 9Z" fill={paper} />
-          <path d="M-4 30q2-6 6-6M48 30q-4-6-6-6" opacity=".5" />
+          <path d="M-22 34q-4-8 4-9h14q8 1 4 9Z" fill={paper} /><path d="M20 34q-4-8 4-9h14q8 1 4 9Z" fill={paper} />
+          <path d="M-4 30q2-6 6-6" opacity=".5" />
         </g>
       </g>
     )}
@@ -239,7 +238,7 @@ function Bags() {
 function Evening({ thinking = false }: { thinking?: boolean }) {
   return <>
     <WallClock x={711} y={118} time={thinking ? "quarter-past" : "nine"} />
-    <DailyCalendar x={592} y={126} />
+    <DailyCalendar x={640} y={126} />
     <Bags />
     <Person who="me" facing={-1} x={704} y={395} mood={thinking ? "worried" : "calm"} near={thinking ? "pocket" : "hang"} />
     {thinking && (
@@ -259,7 +258,7 @@ function Evening({ thinking = false }: { thinking?: boolean }) {
 function Gift({ taking = false }: { taking?: boolean }) {
   return <>
     <WallClock x={711} y={118} time="nine" />
-    <DailyCalendar x={592} y={126} />
+    <DailyCalendar x={640} y={126} />
     <Bags />
     {/* Chithappa, holding the notes out; me, reaching for them */}
     <Person who="chithappa" x={588} y={395} mood="smile" near={[46, -10]} />
@@ -278,7 +277,7 @@ function Gift({ taking = false }: { taking?: boolean }) {
 function Permission() {
   return <>
     <g opacity=".15" strokeWidth="1"><path d="M428 400V81h167v319m-155-5V94h143v301m-139-299 30 13v266l-30 17m22-148h1M419 401h185m-192 8h199" /></g>
-    <DailyCalendar x={592} y={126} />
+    <DailyCalendar x={640} y={126} />
     <Bags />
     {/* Amma, a little short, saying go */}
     <Person who="amma" x={505} y={397} mood="talk" near={[64, -52]} />
