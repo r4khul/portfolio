@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Section } from "@/components/ui/section";
-import { SlideCard } from "@/components/slides/slide-card";
+import { SlideGrid } from "@/components/slides/slide-card";
 
 export function SlidesSection() {
   return (
@@ -22,7 +22,7 @@ export function SlidesSection() {
       <p className="mb-6 max-w-prose text-[15px] leading-[1.8] text-muted">
         Life, one memory at a time. Scroll into the moments that stayed.
       </p>
-      <SlideCard />
+      <SlideGrid />
     </Section>
   );
 }
