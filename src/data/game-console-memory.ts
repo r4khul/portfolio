@@ -1,10 +1,4 @@
-export type MemoryScene = {
-  id: string;
-  art: string;
-  paragraphs: string[];
-  /** shows the memory's title above the paragraphs, as the cover and the last shot do */
-  title?: boolean;
-};
+import type { MemoryScene } from "./memories";
 
 export const gameConsoleMemory: MemoryScene[] = [
   {
