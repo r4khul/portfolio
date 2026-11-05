@@ -33,8 +33,8 @@ function Stat({
 const POSTERS: Record<string, { Art: ComponentType; crop: string }> = {
   // the lamp, the ride home and the console
   "game-console-and-ice-tubes": { Art: PosterArt, crop: "170 22 1030 579" },
-  // the ride home, the ticket and the burger
-  "first-movie-and-a-burger": { Art: MoviePosterArt, crop: "300 120 860 484" },
+  // the ride home, the clapperboard and the burger
+  "first-movie-and-a-burger": { Art: MoviePosterArt, crop: "170 22 1030 579" },
 };
 
 export function SlideCard({ memory }: { memory: Memory }) {
