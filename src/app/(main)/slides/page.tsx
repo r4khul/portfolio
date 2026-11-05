@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BackButton } from "@/components/project/back-button";
 import { SlideGrid } from "@/components/slides/slide-card";
+import { memories } from "@/data/memories";
 
 export const metadata: Metadata = {
   title: "Slides",
@@ -39,7 +40,7 @@ export default function SlidesPage() {
           <h2 id="core-memories-title" className="font-serif text-[26px] tracking-tight">
             Core memories
           </h2>
-          <span className="font-mono text-[10px] text-faint">01 memory</span>
+          <span className="font-mono text-[10px] text-faint">{String(memories.length).padStart(2, "0")} memories</span>
         </div>
         <SlideGrid />
         <p className="mt-5 font-mono text-[10px] leading-relaxed text-faint">

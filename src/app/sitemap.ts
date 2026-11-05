@@ -3,6 +3,7 @@ import { getProjects } from "@/lib/projects";
 import { getBlogs } from "@/lib/blogs";
 import { getStories } from "@/lib/stories";
 import { getToys } from "@/lib/toys";
+import { memories } from "@/data/memories";
 import { profile } from "@/data/profile";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -71,12 +72,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     },
-    {
-      url: `${profile.url}/slides/game-console-and-ice-tubes`,
-      lastModified: new Date("2026-11-03T00:00:00+05:30"),
+    ...memories.map((memory) => ({
+      url: `${profile.url}/slides/${memory.slug}`,
+      lastModified: new Date(memory.published),
       changeFrequency: "monthly" as const,
       priority: 0.7,
-    },
+    })),
     {
       url: `${profile.url}/travels`,
       lastModified: new Date(),
