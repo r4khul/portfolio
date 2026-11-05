@@ -14,7 +14,7 @@ import { COVER_FAN, Handheld, Pouch } from "./memory-props";
  */
 export const POSTER = { width: 1200, height: 630 } as const;
 const paper = "var(--background)";
-const GROUND = 548;
+export const GROUND = 548;
 
 const STARS = [
   [690, 60, 1.6], [742, 112, 1.1], [806, 48, 1.3], [868, 132, 1], [930, 70, 1.8], [1004, 150, 1.1], [1150, 60, 1.4],
@@ -89,9 +89,10 @@ function Cover({ x, y, scale }: { x: number; y: number; scale: number }) {
   );
 }
 
-export function PosterArt() {
+/** The night street every memory's poster is set in: its gradients, the paper and the backdrop. */
+export function PosterNight() {
   return (
-    <g>
+    <>
       <defs>
         <linearGradient id="poster-lamp" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="currentColor" stopOpacity=".12" />
@@ -108,6 +109,14 @@ export function PosterArt() {
       </defs>
       <rect width={POSTER.width} height={POSTER.height} fill={paper} />
       <Backdrop />
+    </>
+  );
+}
+
+export function PosterArt() {
+  return (
+    <g>
+      <PosterNight />
       <RideHome />
       {/* the console and the ice tubes stand in front of the night, a little apart from it */}
       <Cover x={704 - 322 * 0.82} y={108 - 64 * 0.82} scale={0.82} />
