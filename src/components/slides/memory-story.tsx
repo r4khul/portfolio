@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ComponentType } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { MemoryArt, settleFinale } from "./memory-art";
-import { MemoryEnvironment } from "./memory-environment";
-import { pedalBicycle } from "./memory-bicycle";
 import { useMemorySound } from "./memory-sound";
+import type { Mark } from "./memory-sfx";
 import { AudioPrompt } from "@/components/stories/engine/audio-prompt";
-import { gameConsoleMemory } from "@/data/game-console-memory";
+import type { MemoryScene } from "@/data/memories";
 import "./memory-story.css";
 
 const landscapeQuery = "(max-height: 680px) and (min-aspect-ratio: 13/10)";
 const portraitQuery = "(max-aspect-ratio: 5/4)";
 
 /**
- * Each scene's camera, as viewBox keyframes across its scroll: [progress, box].
+ * A scene's camera, as viewBox keyframes across its scroll: [progress, box].
  *
  * Every box has the same 3:2 shape, so a drawing never jumps in size between
  * shots, and keeps a margin of about an eighth of its width around the people
@@ -23,55 +21,41 @@ const portraitQuery = "(max-aspect-ratio: 5/4)";
  * that continues the previous drawing starts exactly where the last one ended,
  * so the handover is invisible and only the words change.
  */
-type Keyframes = readonly (readonly [at: number, box: string])[];
-const sceneCameras: Record<string, Keyframes> = {
-  cover: [[0, "246 -22 710 473"], [1, "234 -30 734 489"]],
-  cousins: [[0, "370 135 545 363"], [1, "405 158 474 316"]],
-  laptop: [[0, "405 158 474 316"], [1, "497 242 237 158"]],
-  four: [[0, "497 242 237 158"], [0.5, "430 170 420 280"], [1, "405 158 474 316"]],
-  brick: [[0, "405 158 474 316"], [1, "518 244 248 165"]],
-  console: [[0, "518 244 248 165"], [1, "369 129 441 294"]],
-  price: [[0, "369 129 441 294"], [1, "464 131 435 290"]],
-  packed: [[0, "310 30 636 424"], [1, "334 47 587 391"]],
-  gift: [[0, "334 47 587 391"], [1, "312 47 587 391"]],
-  taking: [[0, "312 47 587 391"], [1, "400 110 480 320"]],
-  pocket: [[0, "400 110 480 320"], [1, "334 47 587 391"]],
-  permission: [[0, "334 47 587 391"], [1, "283 40 600 400"]],
-  rush: [[0, "215 -10 730 487"], [1, "237 4 686 458"]],
-  shop: [[0, "220 -10 766 511"], [1, "241 4 724 482"]],
-  empty: [[0, "542 217 345 230"], [1, "513 211 354 236"]],
-  other: [[0, "513 211 354 236"], [1, "365 176 461 307"]],
-  ice: [[0, "330 45 540 360"], [1, "345 56 510 340"]],
-  ride: [[0, "205 -20 750 500"], [1, "226 -9 709 472"]],
-  reflection: [[0, "226 -9 709 472"], [1, "215 -16 730 487"]],
-  after: [[0, "215 -16 730 487"], [1, "130 -40 900 600"]],
-  finale: [[0, "130 -40 900 600"], [0.2, "215 -16 730 487"], [0.34, "630 150 150 100"], [0.45, "630 150 150 100"], [0.68, "587 204 186 124"], [1, "587 204 186 124"]],
-};
-
-/** Scenes drawn from the same picture continue one another. */
-const drawing: Record<string, string> = {
-  // the cousin's house by day: we sit in the same places at the laptop and after
-  cousins: "day", laptop: "day", four: "day", brick: "day", console: "day", price: "day",
-  // the last evening: I stand by the window from nine until I go to Amma
-  packed: "evening", gift: "evening", taking: "evening", pocket: "evening", permission: "evening",
-  shop: "shop", empty: "shop", other: "shop",
-  // the ride home, and the same ride remembered
-  ride: "home", reflection: "home", after: "home", finale: "home",
-};
+export type Keyframes = readonly (readonly [at: number, box: string])[];
 
 /**
  * How a scene arrives:
  * - dissolve: the same picture continues, so the two frames simply cross
  * - dip: a new picture; the old one fades into the page, then the new one breathes in
- * - drift: setting off on the bicycle, the new picture glides in from the right
+ * - drift: setting off on a ride, the new picture glides in from the right
  * - cut: a hard cut to a closer frame, for the moment it hits
  */
-type Entrance = "dissolve" | "dip" | "drift" | "cut";
-function entranceOf(from: string, to: string): Entrance {
-  if (to === "empty") return "cut";
-  if (drawing[from] && drawing[from] === drawing[to]) return "dissolve";
-  if (to === "rush") return "drift";
-  return "dip";
+export type Entrance = "dissolve" | "dip" | "drift" | "cut";
+
+/** One memory as a film: its words, its drawings and how the camera moves through them. */
+export type MemoryFilm = {
+  /** the title, as two lines */
+  title: readonly [string, string];
+  /** the title read aloud */
+  label: string;
+  number: string;
+  scenes: readonly MemoryScene[];
+  cameras: Record<string, Keyframes>;
+  /** Scenes drawn from the same picture continue one another, so they dissolve. */
+  drawing: Record<string, string>;
+  /** an entrance other than the usual dissolve or dip */
+  entrance?: (from: string, to: string) => Entrance | undefined;
+  Art: ComponentType<{ scene: string; viewBox?: string }>;
+  Environment: ComponentType<{ scene: string }>;
+  /** Moves a scene's own parts with its scroll, every frame it is on screen. */
+  animate?: (scene: HTMLElement, art: string, progress: number) => void;
+  marks: readonly Mark[];
+};
+
+function entranceOf(film: MemoryFilm, from: string, to: string): Entrance {
+  const own = film.entrance?.(from, to);
+  if (own) return own;
+  return film.drawing[from] && film.drawing[from] === film.drawing[to] ? "dissolve" : "dip";
 }
 
 /** The camera arrives at its last frame here and holds through the handover. */
@@ -89,12 +73,17 @@ const easeInOut = (value: number) => {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 };
 
-const parsed = new Map<string, number[][]>();
-function cameraAt(art: string, progress: number) {
-  let frames = parsed.get(art);
+const parsed = new WeakMap<MemoryFilm["cameras"], Map<string, number[][]>>();
+function cameraAt(cameras: MemoryFilm["cameras"], art: string, progress: number) {
+  let byArt = parsed.get(cameras);
+  if (!byArt) {
+    byArt = new Map();
+    parsed.set(cameras, byArt);
+  }
+  let frames = byArt.get(art);
   if (!frames) {
-    frames = (sceneCameras[art] ?? [[0, "0 0 1200 440"]]).map(([at, box]) => [at, ...box.split(" ").map(Number)]);
-    parsed.set(art, frames);
+    frames = (cameras[art] ?? [[0, "0 0 1200 440"]]).map(([at, box]) => [at, ...box.split(" ").map(Number)]);
+    byArt.set(art, frames);
   }
   if (progress <= frames[0][0]) return frames[0].slice(1);
   const last = frames[frames.length - 1];
@@ -134,9 +123,9 @@ function handover(entrance: Entrance, t: number): [Look, Look] {
   }
 }
 
-export function MemoryStory() {
+export function MemoryStory({ film }: { film: MemoryFilm }) {
   const rootRef = useRef<HTMLElement>(null);
-  const sound = useMemorySound();
+  const sound = useMemorySound(film.marks);
   const { start: startSound, sfx } = sound;
 
   useEffect(() => {
@@ -180,7 +169,7 @@ export function MemoryStory() {
     const paint = (index: number, progress: number, look: Look, proseOpacity: number) => {
       const shot = shots[index];
       const travel = index === shots.length - 1 ? progress : clamp(progress / HOLD);
-      const box = cameraAt(shot.art, travel).map((value) => value.toFixed(1)).join(" ");
+      const box = cameraAt(film.cameras, shot.art, travel).map((value) => value.toFixed(1)).join(" ");
       if (box !== shot.last.box) {
         shot.svg.setAttribute("viewBox", box);
         shot.last.box = box;
@@ -230,8 +219,7 @@ export function MemoryStory() {
         });
         shot.last.prose = proseOpacity;
       }
-      pedalBicycle(shot.el, progress);
-      if (shot.art === "finale") settleFinale(shot.el, progress);
+      film.animate?.(shot.el, shot.art, progress);
     };
 
     // The picture follows the scroll through a short ease, so a mouse wheel's
@@ -253,7 +241,7 @@ export function MemoryStory() {
       const next = final ? -1 : current + 1;
       const previous = current - 1;
       const t = next < 0 ? 0 : clamp((progress - HANDOVER) / (1 - HANDOVER));
-      const entrance = next < 0 || reducedMotion.matches ? "dissolve" : entranceOf(shots[current].art, shots[next].art);
+      const entrance = next < 0 || reducedMotion.matches ? "dissolve" : entranceOf(film, shots[current].art, shots[next].art);
       const [outgoing, incoming] = t > 0 ? handover(entrance, t) : [still, gone];
 
       // Neighbours are painted, invisibly, well before they are needed, so a
@@ -347,7 +335,7 @@ export function MemoryStory() {
           shot.prose.style.translate = "";
           shot.world.style.scale = "";
           shot.world.style.translate = "";
-          shot.svg.setAttribute("viewBox", cameraAt(shot.art, 1).join(" "));
+          shot.svg.setAttribute("viewBox", cameraAt(film.cameras, shot.art, 1).join(" "));
           shot.el.style.pointerEvents = "auto";
           shot.links.forEach((link) => {
             link.tabIndex = 0;
@@ -451,14 +439,16 @@ export function MemoryStory() {
       window.removeEventListener("keydown", onKey);
       document.documentElement.style.overscrollBehaviorX = overscroll;
       root.style.removeProperty("--world-top");
+      // a remount starts from nothing on screen, so no scene stays painted from before
+      shots.forEach(({ el }) => el.classList.remove("is-live"));
     };
-  }, [sfx]);
+  }, [sfx, film]);
 
   return (
     <main ref={rootRef} className="memory-story">
       <AudioPrompt onUnlock={startSound} />
-      <article className="memory-film" aria-label="Game Console and Ice Tubes">
-        {gameConsoleMemory.map((scene, index) => {
+      <article className="memory-film" aria-label={film.label}>
+        {film.scenes.map((scene, index) => {
           const isCover = index === 0;
           const isFinale = scene.art === "finale";
           return (
@@ -470,12 +460,12 @@ export function MemoryStory() {
               className={`memory-scene${isCover ? " memory-scene--cover" : ""}${isFinale ? " memory-scene--finale" : ""}`}
             >
               <div className="memory-stage">
-                <MemoryEnvironment scene={scene.art} />
+                <film.Environment scene={scene.art} />
                 {isCover && <Link href="/slides" className="memory-return"><ArrowLeft size={14} aria-hidden="true" />Slides</Link>}
                 <div className="memory-prose">
                   <div className="memory-copy">
-                    {isFinale && <p className="memory-kicker">Core memory · 01</p>}
-                    {(isCover || scene.title) && <h1>Game Console<br />&amp; Ice Tubes</h1>}
+                    {isFinale && <p className="memory-kicker">Core memory · {film.number}</p>}
+                    {(isCover || scene.title) && <h1>{film.title[0]}<br />{film.title[1]}</h1>}
                     <div className="memory-paragraphs">
                       {scene.paragraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
                     </div>
@@ -483,7 +473,7 @@ export function MemoryStory() {
                   </div>
                 </div>
                 <div className="memory-world" aria-hidden="true">
-                  <MemoryArt scene={scene.art} viewBox={sceneCameras[scene.art]?.[0][1]} />
+                  <film.Art scene={scene.art} viewBox={film.cameras[scene.art]?.[0][1]} />
                 </div>
               </div>
             </div>
@@ -491,12 +481,12 @@ export function MemoryStory() {
         })}
       </article>
       <div className="memory-scroll-track" aria-hidden="true">
-        {gameConsoleMemory.map((scene, index) => (
+        {film.scenes.map((scene, index) => (
           <div
             id={scene.id}
             key={scene.id}
             data-memory-step
-            className={index === 0 ? "memory-step memory-step--cover" : index === gameConsoleMemory.length - 1 ? "memory-step memory-step--last" : "memory-step"}
+            className={index === 0 ? "memory-step memory-step--cover" : index === film.scenes.length - 1 ? "memory-step memory-step--last" : "memory-step"}
           />
         ))}
       </div>

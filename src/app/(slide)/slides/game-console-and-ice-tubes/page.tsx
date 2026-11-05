@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MemoryStory } from "@/components/slides/memory-story";
+import { GameConsoleStory } from "@/components/slides/game-console-story";
 import { profile } from "@/data/profile";
 
 const description = "A bicycle ride, a console I never bought, and a kind of love I only understood later. An immersive core memory from Nagercoil.";
@@ -23,5 +23,5 @@ export const metadata: Metadata = {
 };
 
 export default function GameConsoleMemoryPage() {
-  return <MemoryStory />;
+  return <GameConsoleStory />;
 }

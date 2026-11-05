@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAudioContext } from "@/lib/contexts/audio-context";
-import { createMemorySfx, type MemorySfx } from "./memory-sfx";
+import { createMemorySfx, type Mark, type MemorySfx } from "./memory-sfx";
 
 /**
  * The memory's sound: a quiet music bed under the whole story, and the scene
@@ -51,8 +51,8 @@ const ramp = (gain: GainNode, level: number, seconds: number) => {
   gain.gain.linearRampToValueAtTime(level, now + seconds);
 };
 
-/** Returns `start` (call it from a trusted gesture) and `sfx`, the scene sounds once started. */
-export function useMemorySound() {
+/** Returns `start` (call it from a trusted gesture) and `sfx`, the scene sounds once started, playing `marks`. */
+export function useMemorySound(marks: readonly Mark[]) {
   const { isMuted } = useAudioContext();
   const sound = useRef<Sound | null>(null);
   const sfx = useRef<MemorySfx | null>(null);
@@ -78,7 +78,7 @@ export function useMemorySound() {
       const bed = context.createGain();
       bed.gain.value = 0;
       bed.connect(master);
-      sound.current = { context, master, bed, source: null, sfx: createMemorySfx(context, master) };
+      sound.current = { context, master, bed, source: null, sfx: createMemorySfx(context, master, marks) };
     }
     const current = sound.current;
     // Resume synchronously, while the browser still counts this as the reader's tap.
@@ -108,7 +108,7 @@ export function useMemorySound() {
       }
       ramp(current.bed, BED_LEVEL, BED_FADE_IN);
     });
-  }, []);
+  }, [marks]);
 
   // Muting anywhere on the site silences everything; the scene sounds stop following.
   useEffect(() => {

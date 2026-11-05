@@ -197,9 +197,9 @@ function Street({ scene, glowId, layer }: { scene: string; glowId: string; layer
  * can drift at its own depth as a whole: the browser moves them on the GPU
  * without redrawing a line.
  */
-export function MemoryEnvironment({ scene }: { scene: string }) {
+export function MemoryEnvironment({ scene, place }: { scene: string; place?: "interior" | "street" }) {
   const id = useId().replace(/:/g, "");
-  const inside = ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
+  const inside = place ? place === "interior" : ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
   const Place = inside ? HouseInterior : Street;
   const svg = (layer: Layer) => (
     <svg

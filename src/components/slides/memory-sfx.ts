@@ -1,5 +1,5 @@
 /**
- * Scene sounds for the game console memory, synthesised on the Web Audio API.
+ * Scene sounds for the memories, synthesised on the Web Audio API.
  *
  * Nothing is downloaded or decoded. Every sound is built as it plays from
  * oscillators, one short noise buffer, a few filters and gain envelopes. The
@@ -27,16 +27,16 @@ export type MemorySfx = {
   dispose(): void;
 };
 
-type Cue =
+export type Cue =
   | "tap" | "cheat" | "brick" | "powerDown" | "wonder" | "sigh" | "clock" | "horn"
   | "rustle" | "take" | "thought" | "arpeggio" | "bell" | "shutter" | "sink"
   | "crinkle" | "glint" | "musicBox" | "chime" | "swish" | "chord";
 
 /** A cue at a point in its scene's scroll. `step` picks the key, note or heave in a series. */
-type Mark = { art: string; at: number; cue: Cue; step?: number };
+export type Mark = { art: string; at: number; cue: Cue; step?: number };
 
-/** Every cue, where it plays. Retime here. Scenes left out stay silent on purpose. */
-const MARKS: readonly Mark[] = [
+/** Every cue in Game Console & Ice Tubes, where it plays. Retime here. Scenes left out stay silent on purpose. */
+export const GAME_CONSOLE_MARKS: readonly Mark[] = [
   // HESOYAM, one key at a time, unevenly as a child types, then the game's little nod
   { art: "laptop", at: 0.25, cue: "tap", step: 0 },
   { art: "laptop", at: 0.272, cue: "tap", step: 1 },
@@ -166,10 +166,6 @@ const BUTTERWORTH = -3.01;
 /** RMS of uniform white noise in -1..1 */
 const NOISE_RMS = 1 / Math.sqrt(3);
 
-const MARKS_BY_ART = new Map<string, Mark[]>();
-for (const mark of [...MARKS].sort((a, b) => a.at - b.at)) {
-  MARKS_BY_ART.set(mark.art, [...(MARKS_BY_ART.get(mark.art) ?? []), mark]);
-}
 const NO_MARKS: Mark[] = [];
 
 function db(value: number) {
@@ -256,7 +252,11 @@ type Bike = {
 
 const silent: MemorySfx = { update() {}, ride() {}, dispose() {} };
 
-export function createMemorySfx(context: AudioContext, output: AudioNode): MemorySfx {
+export function createMemorySfx(context: AudioContext, output: AudioNode, cues: readonly Mark[]): MemorySfx {
+  const marksByArt = new Map<string, Mark[]>();
+  for (const mark of [...cues].sort((a, b) => a.at - b.at)) {
+    marksByArt.set(mark.art, [...(marksByArt.get(mark.art) ?? []), mark]);
+  }
   let input: BiquadFilterNode;
   let ceiling: BiquadFilterNode;
   let master: GainNode;
@@ -683,7 +683,7 @@ export function createMemorySfx(context: AudioContext, output: AudioNode): Memor
       if (art !== scene) {
         // A new visit: every mark here is ready again, from the very start.
         scene = art;
-        marks = MARKS_BY_ART.get(art) ?? NO_MARKS;
+        marks = marksByArt.get(art) ?? NO_MARKS;
         fired = 0;
         progress = -0.001;
         if (bike && bike.art !== art) stopBike();
