@@ -1,0 +1,70 @@
+/* the homework clock runs from four towards six as the scene scrolls */
+.movie-art__hour { transform: rotate(calc(var(--scene-progress, 0) * 60deg)); }
+.movie-art__minute { transform: rotate(calc(var(--scene-progress, 0) * 720deg)); }
+
+/* the cover's clapperboard and turtle lean a little as it scrolls */
+.movie-art--cover .movie-art__clapboard {
+  transform-origin: 530px 352px;
+  transform: rotate(calc((var(--scene-progress, .5) - .5) * -2deg));
+}
+.movie-art--cover .movie-art__turtle {
+  transform: translateY(calc((var(--scene-progress, .5) - .5) * -5px));
+}
+
+/*
+ * The last shot, on the scene's scroll. The three of us fade around the
+ * turtle in my hand (.28–.44) while it steps out into the cover (moved in
+ * script, .44–.66); the clapperboard and the burger join it (.56–.78).
+ */
+.movie-art--finale .movie-art__people { opacity: calc(1 - clamp(0, (var(--scene-progress, 0) - .28) / .16, 1)); }
+.movie-art__arrive--clapboard {
+  opacity: clamp(0, (var(--scene-progress, 0) - .56) / .12, 1);
+  translate: calc((1 - clamp(0, (var(--scene-progress, 0) - .56) / .16, 1)) * -18px) 0;
+}
+.movie-art__arrive--burger {
+  opacity: clamp(0, (var(--scene-progress, 0) - .62) / .12, 1);
+  translate: 0 calc((1 - clamp(0, (var(--scene-progress, 0) - .62) / .14, 1)) * 10px);
+}
+
+/* the javadhu's scent rising */
+.movie-art__scent {
+  opacity: calc(.15 + var(--scene-progress, .5) * .5);
+  translate: 0 calc(var(--scene-progress, .5) * -12px);
+}
+
+/* Setting off, the Avenger rolls forward past the lamps; coming home it eases to a stop. */
+.movie-art--avenger .movie-avenger { transform: translateX(calc((var(--scene-progress, .5) - .5) * 60px)); }
+.movie-art--avenger .movie-art__lamps,
+.movie-art--avenger .movie-art__road { transform: translateX(calc((var(--scene-progress, .5) - .5) * -80px)); }
+.movie-art--home .movie-avenger { transform: translateX(calc((1 - var(--scene-progress, 1)) * 30px)); }
+.movie-art--home .movie-art__lamps,
+.movie-art--home .movie-art__road { transform: translateX(calc((1 - var(--scene-progress, 1)) * -50px)); }
+
+/* the beam flickers, only while its scene is on screen; on the screen, the man lurches forward */
+.memory-scene.is-live .movie-art__beam { animation: movie-flicker 2.4s steps(1) infinite; }
+@keyframes movie-flicker { 0%, 100% { opacity: .06; } 30% { opacity: .045; } 55% { opacity: .07; } 80% { opacity: .05; } }
+.movie-art__monster { translate: calc(var(--scene-progress, 0) * 16px) 0; }
+
+/* the can catches the light as I point at it */
+.movie-art__glint { opacity: clamp(0, (var(--scene-progress, 0) - .3) / .1, 1); }
+
+/* the flash goes off once */
+.movie-art__flash { opacity: min(clamp(0, (var(--scene-progress, 0) - .3) / .03, 1), clamp(0, (.48 - var(--scene-progress, 0)) / .1, 1)); }
+
+/* the bad dream comes in as I fall asleep */
+.movie-art__dream { opacity: calc(.35 + .65 * clamp(0, (var(--scene-progress, 0) - .1) / .25, 1)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-art__hour,
+  .movie-art__minute,
+  .movie-art--cover .movie-art__clapboard,
+  .movie-art--cover .movie-art__turtle,
+  .movie-avenger,
+  .movie-art__lamps,
+  .movie-art__road { transform: none !important; }
+  .movie-art__arrive--clapboard,
+  .movie-art__arrive--burger,
+  .movie-art__scent,
+  .movie-art__monster { translate: none; }
+  .memory-scene.is-live .movie-art__beam { animation: none; }
+}
