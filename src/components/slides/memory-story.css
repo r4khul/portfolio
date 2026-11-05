@@ -11,15 +11,15 @@
 .memory-step--cover { height: 130svh; }
 /* the closing shot holds longest: bicycle, ice tubes, console, then the title */
 .memory-step--last { height: calc(var(--memory-viewport, 100svh) * 4.2); }
-.memory-prose { position: absolute; z-index: 3; top: 14%; left: clamp(36px, 8vw, 140px); width: min(42%, 470px); isolation: isolate; }
+.memory-prose { position: absolute; z-index: 3; top: 14%; left: clamp(36px, 8vw, 140px); width: min(43%, 500px); isolation: isolate; }
 .memory-prose::before { content: ""; position: absolute; z-index: -1; inset: -12px -10px; background: var(--background); box-shadow: 0 0 30px 24px var(--background); pointer-events: none; }
 .memory-copy { width: 100%; }
 .memory-copy h1 { margin: 0 0 34px; color: var(--foreground); font-family: var(--font-instrument-serif), Georgia, serif; font-size: clamp(48px, 5.2vw, 72px); font-weight: 400; line-height: 1.07; letter-spacing: -.025em; }
 .memory-paragraphs { display: grid; gap: 24px; }
-.memory-paragraphs p { margin: 0; color: var(--muted); font-size: 19px; line-height: 1.85; letter-spacing: -.011em; text-wrap: pretty; }
+.memory-paragraphs p { margin: 0; color: var(--muted); font-size: 21px; line-height: 1.8; letter-spacing: -.011em; text-wrap: pretty; }
 .memory-scene--cover .memory-prose { top: 24%; width: min(45%, 550px); }
-.memory-scene--cover .memory-paragraphs { max-width: 400px; }
-.memory-scene--cover .memory-paragraphs p { font-size: 18px; }
+.memory-scene--cover .memory-paragraphs { max-width: 430px; }
+.memory-scene--cover .memory-paragraphs p { font-size: 20px; }
 .memory-return { position: absolute; z-index: 4; top: 28px; left: clamp(36px, 4vw, 64px); display: inline-flex; align-items: center; gap: 9px; min-height: 44px; color: var(--muted); font-size: 12px; transition: color .2s; }
 .memory-return:hover { color: var(--foreground); }
 .memory-world { position: absolute; z-index: 2; left: 52%; bottom: 4%; width: 46%; height: 70%; color: var(--foreground); pointer-events: none; }
@@ -58,19 +58,19 @@
 .memory-story[data-enhanced="true"][data-linear="false"] .memory-paragraphs p + p { opacity: var(--passage-next, 0); translate: 0 calc((1 - var(--passage-next, 0)) * 14px); }
 
 @media (min-width: 1600px) {
-  .memory-prose { width: min(42%, 540px); }
-  .memory-paragraphs p { font-size: 20px; }
+  .memory-prose { width: min(42%, 570px); }
+  .memory-paragraphs p { font-size: 22px; }
 }
 
 @media (max-height: 860px) and (min-aspect-ratio: 5/4) {
-  .memory-paragraphs p { font-size: clamp(15px, 2.25vh, 19px); line-height: 1.75; }
-  .memory-scene--cover .memory-paragraphs p { font-size: clamp(15px, 2.2vh, 18px); }
+  .memory-paragraphs p { font-size: clamp(16px, 2.45vh, 21px); line-height: 1.72; }
+  .memory-scene--cover .memory-paragraphs p { font-size: clamp(16px, 2.35vh, 20px); }
 }
 
 @media (max-width: 700px) {
   .memory-copy h1 { font-size: clamp(44px, 12vw, 60px); margin-bottom: 26px; }
   .memory-paragraphs { gap: 20px; }
-  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: 17px; line-height: 1.8; }
+  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: 18.5px; line-height: 1.75; }
   .memory-return { top: 14px; left: 26px; }
 }
 
@@ -83,7 +83,7 @@
 
 /* Short, stacked windows: smaller words, so the picture below keeps its room. */
 @media (max-aspect-ratio: 5/4) and (max-height: 700px) {
-  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: clamp(14px, 2.3svh, 16px); line-height: 1.65; }
+  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: clamp(15px, 2.5svh, 17.5px); line-height: 1.62; }
   .memory-copy h1 { font-size: clamp(38px, 7.5svh, 52px); margin-bottom: 18px; }
 }
 
@@ -91,7 +91,7 @@
   .memory-prose { top: 32px; left: 36px; width: 46%; }
   .memory-scene--cover .memory-prose { top: 76px; left: 36px; width: 50%; }
   .memory-paragraphs { gap: 16px; }
-  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: clamp(14px, 2.7svh, 17px); line-height: 1.75; }
+  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: clamp(15px, 2.9svh, 18px); line-height: 1.7; }
   .memory-copy h1 { font-size: clamp(36px, 8svh, 52px); margin-bottom: 22px; }
   .memory-world { left: 52%; width: 46%; height: 85%; bottom: 0; }
   .memory-scene--finale .memory-prose { top: 76px; left: 36px; width: 50%; }
@@ -99,14 +99,14 @@
 
 @media (max-height: 360px) and (min-aspect-ratio: 13/10) {
   .memory-paragraphs { gap: 12px; }
-  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: 13.5px; line-height: 1.6; }
+  .memory-paragraphs p, .memory-scene--cover .memory-paragraphs p { font-size: 14.5px; line-height: 1.55; }
 }
 
 /* Enlarged text remains readable; the world follows the taller passage. */
 .memory-story:not([data-enhanced="true"]) .memory-stage,
 .memory-story[data-linear="true"] .memory-stage { height: auto; min-height: var(--memory-viewport, 100svh); padding: 70px 26px 40px; }
 .memory-story:not([data-enhanced="true"]) .memory-prose,
-.memory-story[data-linear="true"] .memory-prose { position: relative; top: auto; left: auto; width: min(42vw, 470px); max-width: 100%; margin-inline: auto; transform: none; }
+.memory-story[data-linear="true"] .memory-prose { position: relative; top: auto; left: auto; width: min(43vw, 500px); max-width: 100%; margin-inline: auto; transform: none; }
 .memory-story:not([data-enhanced="true"]) .memory-world,
 .memory-story[data-linear="true"] .memory-world { position: relative; top: auto; left: auto; bottom: auto; width: 100%; height: 35svh; margin-inline: auto; }
 
