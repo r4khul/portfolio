@@ -11,12 +11,16 @@
  * - chithappa: late thirties, a full hairline, always in spectacles
  * - anna: the shopkeeper, thin, grey through his dark hair, a short beard
  * - amma: hair drawn back into a bun with jasmine, a pottu, an earring
+ * - tenant: Anna, who rented one of our houses: tall, clean-shaven, in spectacles
+ * - akka: his wife, her long hair tied back in a low ponytail, small earrings
+ * - vendor: the pani puri man, a thick moustache
+ * - clown: the McDonald's clown on his bench: a mop of curls, a round nose, a painted smile
  */
 export const paper = "var(--background)";
 
 export type Point = readonly [x: number, y: number];
-export type Role = "narrator" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "anna" | "amma" | "adult";
-export type Mood = "calm" | "excited" | "awe" | "down" | "sad" | "focus" | "worried" | "soft" | "talk" | "smile";
+export type Role = "narrator" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "anna" | "amma" | "tenant" | "akka" | "vendor" | "clown" | "adult";
+export type Mood = "calm" | "excited" | "awe" | "down" | "sad" | "focus" | "worried" | "soft" | "talk" | "smile" | "scared" | "asleep";
 
 const r1 = (value: number) => Math.round(value * 10) / 10;
 
@@ -61,7 +65,8 @@ export const place = ([x, y]: Point, degrees = 0, scale = 1) =>
 
 /** Where each head's outline ends at the neck, behind and in front, in head units. */
 const NECK_ENDS: Record<"kid" | "man" | "amma", readonly [Point, Point]> = { kid: [[-12, 40], [8, 42]], man: [[-13, 46], [7, 48]], amma: [[-12, 44], [8, 45]] };
-const neckEnds = (role: Role) => NECK_ENDS[role === "narrator" ? "kid" : role === "amma" ? "amma" : "man"];
+const lady = (role: Role) => role === "amma" || role === "akka";
+const neckEnds = (role: Role) => NECK_ENDS[role === "narrator" ? "kid" : lady(role) ? "amma" : "man"];
 
 /**
  * The neck under a head placed with `place(at, degrees, scale)`. Its sides
@@ -102,6 +107,10 @@ const HAIR: Record<Role, string> = {
   anna: "M-27 14C-37-6-31-33-7-37C14-41 28-30 29-17C22-18 14-16 6-15C0-12-2-6-2 0L-6 4L-12-3C-16 3-20 9-27 14Z",
   adult: "M-27 15C-37-4-31-31-9-37C12-41 26-31 28-19C18-20 8-18 2-14C-2-10-3-5-3 0L-7 5L-12-2C-16 4-20 10-27 15Z",
   amma: "M-27 12C-36-6-30-32-6-37C12-40 26-31 28-18C20-22 8-22 0-16C-4-12-4-6-3-1L-6 6L-12 0C-16 6-20 10-27 12Z",
+  tenant: "M-27 15C-38-6-32-35-8-40C14-44 30-33 31-18C24-22 14-22 6-19C0-16-2-10-2-3L-6 4L-12-2C-16 4-20 10-27 15Z",
+  akka: "M-29 16C-38-6-31-34-6-38C14-41 28-31 29-17C22-23 10-25 1-19C-4-15-4-8-3-1L-6 6L-12 1C-17 8-22 13-29 16Z",
+  vendor: "M-27 14C-36-6-31-32-9-37C12-41 26-31 28-19C18-19 8-17 2-13C-2-9-3-4-3 1L-7 5L-12-2C-16 4-20 10-27 14Z",
+  clown: "M-24 18L-38 8Q-50 4-46-8Q-56-16-46-26Q-50-38-36-40Q-34-52-20-48Q-12-58 0-50Q12-56 20-46Q32-48 32-36Q42-32 36-22Q40-14 32-12Q26-14 22-17Q16-13 10-17Q4-14-1-9L-3 0L-7 5L-12-1C-16 6-20 13-24 18Z",
 };
 
 /** Paper lines laid over the hair: curl, shine, a parting or grey. */
@@ -126,11 +135,22 @@ const HAIR_DETAIL: Partial<Record<Role, { d: string; width: number; opacity: num
   anna: [{ d: "M-22-20l8-6M-14-31l9-3M-27-6l6-7M1-35l8 1M13-30l7 3M-18-12l7-5M-6-24l8-2", width: 1.2, opacity: 0.7 }],
   adult: [{ d: "M-21-26C-12-35 4-38 18-33", width: 1.6, opacity: 0.55 }],
   amma: [{ d: "M-22-24C-12-33 4-36 18-30", width: 1.6, opacity: 0.55 }],
+  tenant: [
+    { d: "M-20-29C-8-38 8-39 22-31", width: 1.6, opacity: 0.55 },
+    { d: "M4-38C10-30 14-26 20-22", width: 1.1, opacity: 0.45 },
+  ],
+  akka: [
+    { d: "M-2-38C-6-28-6-20-2-14", width: 1.3, opacity: 0.6 },
+    { d: "M-24-22C-16-32-6-35 2-35M8-35C16-33 22-28 26-22", width: 1.2, opacity: 0.45 },
+  ],
+  vendor: [{ d: "M-21-26C-12-34 4-37 18-32", width: 1.4, opacity: 0.5 }],
+  clown: [{ d: "M-40-14q4-4 8 0M-30-34q4-4 8 0M-10-44q4-4 8 0M12-40q4-3 8 1M24-26q3-3 6 0M-38 2q3-4 7-1", width: 1.3, opacity: 0.55 }],
 };
 
 /** Small, tight eyes read better than big ones at the sizes these heads are drawn. */
 function Eye({ x, y, mood, size }: { x: number; y: number; mood: Mood; size: number }) {
   if (mood === "soft") return <path d={`M${x - 4.5} ${y + 1}q4.5-4.5 9 0`} strokeWidth={1.9} />;
+  if (mood === "asleep") return <path d={`M${x - 4.5} ${y}q4.5 3 9 0`} strokeWidth={1.7} />;
   if (mood === "down" || mood === "sad") {
     return (
       <g strokeWidth={1.9}>
@@ -139,7 +159,7 @@ function Eye({ x, y, mood, size }: { x: number; y: number; mood: Mood; size: num
       </g>
     );
   }
-  const wide = mood === "awe" || mood === "excited";
+  const wide = mood === "awe" || mood === "excited" || mood === "scared";
   const ry = (wide ? 4.8 : mood === "focus" ? 3.2 : 4) * size;
   return (
     <g>
@@ -157,6 +177,7 @@ function brow(mood: Mood, x: number, y: number) {
       return `M${x - 6} ${y - 4}q6-5 13-1`;
     case "sad":
     case "worried":
+    case "scared":
       return `M${x - 7} ${y + 1}q6-1 12-6`;
     case "down":
       return `M${x - 6} ${y + 1}q6-2 12-3`;
@@ -173,6 +194,8 @@ function Mouth({ mood, x, y }: { mood: Mood; x: number; y: number }) {
       return <path d={`M${x - 5} ${y - 3}c4 0 7 1 7 3c-1 5-5 6-8 2Z`} fill="currentColor" strokeWidth={1.4} />;
     case "awe":
       return <ellipse cx={x} cy={y + 1} rx={2.4} ry={3.6} fill="currentColor" strokeWidth={1.2} />;
+    case "scared":
+      return <path d={`M${x - 3} ${y + 3}q2-5 5 0q-2 2-5 0Z`} fill="currentColor" strokeWidth={1.2} />;
     case "talk":
       return <path d={`M${x - 4} ${y - 1}q3 4 6 0`} fill="currentColor" strokeWidth={1.3} />;
     case "sad":
@@ -194,9 +217,10 @@ function Mouth({ mood, x, y }: { mood: Mood; x: number; y: number }) {
 export function Head({ role = "adult", mood = "calm", spectacles = false }: { role?: Role; mood?: Mood; spectacles?: boolean }) {
   const kid = role === "narrator";
   const amma = role === "amma";
-  const skin = kid ? KID_SKIN : amma ? AMMA_SKIN : MAN_SKIN;
-  const eye: Point = kid ? [19, -2] : amma ? [19, -3] : [20, -1];
-  const mouth: Point = kid ? [28, 19] : amma ? [28, 20] : [29, 22];
+  const woman = lady(role);
+  const skin = kid ? KID_SKIN : woman ? AMMA_SKIN : MAN_SKIN;
+  const eye: Point = kid ? [19, -2] : woman ? [19, -3] : [20, -1];
+  const mouth: Point = kid ? [28, 19] : woman ? [28, 20] : [29, 22];
   const [behind, ahead] = neckEnds(role);
   return (
     <g strokeLinecap="round" strokeLinejoin="round">
@@ -225,9 +249,21 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
           {[[22, 30], [17, 34], [11, 35], [5, 32], [1, 26], [26, 25]].map(([dx, dy]) => <circle key={`${dx}${dy}`} cx={dx} cy={dy} r=".9" fill={paper} opacity=".7" />)}
         </g>
       )}
+      {/* the soft double chin of a man who likes his food */}
+      {role === "tenant" && <path d="M12 39q8 3 15-2" strokeWidth="1.1" opacity=".45" />}
+      {role === "vendor" && <path d="M24 14C28 11 35 11 38 15C35 18 29 18 24 17Z" fill="currentColor" stroke="none" />}
+      {role === "clown" && (
+        // the painted smile, wide and fixed, and the round nose
+        <g>
+          <path d="M10 17C16 30 30 30 37 15C31 20 18 22 10 17Z" fill={paper} strokeWidth="1.6" />
+          <path d="M14 20C20 25 28 25 33 19" strokeWidth="1.2" />
+          <circle cx="37" cy="7" r="6" fill="currentColor" stroke="none" />
+          <path d={`M${eye[0]} ${eye[1] - 9}l-3-6m6 6 3-6`} strokeWidth="1.2" opacity=".7" />
+        </g>
+      )}
       {role === "brother" && <path d="M27 17q3-2 5 1" strokeWidth="1.4" opacity=".45" />}
       {amma && <circle cx="25" cy="-12" r="1.9" fill="currentColor" stroke="none" />}
-      {amma && <circle cx="-6" cy="13" r="2.6" fill={paper} strokeWidth="1.2" />}
+      {woman && <circle cx="-6" cy="13" r={amma ? 2.6 : 2} fill={paper} strokeWidth="1.2" />}
       {kid && <path d="M11 11l3-2m1 4 3-2" strokeWidth="1" opacity=".35" />}
       <Eye x={eye[0]} y={eye[1]} mood={mood} size={kid ? 1 : 0.92} />
       <path d={brow(mood, eye[0], eye[1] - 8)} strokeWidth="2.1" fill="none" />
@@ -237,7 +273,18 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
           <path d={`M${eye[0] - 7} ${eye[1] - 2}L-8 -4`} />
         </g>
       )}
-      <Mouth mood={mood} x={mouth[0]} y={mouth[1]} />
+      {role !== "clown" && <Mouth mood={mood} x={mouth[0]} y={mouth[1]} />}
+    </g>
+  );
+}
+
+/** Akka's low ponytail, hanging down her back. Drawn after her kurti, in the head's frame. */
+export function Ponytail() {
+  return (
+    <g>
+      <path d="M-24 10C-30 22-34 40-34 58C-34 70-30 80-26 86C-24 76-24 64-22 52C-20 38-16 24-12 14Z" fill="currentColor" stroke={paper} strokeWidth="1.2" />
+      <path d="M-28 30C-29 44-29 58-27 72" stroke={paper} strokeWidth="1" opacity=".45" />
+      <path d="M-27 12q4 4 10 1" stroke={paper} strokeWidth="2.4" />
     </g>
   );
 }
