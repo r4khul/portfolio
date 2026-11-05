@@ -12,7 +12,8 @@
  * is ready again after they leave the scene and come back. Scrolling backward,
  * or jumping past a mark, plays nothing. On the bicycle, `ride` turns scroll
  * speed into pedalling: a chain tick as each pedal goes down, the freewheel's
- * clicks and the hiss of the road, all gone soon after the reader stops.
+ * clicks and the hiss of the road, all gone soon after the reader stops. On
+ * the Avenger it turns into the engine's thump, quickening as the reader does.
  *
  * Every voice is built per play and disconnects itself when its last source
  * ends. Mute, fades and tab visibility belong to `output`. This module only
@@ -30,7 +31,11 @@ export type MemorySfx = {
 export type Cue =
   | "tap" | "cheat" | "brick" | "powerDown" | "wonder" | "sigh" | "clock" | "horn"
   | "rustle" | "take" | "thought" | "arpeggio" | "bell" | "shutter" | "sink"
-  | "crinkle" | "glint" | "musicBox" | "chime" | "swish" | "chord";
+  | "crinkle" | "glint" | "musicBox" | "chime" | "swish" | "chord"
+  | "warmth" | "kick" | "whistle" | "cheer" | "carrom" | "page" | "scribble" | "flick" | "knock" | "yes"
+  | "hurry" | "done" | "puff" | "sparkle" | "rev" | "crunch" | "slurp" | "dim" | "projector" | "heartbeat"
+  | "sting" | "popcorn" | "fridge" | "fizz" | "sip" | "wrapper" | "toy" | "camera" | "clink" | "steps"
+  | "clap" | "phrase";
 
 /** A cue at a point in its scene's scroll. `step` picks the key, note or heave in a series. */
 export type Mark = { art: string; at: number; cue: Cue; step?: number };
@@ -84,6 +89,67 @@ export const GAME_CONSOLE_MARKS: readonly Mark[] = [
   { art: "finale", at: 0.79, cue: "chord" },
 ];
 
+/** Every cue in My First Movie & a Burger, where it plays. Its own sounds, in the same warm, short hand. */
+export const FIRST_MOVIE_MARKS: readonly Mark[] = [
+  // a film starting up behind the title
+  { art: "cover", at: 0.18, cue: "projector" },
+  { art: "couple", at: 0.2, cue: "warmth" },
+  // two shots on the carrom board, each a click, a clack, and a coin dropping into the pocket
+  { art: "games", at: 0.22, cue: "carrom", step: 0 },
+  { art: "games", at: 0.56, cue: "carrom", step: 1 },
+  { art: "english", at: 0.2, cue: "page" },
+  { art: "english", at: 0.5, cue: "scribble", step: 0 },
+  // FIFA on Anna's phone: two touches, the crowd, the whistle
+  { art: "phone", at: 0.22, cue: "kick", step: 0 },
+  { art: "phone", at: 0.3, cue: "kick", step: 1 },
+  { art: "phone", at: 0.4, cue: "cheer" },
+  { art: "phone", at: 0.62, cue: "whistle" },
+  { art: "ticket", at: 0.25, cue: "flick" },
+  // a knock at our door, and Amma's yes
+  { art: "asking", at: 0.1, cue: "knock" },
+  { art: "asking", at: 0.45, cue: "yes" },
+  // the clock running while I race through it, and done
+  { art: "homework", at: 0.1, cue: "hurry", step: 0 },
+  { art: "homework", at: 0.35, cue: "scribble", step: 1 },
+  { art: "homework", at: 0.55, cue: "hurry", step: 1 },
+  { art: "homework", at: 0.76, cue: "done" },
+  { art: "ready", at: 0.2, cue: "puff" },
+  { art: "ready", at: 0.45, cue: "sparkle" },
+  { art: "avenger", at: 0.08, cue: "rev" },
+  { art: "panipuri", at: 0.25, cue: "crunch", step: 0 },
+  { art: "panipuri", at: 0.5, cue: "slurp" },
+  { art: "panipuri", at: 0.66, cue: "crunch", step: 1 },
+  // the lights going down, the projector, the man on the screen, my heart
+  { art: "theatre", at: 0.08, cue: "dim" },
+  { art: "theatre", at: 0.2, cue: "projector" },
+  { art: "theatre", at: 0.36, cue: "sting" },
+  { art: "theatre", at: 0.56, cue: "heartbeat" },
+  { art: "counter", at: 0.15, cue: "popcorn" },
+  { art: "counter", at: 0.5, cue: "fridge" },
+  { art: "drink", at: 0.15, cue: "fizz" },
+  { art: "drink", at: 0.4, cue: "sip" },
+  { art: "drink", at: 0.62, cue: "crunch", step: 1 },
+  { art: "burger", at: 0.2, cue: "wrapper" },
+  { art: "burger", at: 0.48, cue: "toy" },
+  { art: "photo", at: 0.26, cue: "camera" },
+  { art: "home", at: 0.2, cue: "clink" },
+  { art: "home", at: 0.5, cue: "sip" },
+  // the nightmare: my heart, his steps coming, and him
+  { art: "night", at: 0.1, cue: "heartbeat" },
+  { art: "night", at: 0.34, cue: "steps" },
+  { art: "night", at: 0.56, cue: "sting" },
+  { art: "after", at: 0.35, cue: "warmth" },
+  { art: "money", at: 0.4, cue: "musicBox" },
+  { art: "life", at: 0.4, cue: "phrase" },
+  // the turtle stepping out of my hand (.44–.66), the clapperboard landing (.66), the title (.78)
+  { art: "finale", at: 0.3, cue: "chime", step: 0 },
+  { art: "finale", at: 0.46, cue: "swish" },
+  { art: "finale", at: 0.52, cue: "chime", step: 2 },
+  { art: "finale", at: 0.66, cue: "clap" },
+  { art: "finale", at: 0.72, cue: "chime", step: 4 },
+  { art: "finale", at: 0.79, cue: "chord" },
+];
+
 /**
  * The pedalling texture `ride` plays, per scene. Stroke counts follow the
  * drawing: the cranks turn 7 times across `rush` and 2.4 times across `ride`
@@ -105,6 +171,15 @@ type Ride = {
   tick: number;
   click: number;
 };
+/** The Avenger's engine `ride` plays, per scene: its firing rate and exhaust tone across the reader's speed. */
+type Motor = { pulse: readonly [number, number]; tone: readonly [number, number]; level: number; full: number };
+const MOTORBIKE: Partial<Record<string, Motor>> = {
+  // setting off: an eager thump that climbs as the reader hurries
+  avenger: { pulse: [11, 26], tone: [74, 112], level: db(-13), full: 1 },
+  // home late at night: a low, lazy putter
+  home: { pulse: [9, 16], tone: [62, 82], level: db(-17), full: 0.7 },
+};
+
 const BICYCLE: Partial<Record<string, Ride>> = {
   // the ride there: brisk, bright and clearly there
   rush: { strokes: 14, clicks: 24, maxClicks: 34, full: 1.1, level: db(-10), hiss: 1400, tick: 1700, click: 3200 },
@@ -115,7 +190,7 @@ const BICYCLE: Partial<Record<string, Ride>> = {
 // The bed is in F major, so the tunes stay on F major pentatonic (F G A C D),
 // which sits under every one of its chords.
 const NOTE = {
-  D3: 146.83, F3: 174.61, A3: 220, C4: 261.63, F4: 349.23, G4: 392, A4: 440,
+  D3: 146.83, F3: 174.61, A3: 220, C4: 261.63, F4: 349.23, G4: 392, A4: 440, C5: 523.25, D5: 587.33,
   F5: 698.46, G5: 783.99, A5: 880, C6: 1046.5, D6: 1174.66, F6: 1396.91, G6: 1567.98, A6: 1760,
 } as const;
 
@@ -235,6 +310,17 @@ type Source = OscillatorNode | AudioBufferSourceNode;
 type Add = (source: Source, own: AudioNode[], start: number, end: number, offset?: number) => void;
 type Tone = { at: number; freq: number; peak: number; attack: number; decay: number; type?: OscillatorType };
 type Grain = { at: number; freq: number; q: number; peak: number; attack: number; decay: number; hold?: number; type?: "bandpass" | "lowpass" };
+type Engine = {
+  art: string;
+  motor: Motor;
+  bus: GainNode;
+  osc: OscillatorNode;
+  lfo: OscillatorNode;
+  rumble: AudioBufferSourceNode;
+  speed: number;
+  clock: number;
+  moved: number;
+};
 type Bike = {
   art: string;
   ride: Ride;
@@ -293,6 +379,7 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
   // which of this scene's marks have played on this visit, one bit each
   let fired = 0;
   let bike: Bike | null = null;
+  let engine: Engine | null = null;
 
   const filter = (type: BiquadFilterType, frequency: number, q: number) => {
     const node = context.createBiquadFilter();
@@ -604,6 +691,297 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
       const end = swell(gain.gain, at, db(-13) / noisePeak("bandpass", 1200, 0.7, true), 0.16, 0.06, 0.42);
       add(source, [gain], at, end, Math.random() * (noise.duration - 1));
     },
+    // Their door: a warm hello, three soft notes up the chord.
+    warmth(at) {
+      [NOTE.F4, NOTE.A4, NOTE.C5].forEach((freq, index) => felt(at + index * 0.16, freq, db(-16), 1.6 + index * 0.3));
+    },
+    // FIFA: a boot on the ball, a thud and the slap of leather; the second touch lighter.
+    kick(at, step) {
+      const level = step ? 0.7 : 1;
+      const add = voice(filter("lowpass", 3000, BUTTERWORTH));
+      const thud = tone(add, { at, freq: 210, peak: db(-11) * level, attack: 0.002, decay: 0.09 });
+      thud.frequency.setValueAtTime(210, at);
+      thud.frequency.exponentialRampToValueAtTime(120, at + 0.08);
+      grain(add, { at, freq: 1400, q: 1.2, peak: db(-14) * level, attack: 0.002, decay: 0.022 });
+    },
+    // The referee's pea whistle: a short toot, then a long one, trilling.
+    whistle(at) {
+      const add = voice(filter("lowpass", 4200, BUTTERWORTH), ...panned(0.15));
+      for (const [offset, length] of [[0, 0.12], [0.2, 0.46]] as const) {
+        const osc = context.createOscillator();
+        const start = at + offset;
+        for (let time = 0, high = true; time < length; time += 1 / 28, high = !high) osc.frequency.setValueAtTime(high ? 2960 : 2840, start + time);
+        const gain = context.createGain();
+        add(osc, [gain], start, swell(gain.gain, start, db(-20), 0.012, length - 0.06, 0.05));
+      }
+    },
+    // The crowd as the ball goes in: a wide breath of voices, rising and falling away.
+    cheer(at) {
+      const add = voice(filter("lowpass", 3600, BUTTERWORTH));
+      grain(add, { at, freq: 1050, q: 0.6, peak: db(-14), attack: 0.35, hold: 0.55, decay: 1.2 });
+      grain(add, { at: at + 0.1, freq: 2100, q: 0.8, peak: db(-19), attack: 0.3, hold: 0.4, decay: 0.9 });
+    },
+    // A carrom shot: the striker's click, the coins clacking apart, one dropping into the pocket.
+    carrom(at, step) {
+      const add = voice(...panned(step ? 0.2 : -0.15));
+      grain(add, { at, freq: 2600, q: 3, peak: db(-10), attack: 0.002, decay: 0.012 });
+      grain(add, { at: at + 0.035, freq: 3400, q: 4, peak: db(-14), attack: 0.002, decay: 0.01 });
+      grain(add, { at: at + 0.075, freq: 2900, q: 4, peak: db(-17), attack: 0.002, decay: 0.01 });
+      const drop = at + 0.32 + step * 0.06;
+      grain(add, { type: "lowpass", at: drop, freq: 420, q: BUTTERWORTH, peak: db(-13), attack: 0.003, decay: 0.08 });
+      tone(add, { at: drop, freq: 220, peak: db(-18), attack: 0.003, decay: 0.07 });
+    },
+    // A page turned in her book: a soft sweep of paper, settling.
+    page(at) {
+      const band = filter("bandpass", 1800, 0.9);
+      band.frequency.setValueAtTime(1800, at);
+      band.frequency.exponentialRampToValueAtTime(3600, at + 0.22);
+      const add = voice(band);
+      const source = context.createBufferSource();
+      source.buffer = noise;
+      const gain = context.createGain();
+      add(source, [gain], at, swell(gain.gain, at, db(-15) / noisePeak("bandpass", 2600, 0.9, true), 0.05, 0.05, 0.16), Math.random() * (noise.duration - 1));
+      grain(voice(), { type: "lowpass", at: at + 0.24, freq: 700, q: BUTTERWORTH, peak: db(-18), attack: 0.004, decay: 0.05 });
+    },
+    // A pencil writing: three quick strokes of graphite on paper; faster when I'm in a hurry.
+    scribble(at, step) {
+      const add = voice(filter("lowpass", 5600, BUTTERWORTH));
+      const pace = step ? 0.7 : 1;
+      for (let stroke = 0; stroke < 3; stroke++) {
+        const begin = at + stroke * 0.26 * pace;
+        for (let index = 0; index < 6; index++) {
+          grain(add, { at: begin + index * 0.024 * pace, freq: 3800 + Math.random() * 900, q: 2.5, peak: db(-19) * (0.6 + Math.random() * 0.4), attack: 0.003, decay: 0.025 + Math.random() * 0.02 });
+        }
+      }
+    },
+    // Akka holding up the tickets: two crisp flicks of card.
+    flick(at) {
+      const add = voice(filter("lowpass", 5000, BUTTERWORTH), ...panned(-0.15));
+      grain(add, { at, freq: 3000, q: 1.4, peak: db(-12), attack: 0.002, decay: 0.02 });
+      grain(add, { at: at + 0.09, freq: 2600, q: 1.4, peak: db(-14), attack: 0.002, decay: 0.025 });
+      grain(add, { at: at + 0.12, freq: 2200, q: 0.9, peak: db(-20), attack: 0.01, decay: 0.08 });
+    },
+    // Three knocks on our wooden door.
+    knock(at) {
+      const add = voice(filter("lowpass", 1800, BUTTERWORTH));
+      [1, 0.85, 0.95].forEach((level, index) => {
+        const time = at + index * 0.18;
+        grain(add, { at: time, freq: 380, q: 1.5, peak: db(-9) * level, attack: 0.002, decay: 0.05 });
+        tone(add, { at: time, freq: 180, peak: db(-16) * level, attack: 0.002, decay: 0.06 });
+      });
+    },
+    // Amma's yes: a warm plucked run up the chord, the top note left ringing.
+    yes(at) {
+      [NOTE.F4, NOTE.A4, NOTE.C5, NOTE.F5].forEach((freq, index) => pluck(at + index * 0.09, freq, db(-13) * (0.8 + index * 0.06)));
+    },
+    // The clock racing: ticks coming quicker and quicker.
+    hurry(at, step) {
+      const add = voice();
+      let time = 0;
+      for (let index = 0; index < 8; index++) {
+        const tock = index % 2 === 1;
+        grain(add, { at: at + time, freq: tock ? 2050 : 2500, q: 4, peak: db(-14) * (step ? 1 : 0.85), attack: 0.002, decay: 0.022 });
+        time += 0.24 - index * 0.018;
+      }
+    },
+    // Homework done: one small bell, and its fifth.
+    done(at) {
+      glass(at, NOTE.C6, db(-14), 1.5, 0.1);
+      glass(at + 0.09, NOTE.G6, db(-17), 1.9, 0.25);
+    },
+    // Powder from the tin: two soft puffs.
+    puff(at) {
+      const add = voice();
+      grain(add, { type: "lowpass", at, freq: 1600, q: BUTTERWORTH, peak: db(-15), attack: 0.01, decay: 0.13 });
+      grain(add, { type: "lowpass", at: at + 0.24, freq: 1400, q: BUTTERWORTH, peak: db(-17), attack: 0.01, decay: 0.16 });
+    },
+    // The javadhu's scent: a little shimmer falling through the air.
+    sparkle(at) {
+      [NOTE.A6, NOTE.F6, NOTE.D6, NOTE.C6, NOTE.A5].forEach((freq, index) => glass(at + index * 0.07, freq, db(-19), 1, 0.3 - index * 0.12));
+    },
+    // The Avenger setting off: the single cylinder's thump quickening into a pull.
+    rev(at) {
+      const shade = filter("lowpass", 520, BUTTERWORTH);
+      shade.frequency.setValueAtTime(420, at);
+      shade.frequency.linearRampToValueAtTime(760, at + 1.2);
+      const add = voice(shade);
+      const osc = context.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(72, at);
+      osc.frequency.linearRampToValueAtTime(118, at + 1.3);
+      const gain = context.createGain();
+      gain.gain.setValueAtTime(0, at);
+      let time = 0;
+      for (let index = 0; time < 1.5; index++) {
+        const rate = 10 + 18 * Math.min(1, time / 1.2);
+        const level = db(-11) * Math.min(1, 0.55 + time) * (time > 1.2 ? 1 - (time - 1.2) / 0.3 : 1);
+        gain.gain.linearRampToValueAtTime(Math.max(level, FLOOR * 2), at + time + 0.006);
+        gain.gain.exponentialRampToValueAtTime(Math.max(level * 0.12, FLOOR), at + time + 0.8 / rate);
+        time += 1 / rate;
+      }
+      gain.gain.exponentialRampToValueAtTime(FLOOR, at + time + 0.1);
+      add(osc, [gain], at, at + time + 0.1);
+    },
+    // A puri cracking in my mouth, then a smaller crunch as I chew.
+    crunch(at, step) {
+      const add = voice(filter("lowpass", 4600, BUTTERWORTH));
+      const level = step ? 0.75 : 1;
+      let time = 0;
+      for (let index = 0; index < 7; index++) {
+        grain(add, { at: at + time, freq: 1500 + Math.random() * 1700, q: 1.2, peak: db(-11) * level * (0.5 + Math.random() * 0.5), attack: 0.002, decay: 0.015 + Math.random() * 0.02 });
+        time += 0.008 + Math.random() * 0.014;
+      }
+      for (let index = 0; index < 3; index++) grain(add, { at: at + 0.24 + index * 0.17, freq: 1300 + Math.random() * 900, q: 1, peak: db(-18) * level, attack: 0.003, decay: 0.03 });
+    },
+    // The pani: a slurp, and a gulp.
+    slurp(at) {
+      const band = filter("bandpass", 700, 1.4);
+      band.frequency.setValueAtTime(700, at);
+      band.frequency.exponentialRampToValueAtTime(1600, at + 0.32);
+      const add = voice(band);
+      const source = context.createBufferSource();
+      source.buffer = noise;
+      const gain = context.createGain();
+      add(source, [gain], at, swell(gain.gain, at, db(-17) / noisePeak("bandpass", 1100, 1.4, true), 0.05, 0.2, 0.14), Math.random() * (noise.duration - 1));
+      const gulp = tone(voice(filter("lowpass", 900, BUTTERWORTH)), { at: at + 0.46, freq: 260, peak: db(-18), attack: 0.01, decay: 0.12 });
+      gulp.frequency.setValueAtTime(260, at + 0.46);
+      gulp.frequency.exponentialRampToValueAtTime(170, at + 0.56);
+    },
+    // The lights going down in the hall: a hush, and a tone sinking with them.
+    dim(at) {
+      const add = voice(filter("lowpass", 1200, BUTTERWORTH));
+      const glide = tone(add, { at, freq: 520, peak: db(-19), attack: 0.3, decay: 1.4 });
+      glide.frequency.setValueAtTime(520, at);
+      glide.frequency.exponentialRampToValueAtTime(260, at + 1.3);
+      grain(add, { type: "lowpass", at, freq: 800, q: BUTTERWORTH, peak: db(-22), attack: 0.4, hold: 0.3, decay: 0.9 });
+    },
+    // The projector at the back: film flickering through the gate, coming up and away.
+    projector(at) {
+      const add = voice(filter("bandpass", 1800, 2));
+      const source = context.createBufferSource();
+      source.buffer = noise;
+      const gain = context.createGain();
+      // shorter than the shared noise, so the slice always fits in it
+      const length = 1.7;
+      const top = db(-21) / noisePeak("bandpass", 1800, 2, false);
+      gain.gain.setValueAtTime(0, at);
+      for (let time = 0; time < length; time += 1 / 24) {
+        const level = top * Math.sin((Math.PI * time) / length);
+        gain.gain.linearRampToValueAtTime(Math.max(level, FLOOR * 2), at + time + 0.004);
+        gain.gain.exponentialRampToValueAtTime(Math.max(level * 0.25, FLOOR), at + time + 0.035);
+      }
+      gain.gain.exponentialRampToValueAtTime(FLOOR, at + length + 0.05);
+      add(source, [gain], at, at + length + 0.05, Math.random() * (noise.duration - length - 0.1));
+    },
+    // My heart: three beats, each a lub and a quieter dub.
+    heartbeat(at) {
+      const add = voice(filter("lowpass", 400, BUTTERWORTH));
+      for (let beat = 0; beat < 3; beat++) {
+        for (const [offset, level] of [[0, 1], [0.18, 0.65]] as const) {
+          const time = at + beat * 0.82 + offset;
+          const thump = tone(add, { at: time, freq: 165, peak: db(-9) * level, attack: 0.008, decay: 0.11 });
+          thump.frequency.setValueAtTime(165, time);
+          thump.frequency.exponentialRampToValueAtTime(125, time + 0.1);
+        }
+      }
+    },
+    // Him: three low felted notes that don't belong together, sagging, under a breath of air.
+    sting(at) {
+      for (const [freq, level] of [[NOTE.D3, 1], [NOTE.D3 * 1.0595, 0.75], [NOTE.D3 * 1.414, 0.55]] as const) {
+        felt(at, freq, db(-12) * level, 2.6, 900).forEach((osc) => {
+          osc.detune.setValueAtTime(0, at + 0.4);
+          osc.detune.linearRampToValueAtTime(-30, at + 2.4);
+        });
+      }
+      grain(voice(filter("lowpass", 1400, BUTTERWORTH)), { at, freq: 600, q: 0.7, peak: db(-20), attack: 0.5, hold: 0.4, decay: 1.2 });
+    },
+    // The popcorn machine at the counter, popping away.
+    popcorn(at) {
+      let time = 0;
+      for (let index = 0; index < 12; index++) {
+        grain(voice(...panned(-0.35 + Math.random() * 0.4)), { at: at + time, freq: 1800 + Math.random() * 1200, q: 2, peak: db(-13) * (0.55 + Math.random() * 0.45), attack: 0.002, decay: 0.012 });
+        time += 0.04 + Math.random() * 0.12;
+      }
+    },
+    // The fridge door: the seal letting go, the glass rattling, its hum.
+    fridge(at) {
+      const add = voice(...panned(-0.1));
+      grain(add, { type: "lowpass", at, freq: 900, q: BUTTERWORTH, peak: db(-14), attack: 0.004, decay: 0.06 });
+      grain(add, { at: at + 0.05, freq: 2400, q: 6, peak: db(-20), attack: 0.002, decay: 0.05 });
+      tone(add, { at: at + 0.04, freq: 240, peak: db(-26), attack: 0.2, decay: 1.2 });
+    },
+    // The can: the tab cracking, a pop, and the fizz.
+    fizz(at) {
+      const add = voice(filter("lowpass", 5800, BUTTERWORTH));
+      grain(add, { at, freq: 3200, q: 2.5, peak: db(-9), attack: 0.002, decay: 0.01 });
+      grain(add, { at: at + 0.012, freq: 1200, q: 1, peak: db(-14), attack: 0.002, decay: 0.03 });
+      grain(add, { at: at + 0.02, freq: 5000, q: 0.8, peak: db(-17), attack: 0.01, hold: 0.15, decay: 0.9 });
+    },
+    // Sipping through the straw: a few small bubbling pulls.
+    sip(at) {
+      const add = voice(filter("lowpass", 2400, BUTTERWORTH));
+      for (let index = 0; index < 4; index++) {
+        grain(add, { at: at + index * 0.11, freq: 900 - index * 70, q: 3, peak: db(-17), attack: 0.01, decay: 0.05 });
+      }
+    },
+    // The burger's paper, unwrapped.
+    wrapper(at) {
+      const add = voice(filter("lowpass", 5200, BUTTERWORTH));
+      let time = 0;
+      for (let index = 0; index < 14; index++) {
+        grain(add, { at: at + time, freq: 2200 + Math.random() * 2000, q: 1.3, peak: db(-13) * (0.4 + Math.random() * 0.6), attack: 0.002, decay: 0.01 + Math.random() * 0.02 });
+        time += 0.015 + Math.random() * 0.04;
+      }
+    },
+    // The toy in the box: a little plucked 'ta-da', and a glint.
+    toy(at) {
+      pluck(at, NOTE.C5, db(-13));
+      pluck(at + 0.12, NOTE.F5, db(-12));
+      glass(at + 0.24, NOTE.A6, db(-18), 1.4, 0.2);
+    },
+    // Akka's phone: the flash charging up, then the shutter.
+    camera(at) {
+      const add = voice(filter("lowpass", 5000, BUTTERWORTH), ...panned(0.25));
+      const whine = tone(add, { at, freq: 1800, peak: db(-27), attack: 0.4, decay: 0.15 });
+      whine.frequency.setValueAtTime(1800, at);
+      whine.frequency.exponentialRampToValueAtTime(4200, at + 0.5);
+      grain(add, { at: at + 0.55, freq: 2800, q: 3, peak: db(-10), attack: 0.002, decay: 0.008 });
+      grain(add, { at: at + 0.6, freq: 1900, q: 3, peak: db(-12), attack: 0.002, decay: 0.012 });
+      grain(add, { type: "lowpass", at: at + 0.55, freq: 3000, q: BUTTERWORTH, peak: db(-19), attack: 0.002, decay: 0.06 });
+    },
+    // The ice in my cup knocking about.
+    clink(at) {
+      const add = voice(filter("lowpass", 5400, BUTTERWORTH));
+      let time = 0;
+      for (let index = 0; index < 4; index++) {
+        const freq = 2600 + Math.random() * 800;
+        tone(add, { at: at + time, freq, peak: db(-19), attack: 0.002, decay: 0.08 });
+        tone(add, { at: at + time, freq: freq * 1.47, peak: db(-25), attack: 0.002, decay: 0.05 });
+        time += 0.09 + Math.random() * 0.12;
+      }
+    },
+    // His steps in the dream: heavy, slow, dragging closer.
+    steps(at) {
+      const add = voice(filter("lowpass", 1200, BUTTERWORTH));
+      [0.7, 0.85, 1].forEach((level, index) => {
+        const time = at + index * 0.7;
+        grain(add, { type: "lowpass", at: time, freq: 260, q: BUTTERWORTH, peak: db(-11) * level, attack: 0.004, decay: 0.12 });
+        grain(add, { at: time + 0.14, freq: 700, q: 0.8, peak: db(-21) * level, attack: 0.05, hold: 0.12, decay: 0.2 });
+      });
+    },
+    // The clapperboard landing: one sharp wooden clap.
+    clap(at) {
+      const add = voice(filter("lowpass", 4800, BUTTERWORTH));
+      grain(add, { at, freq: 2000, q: 1, peak: db(-9), attack: 0.002, decay: 0.02 });
+      grain(add, { at, freq: 900, q: 1.2, peak: db(-12), attack: 0.002, decay: 0.04 });
+      const knock = tone(add, { at, freq: 330, peak: db(-18), attack: 0.002, decay: 0.06 });
+      knock.frequency.setValueAtTime(330, at);
+      knock.frequency.exponentialRampToValueAtTime(250, at + 0.05);
+    },
+    // This is life: three music-box notes falling home, the last left ringing.
+    phrase(at) {
+      [NOTE.C6, NOTE.A5, NOTE.F5].forEach((freq, index) => musicBox(at + index * 0.36, freq, db(-14), index === 2 ? 3 : 1.6, 0.15 - index * 0.12));
+    },
     // The title: F major, home, rolled gently up from the bottom.
     chord(at) {
       const unit = db(-8) / CHORD.reduce((sum, [, level]) => sum + level, 0);
@@ -677,6 +1055,95 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
     }
   };
 
+  /** The Avenger's engine: a sawtooth exhaust tone and a breath of noise, pulsed at the firing rate. */
+  const startEngine = (art: string, motor: Motor, clock: number): Engine => {
+    const bus = context.createGain();
+    bus.gain.value = 0;
+    const pulse = context.createGain();
+    pulse.gain.value = 0.55;
+    const lfo = context.createOscillator();
+    lfo.type = "square";
+    lfo.frequency.value = motor.pulse[0];
+    const depth = context.createGain();
+    depth.gain.value = 0.45;
+    const osc = context.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.value = motor.tone[0];
+    const rumble = context.createBufferSource();
+    rumble.buffer = noise;
+    rumble.loop = true;
+    const breath = filter("bandpass", 280, 0.9);
+    const breathLevel = context.createGain();
+    breathLevel.gain.value = 0.5 / noisePeak("bandpass", 280, 0.9, true);
+    const body = filter("lowpass", 560, BUTTERWORTH);
+    lfo.connect(depth);
+    depth.connect(pulse.gain);
+    osc.connect(pulse);
+    rumble.connect(breath);
+    breath.connect(breathLevel);
+    breathLevel.connect(pulse);
+    pulse.connect(body);
+    body.connect(bus);
+    bus.connect(input);
+    const sources = [osc, lfo, rumble];
+    sources.forEach((source) => live.add(source));
+    osc.onended = () => {
+      sources.forEach((source) => live.delete(source));
+      [osc, lfo, rumble, depth, pulse, breath, breathLevel, body, bus].forEach((node) => node.disconnect());
+    };
+    const start = context.currentTime + LEAD;
+    osc.start(start);
+    lfo.start(start);
+    rumble.start(start, Math.random() * noise.duration);
+    return { art, motor, bus, osc, lfo, rumble, speed: 0, clock, moved: clock };
+  };
+
+  /** Let the engine go: a quick fade, then everything stops and disconnects. */
+  const stopEngine = () => {
+    const current = engine;
+    engine = null;
+    if (!current) return;
+    try {
+      const now = context.currentTime;
+      current.bus.gain.cancelScheduledValues(now);
+      current.bus.gain.setTargetAtTime(0, now, 0.04);
+      for (const source of [current.osc, current.lfo, current.rumble]) source.stop(now + 0.3);
+    } catch {
+      try { current.bus.disconnect(); } catch { /* The context may have closed. */ }
+    }
+  };
+
+  /** The engine follows the reader's speed like the pedals do: louder and quicker, and quiet soon after they stop. */
+  const runEngine = (art: string, speed: number) => {
+    const motor = MOTORBIKE[art];
+    if (engine && (engine.art !== art || !motor)) stopEngine();
+    if (!motor || context.state !== "running") return;
+    const clock = performance.now() / 1000;
+    const pace = Number.isFinite(speed) ? Math.abs(speed) : 0;
+    if (!engine) {
+      if (pace < STILL) return;
+      engine = startEngine(art, motor, clock);
+    }
+    const current = engine;
+    const elapsed = Math.min(0.1, Math.max(0, clock - current.clock));
+    current.clock = clock;
+    current.speed += (pace - current.speed) * (1 - Math.exp(-elapsed / (pace > current.speed ? 0.12 : 0.06)));
+    const amount = current.speed < STILL ? 0 : Math.min(1, current.speed / motor.full) ** 0.6;
+    try {
+      const now = context.currentTime;
+      const gain = current.bus.gain;
+      gain.cancelScheduledValues(now);
+      gain.setTargetAtTime(motor.level * amount, now, 0.05);
+      gain.setTargetAtTime(0, now + 0.08, 0.06);
+      current.lfo.frequency.setTargetAtTime(motor.pulse[0] + (motor.pulse[1] - motor.pulse[0]) * amount, now, 0.12);
+      current.osc.frequency.setTargetAtTime(motor.tone[0] + (motor.tone[1] - motor.tone[0]) * amount, now, 0.12);
+      if (amount > 0) current.moved = clock;
+      else if (clock - current.moved > 1.5) stopEngine();
+    } catch {
+      stopEngine();
+    }
+  };
+
   return {
     update(art, value) {
       if (disposed || !Number.isFinite(value)) return;
@@ -687,6 +1154,7 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
         fired = 0;
         progress = -0.001;
         if (bike && bike.art !== art) stopBike();
+        if (engine && engine.art !== art) stopEngine();
       }
       if (value > progress && value - progress <= MAX_STEP) {
         for (let index = 0; index < marks.length; index++) {
@@ -702,6 +1170,7 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
 
     ride(art, speed) {
       if (disposed) return;
+      runEngine(art, speed);
       const setting = BICYCLE[art];
       if (bike && (bike.art !== art || !setting)) stopBike();
       if (!setting || context.state !== "running") return;
@@ -754,6 +1223,7 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
       if (disposed) return;
       disposed = true;
       bike = null;
+      engine = null;
       live.forEach((source) => {
         source.onended = null;
         try { source.stop(); } catch { /* It may never have started. */ }
