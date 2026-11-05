@@ -1,7 +1,7 @@
 "use client";
 
 import { FirstMovieArt, settleTurtle } from "./first-movie-art";
-import { MemoryEnvironment } from "./memory-environment";
+import { MemoryEnvironment, type Place } from "./memory-environment";
 import { FIRST_MOVIE_MARKS } from "./memory-sfx";
 import { MemoryStory, type Keyframes, type MemoryFilm } from "./memory-story";
 import { firstMovieMemory } from "@/data/first-movie-memory";
@@ -36,11 +36,12 @@ const drawing: Record<string, string> = {
   after: "goodbye", money: "goodbye", life: "goodbye", finale: "goodbye",
 };
 
-/** The house and the Chennai street behind the scenes; the cinema and McDonald's stand on the page alone. */
-const PLACE: Record<string, "interior" | "city"> = {
+/** What stands faintly behind each scene: the house, the Chennai street, the cinema, the mall's foyer, McDonald's. */
+const PLACE: Record<string, Place> = {
   couple: "interior", games: "interior", english: "interior", phone: "interior", ticket: "interior",
   asking: "interior", homework: "interior", ready: "interior", night: "interior", after: "interior", money: "interior", life: "interior", finale: "interior",
   cover: "city", avenger: "city", panipuri: "city", home: "city",
+  theatre: "hall", drink: "hall", counter: "foyer", burger: "restaurant", photo: "restaurant",
 };
 
 function Environment({ scene }: { scene: string }) {

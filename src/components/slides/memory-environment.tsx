@@ -278,16 +278,156 @@ function City({ glowId, layer }: { glowId: string; layer: Layer }) {
   );
 }
 
+/** A row of seat backs, seen from behind: rounded bumps from x to x + width at height y. */
+const seatRow = (x: number, y: number, width: number, size: number) => {
+  let d = `M${x} ${y}`;
+  for (let at = x; at < x + width; at += size) d += `q${size / 2} ${-size * 0.8} ${size} 0`;
+  return d;
+};
+
+/** The floor running back to the far wall, as the house's floor does. */
+const RAKE = "m0 942 1600-23M191 1000l175-177m710 177 29-177m328 177-115-177";
+
+/*
+ * The cinema, the mall's foyer and McDonald's keep to the same plan as the
+ * house: the side the words are on stays nearly empty, and the room gathers
+ * behind the picture, with one light falling over it.
+ */
+
+/** The cinema hall in the dark: the side wall's lamps and the exit sign behind the seats, rows stepping down. */
+function Hall({ glowId, layer }: { glowId: string; layer: Layer }) {
+  return layer === "back" ? (
+    <>
+      <g className="memory-environment__far" strokeWidth="1.3">
+        <path d="M-30 805H1640M0 815H1600" />
+        <path d="M800 120 1600 70M800 120V805" opacity=".35" />
+        {/* the side wall, its panels and two lamps */}
+        <path d="M940 112v693m180-704v704m180-715v715m180-726v726" opacity=".2" />
+        {[[1030, 300], [1390, 286]].map(([x, y]) => (
+          <path key={x} d={`M${x - 16} ${y}h32l-7 18h-18Z`} fill="currentColor" fillOpacity=".3" />
+        ))}
+        {/* the exit sign over the far door */}
+        <path d="M1166 236h108v42h-108Z" fill="currentColor" fillOpacity=".08" />
+        <text x="1220" y="265" textAnchor="middle" fontSize="22" letterSpacing="6" fill="currentColor" stroke="none" style={{ fontFamily: "var(--font-geist-mono), monospace" }}>EXIT</text>
+        <path d="M1170 805V430h100v375" opacity=".45" />
+        {/* the rows behind ours, stepping down to the screen */}
+        {[[660, 34], [714, 38], [768, 42]].map(([y, size]) => (
+          <path key={y} d={seatRow(820, y, 800, size)} opacity=".45" />
+        ))}
+      </g>
+      <g className="memory-environment__floor" strokeWidth="1.2" opacity=".35">
+        <path d={RAKE} />
+      </g>
+    </>
+  ) : (
+    <>
+      <g className="memory-environment__near" strokeWidth="1.6">
+        {/* the lamp's soft fall of light down the wall */}
+        <path className="memory-environment__light" d="M1384 318 1300 805H1480L1396 318Z" fill={`url(#${glowId})`} stroke="none" />
+        {/* the aisle's steps, lit at their edges */}
+        <path d="M1460 1000 1530 700M1600 860 1580 700" opacity=".6" />
+        <path d="M1524 730h56m-62 60h62m-68 60h68m-74 60h74" opacity=".4" />
+        <path d="M1520 734h8m-14 60h8m-14 60h8m-14 60h8" strokeWidth="3" opacity=".7" />
+      </g>
+    </>
+  );
+}
+
+/** The mall's foyer outside the screens: film posters, the escalator up, a lamp of light, the queue rope. */
+function Foyer({ glowId, layer }: { glowId: string; layer: Layer }) {
+  return layer === "back" ? (
+    <>
+      <g className="memory-environment__far" strokeWidth="1.3">
+        <path d="M-30 805H1640M0 815H1600" />
+        <path d="M800 140H1600" opacity=".35" />
+        {/* film posters along the wall */}
+        {[[860, 0], [990, 1]].map(([x, kind]) => (
+          <g key={x}>
+            <path d={`M${x} 400h104v150H${x}Z`} />
+            <path d={`M${x + 10} 410h84v112H${x + 10}Z`} fill="currentColor" fillOpacity={kind ? ".12" : ".05"} opacity=".6" />
+            <path d={`M${x + 18} 536h68`} opacity=".5" />
+          </g>
+        ))}
+        {/* the escalator rising to the floor above, behind its glass */}
+        <path d="M1150 805 1530 330h70" />
+        <path d="M1220 805 1600 330" opacity=".6" />
+        <path d="M1200 770h40m-4-44h40m-4-44h40m-4-44h40m-4-44h40m-4-44h40m-4-44h40m-4-44h40m-4-44h40" opacity=".35" />
+        <path d="M1500 330h100M1500 342h100" />
+      </g>
+      <g className="memory-environment__floor" strokeWidth="1.2" opacity=".35">
+        <path d={RAKE} />
+      </g>
+    </>
+  ) : (
+    <>
+      <g className="memory-environment__near" strokeWidth="1.6">
+        {/* a downlight over the posters, its light on the floor */}
+        <g transform="translate(947 0)">
+          <path d="M0 0v150m-22 0h44l-6 14h-32Z" />
+          <path className="memory-environment__light" d="m-12 164-150 643h324L12 164Z" fill={`url(#${glowId})`} stroke="none" />
+        </g>
+        {/* the rope for the queue */}
+        {[1250, 1370, 1490].map((x) => <path key={x} d={`M${x} 900v-110m-14 110h28m-22-110h16`} />)}
+        <path d="M1250 810q60 36 120 0t120 0" opacity=".8" />
+      </g>
+    </>
+  );
+}
+
+/** McDonald's at night: the menu boards, a lamp hanging over our table, the dark windows and their booths. */
+function Restaurant({ glowId, layer }: { glowId: string; layer: Layer }) {
+  return layer === "back" ? (
+    <>
+      <g className="memory-environment__far" strokeWidth="1.3">
+        <path d="M-30 805H1640M0 815H1600" />
+        {/* the menu boards over the counter, a burger drawn on the middle one */}
+        {[830, 970, 1110].map((x, index) => (
+          <g key={x}>
+            <path d={`M${x} 160h126v86H${x}Z`} fill="currentColor" fillOpacity=".05" />
+            <path d={`M${x + 12} 184h60m-60 16h48m-48 16h54m-54 16h40`} opacity=".45" />
+            {index === 1 && <path d={`M${x + 84} 222q0-12 18-12t18 12Zm0 4h36v5h-36Z`} opacity=".7" />}
+          </g>
+        ))}
+        {/* the windows onto the road, dark outside, and the booths along them */}
+        <path d="M1290 220h310v420h-310Zm155 0v420" />
+        <g fill="currentColor" stroke="none" opacity=".4">
+          {[[1340, 560], [1410, 580], [1500, 550], [1570, 575]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="3" />)}
+        </g>
+        <path d="M1300 805V700q0-20 20-20h40v125m140 0V680h40q20 0 20 20v105" opacity=".5" />
+      </g>
+      <g className="memory-environment__floor" strokeWidth="1.2" opacity=".35">
+        <path d={RAKE} />
+      </g>
+    </>
+  ) : (
+    <>
+      <g className="memory-environment__near" strokeWidth="1.6">
+        {/* the lamp hanging over our table, its light falling on it */}
+        <g transform="translate(1040 0)">
+          <path d="M0 0v260m-34 30q0-30 34-30t34 30Z" />
+          <path className="memory-environment__light" d="m-30 290-140 517h340L30 290Z" fill={`url(#${glowId})`} stroke="none" />
+        </g>
+        {/* the bin with its swing flap, by the door */}
+        <path d="M1500 1000V700h90v300M1500 740h90M1520 760h50v30h-50Z" opacity=".6" />
+      </g>
+    </>
+  );
+}
+
 /**
  * The room or street behind each scene, faint. It is two stacked drawings,
  * the far wall or skyline and the near furniture or shopfronts, so each layer
  * can drift at its own depth as a whole: the browser moves them on the GPU
  * without redrawing a line.
  */
-export function MemoryEnvironment({ scene, place }: { scene: string; place?: "interior" | "street" | "city" }) {
+export type Place = "interior" | "street" | "city" | "hall" | "foyer" | "restaurant";
+
+const PLACES: Record<Exclude<Place, "interior" | "street" | "city">, typeof Hall> = { hall: Hall, foyer: Foyer, restaurant: Restaurant };
+
+export function MemoryEnvironment({ scene, place }: { scene: string; place?: Place }) {
   const id = useId().replace(/:/g, "");
-  const inside = place ? place === "interior" : ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
-  const Place = inside ? HouseInterior : place === "city" ? City : Street;
+  const inside = place ? place !== "street" && place !== "city" : ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
+  const Place = place && place in PLACES ? PLACES[place as keyof typeof PLACES] : inside ? HouseInterior : place === "city" ? City : Street;
   const svg = (layer: Layer) => (
     <svg
       className={`memory-environment__layer memory-environment__layer--${layer}`}
