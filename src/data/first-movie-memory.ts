@@ -84,7 +84,7 @@ export const firstMovieMemory: MemoryScene[] = [
     id: "pani-puri",
     art: "panipuri",
     paragraphs: [
-      "Before the theatre, they stopped and bought me pani puri. I had never done anything like this before.",
+      "Before the theatre, they stopped and we all had pani puri. I had never done anything like this before.",
       "I ate six or seven of them. With my small tummy, I don’t know how. Everything was so new, and I was so happy.",
     ],
   },

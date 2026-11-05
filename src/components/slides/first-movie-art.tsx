@@ -189,10 +189,19 @@ function Ready() {
   </>;
 }
 
-/** The pani puri cart on the way: the man filling a puri, me eating one, Anna and Akka behind me. */
+/** A leaf bowl in one hand and a puri on its way up in the other, for anyone eating at the cart. */
+function Eating(props: PersonProps) {
+  const hands = handsOf(props);
+  return <>
+    <Person {...props} part="body" />
+    <path d={`M${hands.far[0] - 12} ${hands.far[1] - 6}q12 10 24 0Z`} fill={paper} strokeWidth="1.2" />
+    <circle cx={hands.near[0]} cy={hands.near[1] - 4} r="5.5" fill={paper} strokeWidth="1.1" />
+    <Person {...props} part="arm" />
+  </>;
+}
+
+/** The pani puri cart on the way: the man filling a puri, and the three of us eating, me nearest the cart. */
 function PaniPuri() {
-  const me: PersonProps = { who: "me", facing: -1, x: 600, y: 400, mood: "excited", near: [28, -74], far: [30, -50], wear: { top: "hoodie", bottom: "plain", shoes: true } };
-  const hands = handsOf(me);
   return <>
     <Person who="vendor" x={450} y={400} mood="smile" near={[52, -62]} far={[44, -56]} />
     {/* the cart: its glass case of puris, the pot of pani, on wheels */}
@@ -206,13 +215,9 @@ function PaniPuri() {
       <path d="M476 318q-6-30 22-32q28 2 22 32Z" fill={paper} strokeWidth="1.4" />
       <path d="M480 300h36" strokeWidth=".8" opacity=".4" /><path d="M506 288l12-26" strokeWidth="1.8" />
     </g>
-    <Person who="akka" facing={-1} x={744} y={400} mood="smile" wear={{ shoes: true }} />
-    <Person who="tenant" facing={-1} x={684} y={400} mood="smile" wear={{ shoes: true }} />
-    <Person {...me} part="body" />
-    {/* the leaf bowl in my hand, and the puri going in */}
-    <path d={`M${hands.far[0] - 12} ${hands.far[1] - 6}q12 10 24 0Z`} fill={paper} strokeWidth="1.2" />
-    <circle cx={hands.near[0]} cy={hands.near[1] - 4} r="5.5" fill={paper} strokeWidth="1.1" />
-    <Person {...me} part="arm" />
+    <Eating who="akka" facing={-1} x={748} y={400} mood="smile" near={[22, -86]} far={[32, -58]} wear={{ shoes: true }} />
+    <Eating who="tenant" facing={-1} x={684} y={400} mood="excited" near={[24, -92]} far={[34, -62]} wear={{ shoes: true }} />
+    <Eating who="me" facing={-1} x={600} y={400} mood="excited" near={[28, -74]} far={[30, -50]} wear={{ top: "hoodie", bottom: "plain", shoes: true }} />
     <Floor y={402} from={360} to={840} />
   </>;
 }
@@ -250,6 +255,10 @@ function Hunched({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) 
 function Cinema({ snacks = false }: { snacks?: boolean }) {
   const me: PersonProps = { who: "me", pose: "seat", x: 590, y: 352, mood: snacks ? "calm" : "scared", tilt: snacks ? 4 : -6, near: snacks ? [24, -52] : [24, -8], far: snacks ? [30, -6] : "lap", seated: { thigh: 2, shin: 2 }, wear: { top: "hoodie", bottom: "plain", shoes: true } };
   const hands = handsOf(me);
+  const anna: PersonProps = { who: "tenant", pose: "seat", x: 530, y: 322, scale: 0.88, mood: snacks ? "smile" : "focus", near: snacks ? [18, -44] : "lap", far: "lap", seated: { thigh: 2, shin: 2 } };
+  const annaHands = handsOf(anna);
+  const akka: PersonProps = { who: "akka", pose: "seat", x: 656, y: 376, mood: snacks ? "smile" : "worried", near: snacks ? [30, -36] : "lap", far: "lap", seated: { thigh: 2, shin: 2 } };
+  const akkaHands = handsOf(akka);
   return <>
     {/* the hall in the dark */}
     <path d="M300 40H1000V412H300Z" fill="currentColor" stroke="none" opacity=".045" />
@@ -259,15 +268,18 @@ function Cinema({ snacks = false }: { snacks?: boolean }) {
     <path d="M826 102h138v168H826Z" fill="currentColor" stroke="none" opacity=".07" />
     <g className="movie-art__monster"><Hunched x={880} y={262} scale={1.25} /></g>
     <Seat x={540} y={336} scale={.86} />
-    <Person who="tenant" pose="seat" x={530} y={322} scale={.88} mood={snacks ? "smile" : "focus"} near={snacks ? [30, -40] : "lap"} far="lap" seated={{ thigh: 2, shin: 2 }} />
-    {snacks && <Popcorn x={562} y={300} scale={.5} />}
+    <Person {...anna} part="body" />
+    {snacks && <Popcorn x={annaHands.near[0] - 2} y={annaHands.near[1] + 8} scale={.5} />}
+    <Person {...anna} part="arm" />
     <Seat x={604} y={360} scale={.94} />
     <Person {...me} part="body" />
     {snacks && <Popcorn x={hands.far[0] + 6} y={hands.far[1] + 4} scale={.55} />}
     {snacks && <Can x={hands.near[0] + 2} y={hands.near[1] + 14} angle={-10} scale={.5} />}
     <Person {...me} part="arm" />
     <Seat x={668} y={388} />
-    <Person who="akka" pose="seat" x={656} y={376} mood={snacks ? "smile" : "worried"} near="lap" far="lap" seated={{ thigh: 2, shin: 2 }} />
+    <Person {...akka} part="body" />
+    {snacks && <Popcorn x={akkaHands.near[0] + 4} y={akkaHands.near[1] + 8} scale={.5} />}
+    <Person {...akka} part="arm" />
     <path d="M440 404h130m20 0h260" opacity=".13" strokeWidth=".8" />
   </>;
 }
