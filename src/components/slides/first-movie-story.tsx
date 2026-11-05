@@ -36,11 +36,11 @@ const drawing: Record<string, string> = {
   after: "goodbye", money: "goodbye", life: "goodbye", finale: "goodbye",
 };
 
-/** The house and the street behind the scenes; the cinema and McDonald's stand on the page alone. */
-const PLACE: Record<string, "interior" | "street"> = {
+/** The house and the Chennai street behind the scenes; the cinema and McDonald's stand on the page alone. */
+const PLACE: Record<string, "interior" | "city"> = {
   couple: "interior", games: "interior", english: "interior", phone: "interior", ticket: "interior",
   asking: "interior", homework: "interior", ready: "interior", night: "interior", after: "interior", money: "interior", life: "interior", finale: "interior",
-  cover: "street", avenger: "street", panipuri: "street", home: "street",
+  cover: "city", avenger: "city", panipuri: "city", home: "city",
 };
 
 function Environment({ scene }: { scene: string }) {

@@ -191,16 +191,103 @@ function Street({ scene, glowId, layer }: { scene: string; glowId: string; layer
   );
 }
 
+/** City blocks behind the mall: [x, width, top]. */
+const BLOCKS = [[-30, 170, 540], [150, 128, 466], [288, 116, 592], [414, 150, 436], [1040, 118, 498], [1168, 168, 452], [1346, 122, 566], [1478, 160, 476]] as const;
+
+/** A block's windows, as rows of short dashes: lit and unlit squares from far off. */
+function windowsOf(x: number, width: number, top: number) {
+  let d = "";
+  for (let y = top + 28; y < 790; y += 32) {
+    for (let wx = x + 16; wx + 12 < x + width - 8; wx += 26) d += `M${wx} ${y}h12`;
+  }
+  return d;
+}
+
+/** Chennai: apartment blocks with their water tanks, the mall with its cinema, shopfronts and an auto at the curb. */
+function City({ glowId, layer }: { glowId: string; layer: Layer }) {
+  return layer === "back" ? (
+    <>
+      <g className="memory-environment__far" strokeWidth="1.3">
+        <circle cx="1210" cy="118" r="18" fill="currentColor" stroke="none" opacity=".55" />
+        <g fill="currentColor" stroke="none" opacity=".4">
+          {[[250, 96], [560, 60], [930, 120], [1420, 70], [80, 180]].map(([sx, sy]) => <circle key={sx} cx={sx} cy={sy} r="1.6" />)}
+        </g>
+        {/* apartment blocks, each with a water tank on the roof */}
+        {BLOCKS.map(([x, width, top]) => (
+          <g key={x}>
+            <path d={`M${x} 822V${top}h${width}V822M${x + width * 0.62} ${top}v-26h30v26M${x + 16} ${top}v-14`} />
+            <path d={windowsOf(x, width, top)} strokeWidth="2.4" opacity=".35" />
+          </g>
+        ))}
+        {/* the mall, its cinema's name across the top, a film poster on the glass */}
+        <g>
+          <path d="M588 822V560h444v262" fill="currentColor" fillOpacity=".03" />
+          <path d="M576 560h468v-50H576Z" />
+          <text x="810" y="546" textAnchor="middle" fontSize="26" letterSpacing="14" fill="currentColor" stroke="none" style={{ fontFamily: "var(--font-geist-mono), monospace" }}>CINEMAS</text>
+          <path d="M612 590v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188m30-188v188M600 644h420M600 704h420" opacity=".35" />
+          <path d="M622 600h72v120h-72Z" fill="currentColor" fillOpacity=".08" />
+          <path d="M650 708l3-20q-7-4-6-15q2-12 12-14q4-1 6 2q5 1 4 6q-1 3-4 3q2 7-1 15l2 23h-4l-2-15h-4l-2 15Z" fill="currentColor" stroke="none" opacity=".5" />
+          <path d="M736 760h148l22 18H714Z" />
+          <path d="M760 822v-44m100 44v-44m-90 44h80" opacity=".6" />
+        </g>
+        {/* the electric pole, and its wires */}
+        <g opacity=".45" strokeWidth="1.2">
+          <path d="M520 822V470m-6 0h12" />
+          <path d="M492 484h56m-50 0v6m44-6v6" />
+          <path d="M-20 520Q260 590 492 488M548 488Q700 560 900 560T1300 470M-20 540Q270 610 520 488" opacity=".7" />
+        </g>
+        <path d="M0 822h1600m-37 7H-10" opacity=".45" />
+      </g>
+
+      <g className="memory-environment__floor" strokeWidth="1.1" opacity=".35">
+        <path d="M-40 866q452-29 980-10t700-4M0 904q497-22 900-8t744-1" opacity=".45" />
+        <path d="M67 947h120m13-1h43m853-38h161m48-1h60m-801 67h104m23-1h30m547-71h128m-1347-50h59m1165-12h94" />
+        <path d="M120 884h60m80 0h60m80 0h60m80 0h60m80 0h60m80 0h60m80 0h60m80 0h60" opacity=".45" />
+      </g>
+    </>
+  ) : (
+    <>
+      <g className="memory-environment__near" strokeWidth="1.6">
+        {/* a shopfront on the corner: its board in Tamil, the awning, the shutter half up */}
+        <g>
+          <path d="M1340 815V380h290m-302 0h310v-14h-310Z" />
+          <path d="M1362 420h230v58h-230Z" />
+          <text x="1477" y="459" textAnchor="middle" fontSize="26" fontWeight="600" fill="currentColor" stroke="none">ஸ்டோர்ஸ்</text>
+          <path d="M1350 500h262l-14 34h-234Z" />
+          <path d="M1374 500l-6 34m40-34-4 34m40-34-2 34m40-34v34m40-34 2 34m40-34 4 34" opacity=".5" />
+          <path d="M1372 560h220v120h-220Zm0 16h220m-220 16h220m-220 16h220m-220 16h220m-220 16h220m-220 16h220" opacity=".4" />
+          <path d="M1362 815V560m240 255V560" opacity=".6" />
+        </g>
+        {/* an auto-rickshaw waiting at the curb */}
+        <g transform="translate(1220 822)" opacity=".75">
+          <path d="M-80-14-74-60q2-10 14-10h20l10 30h104v26Z" />
+          <path d="M-60-70q4-42 50-42h62q24 2 24 32v40" />
+          <path d="M-58-72-40-108M-74-30H74M24-40v-30" opacity=".6" />
+          <circle cx="-58" cy="-10" r="12" /><circle cx="50" cy="-10" r="14" />
+        </g>
+        {/* the street lamp, its light falling on the road */}
+        <g transform="translate(1040 0)">
+          <path d="M-3 826V334q0-22 22-22h90M4 826V337q0-18 18-18h87" />
+          <path d="M94 311v17m-22 5q0-11 30-11t30 11Zm6 4h48m-41 1q2 14 17 14t17-14" />
+          <path className="memory-environment__light" d="M83 344-80 827h365L122 344Z" fill={`url(#${glowId})`} stroke="none" />
+          <ellipse className="memory-environment__light" cx="102" cy="827" rx="200" ry="26" fill={`url(#${glowId}-pool)`} stroke="none" />
+          <path d="m-7 693 16 0m-16 6h16m-17 125h18" opacity=".5" />
+        </g>
+      </g>
+    </>
+  );
+}
+
 /**
  * The room or street behind each scene, faint. It is two stacked drawings,
  * the far wall or skyline and the near furniture or shopfronts, so each layer
  * can drift at its own depth as a whole: the browser moves them on the GPU
  * without redrawing a line.
  */
-export function MemoryEnvironment({ scene, place }: { scene: string; place?: "interior" | "street" }) {
+export function MemoryEnvironment({ scene, place }: { scene: string; place?: "interior" | "street" | "city" }) {
   const id = useId().replace(/:/g, "");
   const inside = place ? place === "interior" : ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
-  const Place = inside ? HouseInterior : Street;
+  const Place = inside ? HouseInterior : place === "city" ? City : Street;
   const svg = (layer: Layer) => (
     <svg
       className={`memory-environment__layer memory-environment__layer--${layer}`}

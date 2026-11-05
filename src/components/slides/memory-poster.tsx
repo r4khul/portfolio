@@ -89,8 +89,8 @@ function Cover({ x, y, scale }: { x: number; y: number; scale: number }) {
   );
 }
 
-/** The night street every memory's poster is set in: its gradients, the paper and the backdrop. */
-export function PosterNight() {
+/** A poster's night sky: its gradients and the paper, for any town's backdrop to stand in. */
+export function PosterSky() {
   return (
     <>
       <defs>
@@ -108,6 +108,15 @@ export function PosterNight() {
         </radialGradient>
       </defs>
       <rect width={POSTER.width} height={POSTER.height} fill={paper} />
+    </>
+  );
+}
+
+/** The night street in Nagercoil the first memory's poster is set in. */
+export function PosterNight() {
+  return (
+    <>
+      <PosterSky />
       <Backdrop />
     </>
   );
