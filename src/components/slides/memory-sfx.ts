@@ -89,7 +89,7 @@ export const GAME_CONSOLE_MARKS: readonly Mark[] = [
   { art: "finale", at: 0.79, cue: "chord" },
 ];
 
-/** Every cue in My First Movie & a Burger, where it plays. Its own sounds, in the same warm, short hand. */
+/** Every cue in First Movie & a Burger, where it plays. Its own sounds, in the same warm, short hand. */
 export const FIRST_MOVIE_MARKS: readonly Mark[] = [
   // a film starting up behind the title
   { art: "cover", at: 0.18, cue: "projector" },

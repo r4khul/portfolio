@@ -33,9 +33,9 @@ export const memories: Memory[] = [
     published: "2026-11-03T00:00:00+05:30",
   },
   {
-    slug: "my-first-movie-and-a-burger",
+    slug: "first-movie-and-a-burger",
     number: "02",
-    title: ["My First Movie", "& a Burger"],
+    title: ["First Movie", "& a Burger"],
     place: "Chennai",
     summary: "My first cinema, my first burger, and the cool couple who rented one of our houses.",
     minutes: 6,

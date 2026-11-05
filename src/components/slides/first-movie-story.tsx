@@ -64,8 +64,8 @@ function animate(scene: HTMLElement, art: string, progress: number) {
 }
 
 const film: MemoryFilm = {
-  title: ["My First Movie", "& a Burger"],
-  label: "My First Movie and a Burger",
+  title: ["First Movie", "& a Burger"],
+  label: "First Movie and a Burger",
   number: "02",
   scenes: firstMovieMemory,
   cameras,

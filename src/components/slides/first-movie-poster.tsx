@@ -3,7 +3,7 @@ import { StillLife } from "./first-movie-props";
 import { GROUND, PosterNight } from "./memory-poster";
 
 /**
- * My First Movie & a Burger's poster, on the same 1200×630 night street as
+ * First Movie & a Burger's poster, on the same 1200×630 night street as
  * the first memory's: the three of us riding home under the lamp, and the
  * ticket, the burger and the turtle standing in front.
  *

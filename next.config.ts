@@ -42,6 +42,17 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Old addresses that have moved
+  async redirects() {
+    return [
+      {
+        source: "/slides/my-first-movie-and-a-burger",
+        destination: "/slides/first-movie-and-a-burger",
+        permanent: true,
+      },
+    ];
+  },
+
   // Image optimization
   images: {
     formats: ["image/avif", "image/webp"],

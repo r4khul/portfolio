@@ -34,7 +34,7 @@ const POSTERS: Record<string, { Art: ComponentType; crop: string }> = {
   // the lamp, the ride home and the console
   "game-console-and-ice-tubes": { Art: PosterArt, crop: "170 22 1030 579" },
   // the ride home, the ticket and the burger
-  "my-first-movie-and-a-burger": { Art: MoviePosterArt, crop: "300 120 860 484" },
+  "first-movie-and-a-burger": { Art: MoviePosterArt, crop: "300 120 860 484" },
 };
 
 export function SlideCard({ memory }: { memory: Memory }) {
