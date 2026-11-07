@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Maximize2, X } from "lucide-react";
-import Image from "next/image";
 
 type ImageZoomProps = {
   src?: string;

@@ -1,5 +1,5 @@
 import Script from "next/script";
-import { profile, experience, education } from "@/data/profile";
+import { profile, education } from "@/data/profile";
 import { Project } from "@/lib/projects";
 import { Toy } from "@/lib/toys";
 import { Blog } from "@/lib/blogs";

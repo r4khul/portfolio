@@ -6,7 +6,6 @@ import { useTheme } from "next-themes";
 import { motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { useAudioFeedback } from "@/lib/hooks/use-audio-feedback";
 import { useAudioContext } from "@/lib/contexts/audio-context";
 import { haptic } from "@/lib/haptics";
 import { playSfx } from "@/lib/sfx";
