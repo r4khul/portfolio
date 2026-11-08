@@ -6,7 +6,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, GitPullRequest } from "lucide-react";
 import { FaApple, FaGooglePlay } from "react-icons/fa6";
-import { openSource } from "@/data/profile";
+import { openSource, type OssPr } from "@/data/profile";
 import { BentoCard } from "./bento-grid";
 
 export function OssShowcaseCard({ className }: { className?: string }) {
@@ -98,7 +98,7 @@ export function OssShowcaseCard({ className }: { className?: string }) {
   );
 }
 
-function UnifiedPRDropdown({ prs, repoName }: { prs: any[], repoName: string }) {
+function UnifiedPRDropdown({ prs, repoName }: { prs: OssPr[], repoName: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
