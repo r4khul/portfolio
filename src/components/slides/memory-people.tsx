@@ -1,4 +1,4 @@
-import { Head, Neck, Ponytail, capsule, joint, paper, place, type Mood, type Point, type Role } from "./memory-figures";
+import { Head, Neck, Plait, Ponytail, capsule, joint, paper, place, type Mood, type Point, type Role } from "./memory-figures";
 
 /**
  * The cast, drawn from one rig so each person stays the same person in every
@@ -19,12 +19,14 @@ import { Head, Neck, Ponytail, capsule, joint, paper, place, type Mood, type Poi
  * - akka: his wife, as tall, in a long kurti with a dupatta, over leggings
  * - vendor: the pani puri man in his vest
  * - clown: the McDonald's clown, sitting on his bench in his striped sleeves and big shoes
+ * - girl: the girl I sat beside in sixth standard, in her school pinafore over a white shirt
+ * - teacher: our class teacher, in a saree
  *
  * `wear` dresses anyone differently for one scene: my school uniform, my hoodie.
  */
-export type Who = "me" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "amma" | "anna" | "tenant" | "akka" | "vendor" | "clown";
-type Top = "stripe" | "solid" | "pin" | "pocket" | "full-shirt" | "shirt" | "blouse" | "check" | "kurti" | "hoodie" | "vest" | "jumpsuit";
-type Bottom = "shorts" | "track" | "plain" | "trousers" | "saree" | "jumpsuit";
+export type Who = "me" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "amma" | "anna" | "tenant" | "akka" | "vendor" | "clown" | "girl" | "teacher";
+type Top = "stripe" | "solid" | "pin" | "pocket" | "full-shirt" | "shirt" | "blouse" | "check" | "kurti" | "hoodie" | "vest" | "jumpsuit" | "pinafore";
+type Bottom = "shorts" | "track" | "plain" | "trousers" | "saree" | "jumpsuit" | "pinafore";
 export type Wear = { top?: Top; bottom?: Bottom; shoes?: boolean };
 
 type Build = {
@@ -54,10 +56,12 @@ const CAST: Record<Who, Build> = {
   akka: { role: "akka", heads: 6.4, depth: 0.16, leg: 0.47, arm: [0.185, 0.16], limb: 0.043, top: "kurti", bottom: "plain" },
   vendor: { role: "vendor", heads: 6.3, depth: 0.13, leg: 0.48, arm: [0.19, 0.165], limb: 0.04, top: "vest", bottom: "plain" },
   clown: { role: "clown", heads: 5.2, depth: 0.17, leg: 0.43, arm: [0.18, 0.16], limb: 0.05, top: "jumpsuit", bottom: "jumpsuit", shoes: true },
+  girl: { role: "girl", heads: 4.8, depth: 0.15, leg: 0.42, arm: [0.175, 0.15], limb: 0.048, top: "pinafore", bottom: "pinafore", shoes: true },
+  teacher: { role: "teacher", heads: 6.1, depth: 0.145, leg: 0.47, arm: [0.18, 0.155], limb: 0.04, top: "blouse", bottom: "saree", spectacles: true },
 };
 
 /** Standing heights, relative to each other. My brother is only a little taller than me. */
-export const HEIGHT: Record<Who, number> = { me: 170, brother: 198, cousin: 194, "cousin-swept": 190, chithappa: 226, amma: 198, anna: 218, tenant: 238, akka: 224, vendor: 214, clown: 228 };
+export const HEIGHT: Record<Who, number> = { me: 170, brother: 198, cousin: 194, "cousin-swept": 190, chithappa: 226, amma: 198, anna: 218, tenant: 238, akka: 224, vendor: 214, clown: 228, girl: 166, teacher: 204 };
 
 export function measure(who: Who, height = HEIGHT[who], wear: Wear = {}) {
   const build: Build = { ...CAST[who], ...wear };
@@ -102,6 +106,8 @@ function Shirt({ m, seated }: { m: Measure; seated: boolean }) {
   const hem = tucked ? -0.01 * H : kurti ? (seated ? 0.06 : 0.2) * H : build.top === "hoodie" ? 0.045 * H : 0.035 * H;
   // a kurti flares a little below the hips
   const flare = kurti ? 0.1 * d : 0;
+  // a school pinafore falls to the knee, or over the lap when she sits
+  const pinaforeHem = (seated ? 0.05 : 0.14) * H;
   const chest = build.top === "blouse" || kurti ? 0.58 : 0.55;
   const shape = `M${-0.16 * d} ${-T - 1}C${-0.42 * d} ${-T} ${-0.55 * d} ${-T + 0.06 * H} ${-0.53 * d} ${-T + 0.13 * H}L${-0.49 * d} ${-0.06 * H}C${-0.5 * d} ${-0.01 * H} ${-0.53 * d - flare} ${hem * 0.5} ${-0.54 * d - flare} ${hem}L${0.53 * d + flare} ${hem}C${0.54 * d + flare} ${hem * 0.4} ${0.52 * d} ${-0.05 * H} ${0.52 * d} ${-T * 0.42}C${0.53 * d} ${-T * 0.7} ${chest * d} ${-T + 0.06 * H} ${0.4 * d} ${-T + 0.012 * H}C${0.3 * d} ${-T} ${0.22 * d} ${-T - 1} ${0.15 * d} ${-T - 1}Z`;
   const solid = build.top === "solid" || build.top === "pocket" || build.top === "hoodie";
@@ -139,6 +145,15 @@ function Shirt({ m, seated }: { m: Measure; seated: boolean }) {
           <path d={`M${0.1 * d} ${-T + 0.012 * H}l${0.02 * d} ${0.07 * H}m${0.14 * d} ${-0.07 * H}l${-0.01 * d} ${0.065 * H}`} strokeWidth="1.1" opacity=".75" />
           <path d={`M${-0.52 * d} ${hem - 0.012 * H}H${0.52 * d}`} strokeWidth=".9" opacity=".6" />
           <path d={`M${0.02 * d} ${-T + 0.002 * H}l${0.12 * d} ${0.03 * H} ${0.12 * d} ${-0.03 * H}`} fill={paper} stroke="currentColor" strokeWidth="1" />
+        </g>
+      )}
+      {build.top === "pinafore" && (
+        // the school pinafore over the shirt: a square bib, a strap over the shoulder, a pleated skirt to the knee
+        <g>
+          <path d={`M${-0.5 * d} ${-T + 0.075 * H}H${0.5 * d}C${0.52 * d} ${-T * 0.5} ${0.6 * d} ${pinaforeHem * 0.4} ${0.63 * d} ${pinaforeHem}H${-0.64 * d}C${-0.6 * d} ${pinaforeHem * 0.5} ${-0.5 * d} ${-T * 0.5} ${-0.5 * d} ${-T + 0.075 * H}Z`} fill="currentColor" stroke={paper} strokeWidth="1.4" />
+          <path d={`M${0.18 * d} ${-T + 0.077 * H}L${0.02 * d} ${-T + 0.004 * H}`} strokeWidth={0.13 * d} />
+          <path d={`M${-0.5 * d} ${-0.03 * H}H${0.52 * d}M${-0.3 * d} ${-0.02 * H}l${-0.04 * d} ${pinaforeHem}m${0.3 * d} ${-pinaforeHem}v${pinaforeHem}m${0.3 * d} ${-pinaforeHem}l${0.04 * d} ${pinaforeHem}`} stroke={paper} strokeWidth=".9" opacity=".6" />
+          <path d={`M${0.04 * d} ${-T + 2}l${0.12 * d} ${0.035 * H} ${0.12 * d} ${-0.035 * H}`} fill={paper} strokeWidth="1" />
         </g>
       )}
       {build.top === "vest" && <path d={`M${-0.36 * d} ${-T + 0.01 * H}q${0.12 * d} ${0.07 * H} ${0.04 * d} ${0.12 * H}`} strokeWidth=".8" opacity=".45" />}
@@ -296,6 +311,12 @@ function Legs({ m, pose, pelvis, side, seated }: { m: Measure; pose: Pose; pelvi
     <g opacity={far ? 0.65 : 1}>
       {covered ? (
         <Limb solid parts={[shin, thigh]} line={0.9} />
+      ) : build.bottom === "pinafore" ? (
+        <>
+          <Limb parts={[shin, thigh]} line={1.2} />
+          {/* white socks */}
+          <path d={`M${ankle[0] + (knee[0] - ankle[0]) * 0.22 - limb * 0.45} ${ankle[1] + (knee[1] - ankle[1]) * 0.22}h${limb * 0.9}`} strokeWidth="1" opacity=".6" />
+        </>
       ) : build.bottom === "jumpsuit" ? (
         <>
           <Limb parts={[shin, thigh]} line={1.2} />
@@ -393,7 +414,8 @@ export function Person({ who, x, y, facing = 1, pose = "stand", scale = 1, lean 
   const headAt = toWorld([2 * k, -torso - 44 * k]);
   const headTurn = lean * 0.4 + tilt;
   const saree = m.build.bottom === "saree";
-  const kurti = m.build.top === "kurti";
+  // a kurti or a pinafore hangs over the near leg
+  const long = m.build.top === "kurti" || m.build.top === "pinafore";
   const nearArm = <Arm m={m} shoulder={shoulderNear} hand={handAt(near, m, pose, pelvis, shoulderNear)} />;
   if (part === "arm") return <g transform={`translate(${x} ${y}) scale(${facing} 1)`}>{nearArm}</g>;
   const farSide = (
@@ -410,13 +432,13 @@ export function Person({ who, x, y, facing = 1, pose = "stand", scale = 1, lean 
       <g transform={place(headAt, headTurn, k)}>
         <Head role={m.build.role} mood={mood} spectacles={m.build.spectacles} />
       </g>
-      {/* a kurti hangs over her legs */}
-      {kurti && <Legs m={m} pose={pose} pelvis={pelvis} side="near" seated={seated} />}
+      {long && <Legs m={m} pose={pose} pelvis={pelvis} side="near" seated={seated} />}
       <g transform={place(pelvis, lean)}>
         <Shirt m={m} seated={pose !== "stand"} />
       </g>
       {m.build.role === "akka" && <g transform={place(headAt, headTurn, k)}><Ponytail /></g>}
-      {saree ? <Saree m={m} pelvis={pelvis} torsoTop={pelvis[1] - torso} /> : !kurti && <Legs m={m} pose={pose} pelvis={pelvis} side="near" seated={seated} />}
+      {m.build.role === "girl" && <g transform={place(headAt, headTurn, k)}><Plait /></g>}
+      {saree ? <Saree m={m} pelvis={pelvis} torsoTop={pelvis[1] - torso} /> : !long && <Legs m={m} pose={pose} pelvis={pelvis} side="near" seated={seated} />}
       {part === "all" && nearArm}
     </g>
   );

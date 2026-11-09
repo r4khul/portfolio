@@ -15,11 +15,13 @@
  * - akka: his wife, her long hair tied back in a low ponytail, small earrings
  * - vendor: the pani puri man, a thick moustache
  * - clown: the McDonald's clown on his bench: a mop of curls, a round nose, a painted smile
+ * - girl: the girl I sat beside in sixth standard, her hair in two plaits tied with ribbons
+ * - teacher: our class teacher, her hair in a neat bun, in spectacles
  */
 export const paper = "var(--background)";
 
 export type Point = readonly [x: number, y: number];
-export type Role = "narrator" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "anna" | "amma" | "tenant" | "akka" | "vendor" | "clown" | "adult";
+export type Role = "narrator" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "anna" | "amma" | "tenant" | "akka" | "vendor" | "clown" | "girl" | "teacher" | "adult";
 export type Mood = "calm" | "excited" | "awe" | "down" | "sad" | "focus" | "worried" | "soft" | "talk" | "smile" | "scared" | "asleep";
 
 const r1 = (value: number) => Math.round(value * 10) / 10;
@@ -65,8 +67,9 @@ export const place = ([x, y]: Point, degrees = 0, scale = 1) =>
 
 /** Where each head's outline ends at the neck, behind and in front, in head units. */
 const NECK_ENDS: Record<"kid" | "man" | "amma", readonly [Point, Point]> = { kid: [[-12, 40], [8, 42]], man: [[-13, 46], [7, 48]], amma: [[-12, 44], [8, 45]] };
-const lady = (role: Role) => role === "amma" || role === "akka";
-const neckEnds = (role: Role) => NECK_ENDS[role === "narrator" ? "kid" : lady(role) ? "amma" : "man"];
+const lady = (role: Role) => role === "amma" || role === "akka" || role === "teacher";
+const child = (role: Role) => role === "narrator" || role === "girl";
+const neckEnds = (role: Role) => NECK_ENDS[child(role) ? "kid" : lady(role) ? "amma" : "man"];
 
 /**
  * The neck under a head placed with `place(at, degrees, scale)`. Its sides
@@ -110,6 +113,8 @@ const HAIR: Record<Role, string> = {
   tenant: "M-27 15C-38-6-32-35-8-40C14-44 30-33 31-18C24-22 14-22 6-19C0-16-2-10-2-3L-6 4L-12-2C-16 4-20 10-27 15Z",
   akka: "M-29 16C-38-6-31-34-6-38C14-41 28-31 29-17C22-23 10-25 1-19C-4-15-4-8-3-1L-6 6L-12 1C-17 8-22 13-29 16Z",
   vendor: "M-27 14C-36-6-31-32-9-37C12-41 26-31 28-19C18-19 8-17 2-13C-2-9-3-4-3 1L-7 5L-12-2C-16 4-20 10-27 14Z",
+  girl: "M-27 16C-38-4-32-36-8-40C14-44 30-32 30-17C24-22 14-24 6-20C0-16-2-10-2-3L-6 4L-12-2C-16 4-21 11-27 16Z",
+  teacher: "M-27 12C-36-6-30-32-6-37C12-40 26-31 28-18C20-22 8-22 0-16C-4-12-4-6-3-1L-6 6L-12 0C-16 6-20 10-27 12Z",
   clown: "M-24 18L-38 8Q-50 4-46-8Q-56-16-46-26Q-50-38-36-40Q-34-52-20-48Q-12-58 0-50Q12-56 20-46Q32-48 32-36Q42-32 36-22Q40-14 32-12Q26-14 22-17Q16-13 10-17Q4-14-1-9L-3 0L-7 5L-12-1C-16 6-20 13-24 18Z",
 };
 
@@ -144,6 +149,8 @@ const HAIR_DETAIL: Partial<Record<Role, { d: string; width: number; opacity: num
     { d: "M-24-22C-16-32-6-35 2-35M8-35C16-33 22-28 26-22", width: 1.2, opacity: 0.45 },
   ],
   vendor: [{ d: "M-21-26C-12-34 4-37 18-32", width: 1.4, opacity: 0.5 }],
+  girl: [{ d: "M-4-40C-8-30-8-22-4-16M-24-24C-16-33-8-36-2-36", width: 1.3, opacity: 0.55 }],
+  teacher: [{ d: "M-22-24C-12-33 4-36 18-30", width: 1.6, opacity: 0.55 }],
   clown: [{ d: "M-40-14q4-4 8 0M-30-34q4-4 8 0M-10-44q4-4 8 0M12-40q4-3 8 1M24-26q3-3 6 0M-38 2q3-4 7-1", width: 1.3, opacity: 0.55 }],
 };
 
@@ -215,7 +222,7 @@ function Mouth({ mood, x, y }: { mood: Mood; x: number; y: number }) {
  * spectacles, Amma's bun with a string of jasmine, her pottu and earring.
  */
 export function Head({ role = "adult", mood = "calm", spectacles = false }: { role?: Role; mood?: Mood; spectacles?: boolean }) {
-  const kid = role === "narrator";
+  const kid = child(role);
   const amma = role === "amma";
   const woman = lady(role);
   const skin = kid ? KID_SKIN : woman ? AMMA_SKIN : MAN_SKIN;
@@ -224,11 +231,11 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
   const [behind, ahead] = neckEnds(role);
   return (
     <g strokeLinecap="round" strokeLinejoin="round">
-      {amma && (
+      {(amma || role === "teacher") && (
         <g>
           <circle cx="-31" cy="-4" r="11.5" fill="currentColor" stroke="none" />
-          {/* jasmine strung around the bun */}
-          {[-112, -76, -40, -4, 32, 68].map((a) => {
+          {/* jasmine strung around Amma's bun */}
+          {amma && [-112, -76, -40, -4, 32, 68].map((a) => {
             const [bx, by] = polar([-31, -4], 12.5, a);
             return <circle key={a} cx={r1(bx)} cy={r1(by)} r="3.1" fill={paper} strokeWidth="1.1" />;
           })}
@@ -264,7 +271,14 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
       {role === "brother" && <path d="M27 17q3-2 5 1" strokeWidth="1.4" opacity=".45" />}
       {amma && <circle cx="25" cy="-12" r="1.9" fill="currentColor" stroke="none" />}
       {woman && <circle cx="-6" cy="13" r={amma ? 2.6 : 2} fill={paper} strokeWidth="1.2" />}
-      {kid && <path d="M11 11l3-2m1 4 3-2" strokeWidth="1" opacity=".35" />}
+      {role === "narrator" && <path d="M11 11l3-2m1 4 3-2" strokeWidth="1" opacity=".35" />}
+      {role === "girl" && (
+        // a small stud in her ear, and lashes
+        <g>
+          <circle cx="-6" cy="13" r="1.5" fill="currentColor" stroke="none" />
+          <path d={`M${eye[0] + 2} ${eye[1] - 4}l3-3m-1 5 3-2`} strokeWidth="1" opacity=".7" />
+        </g>
+      )}
       <Eye x={eye[0]} y={eye[1]} mood={mood} size={kid ? 1 : 0.92} />
       <path d={brow(mood, eye[0], eye[1] - 8)} strokeWidth="2.1" fill="none" />
       {spectacles && (
@@ -274,6 +288,19 @@ export function Head({ role = "adult", mood = "calm", spectacles = false }: { ro
         </g>
       )}
       {role !== "clown" && <Mouth mood={mood} x={mouth[0]} y={mouth[1]} />}
+    </g>
+  );
+}
+
+/** One of the girl's two plaits, braided down her back and tied with a ribbon. Drawn after her shirt, in the head's frame. */
+export function Plait() {
+  return (
+    <g>
+      <path d="M-22 12C-28 26-30 44-29 62C-28 70-26 76-24 80C-22 74-20 66-20 58C-20 42-17 26-12 15Z" fill="currentColor" stroke={paper} strokeWidth="1.2" />
+      <path d="M-27 28l4 3m-5 7 5 3m-5 7 5 3m-5 7 5 3m-5 7 5 2" stroke={paper} strokeWidth="1" opacity=".55" />
+      {/* the ribbon at its end, in a bow */}
+      <path d="M-24 80c-10-4-14 4-8 8 3 2 6-1 8-8Zm0 0c6-8 14-4 10 3-2 4-7 2-10-3Z" fill={paper} strokeWidth="1.2" />
+      <path d="M-24 80l-4 12m4-12 3 12" strokeWidth="1.3" />
     </g>
   );
 }
