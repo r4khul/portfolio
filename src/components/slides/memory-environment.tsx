@@ -414,15 +414,55 @@ function Restaurant({ glowId, layer }: { glowId: string; layer: Layer }) {
   );
 }
 
+/** Our classroom: windows with their grills, charts on the wall, a clock, the ceiling fan over us. */
+function SchoolRoom({ glowId, layer }: { glowId: string; layer: Layer }) {
+  return layer === "back" ? (
+    <>
+      <g className="memory-environment__far" strokeWidth="1.3">
+        <path d="M-30 805H1640M0 815H1600" />
+        <path d="M800 150H1600" opacity=".3" />
+        {/* the charts on the wall */}
+        <path d="M842 330h86v110h-86Zm8 10h70v60h-70Z" />
+        <path d="M856 418h56m-56 10h40" opacity=".5" />
+        <path d="M866 382q12-26 24-8t20-10" opacity=".5" />
+        {/* the clock over the door */}
+        <circle cx="1000" cy="250" r="22" /><path d="M1000 250v-14m0 14 10 6" />
+        {/* two windows, barred with grills */}
+        {[1060, 1300].map((x) => (
+          <g key={x}>
+            <path d={`M${x} 300h170v250H${x}Z`} />
+            <path d={Array.from({ length: 9 }, (_, i) => `M${x + 17 * (i + 1)} 300v250`).join("")} opacity=".45" />
+            <path d={`M${x} 425h170M${x - 10} 556h190`} opacity=".6" />
+          </g>
+        ))}
+      </g>
+      <g className="memory-environment__floor" strokeWidth="1.2" opacity=".35">
+        <path d="m0 942 1600-23M191 1000l175-177m710 177 29-177m328 177-115-177" />
+      </g>
+    </>
+  ) : (
+    <>
+      <g className="memory-environment__near" strokeWidth="1.6">
+        {/* the ceiling fan, and the light from the windows falling into the room */}
+        <g transform="translate(947 0)">
+          <path d="M0 0v120m-10 0h20v10h-20Z" />
+          <path d="M-4 130q-90-4-150 10q60 8 150 0M4 130q90-4 150 10q-60 8-150 0" fill="currentColor" fillOpacity=".08" />
+        </g>
+        <path className="memory-environment__light" d="M1080 556 980 807H1340L1250 556Z" fill={`url(#${glowId})`} stroke="none" />
+      </g>
+    </>
+  );
+}
+
 /**
  * The room or street behind each scene, faint. It is two stacked drawings,
  * the far wall or skyline and the near furniture or shopfronts, so each layer
  * can drift at its own depth as a whole: the browser moves them on the GPU
  * without redrawing a line.
  */
-export type Place = "interior" | "street" | "city" | "hall" | "foyer" | "restaurant";
+export type Place = "interior" | "street" | "city" | "hall" | "foyer" | "restaurant" | "classroom";
 
-const PLACES: Record<Exclude<Place, "interior" | "street" | "city">, typeof Hall> = { hall: Hall, foyer: Foyer, restaurant: Restaurant };
+const PLACES: Record<Exclude<Place, "interior" | "street" | "city">, typeof Hall> = { hall: Hall, foyer: Foyer, restaurant: Restaurant, classroom: SchoolRoom };
 
 export function MemoryEnvironment({ scene, place }: { scene: string; place?: Place }) {
   const id = useId().replace(/:/g, "");
