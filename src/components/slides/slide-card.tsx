@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, Clock, GalleryHorizontal, MapPin } from "lucide-react";
 import { memories, type Memory } from "@/data/memories";
 import { MoviePosterArt } from "./first-movie-poster";
+import { KeychainPosterArt } from "./heart-keychain-poster";
 import { PosterArt } from "./memory-poster";
 
 function Stat({
@@ -35,6 +36,8 @@ const POSTERS: Record<string, { Art: ComponentType; crop: string }> = {
   "game-console-and-ice-tubes": { Art: PosterArt, crop: "170 22 1030 579" },
   // the ride home, the clapperboard and the burger
   "first-movie-and-a-burger": { Art: MoviePosterArt, crop: "170 22 1030 579" },
+  // the bus under the lamp, the exam pad and the keychain
+  "last-exam-and-a-heart-keychain": { Art: KeychainPosterArt, crop: "170 22 1030 579" },
 };
 
 export function SlideCard({ memory }: { memory: Memory }) {

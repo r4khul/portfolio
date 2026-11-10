@@ -1,5 +1,6 @@
 import { firstMovieMemory } from "./first-movie-memory";
 import { gameConsoleMemory } from "./game-console-memory";
+import { heartKeychainMemory } from "./heart-keychain-memory";
 
 export type MemoryScene = {
   id: string;
@@ -41,6 +42,16 @@ export const memories: Memory[] = [
     minutes: 6,
     scenes: firstMovieMemory,
     published: "2026-11-06T00:00:00+05:30",
+  },
+  {
+    slug: "last-exam-and-a-heart-keychain",
+    number: "03",
+    title: ["Last Exam", "& a Heart Keychain"],
+    place: "Chennai",
+    summary: "The last paper of sixth standard, a heart keychain in my bag, and the first girl my age I really talked to.",
+    minutes: 3,
+    scenes: heartKeychainMemory,
+    published: "2026-11-10T00:00:00+05:30",
   },
 ];
 
