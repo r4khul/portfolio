@@ -35,7 +35,8 @@ export type Cue =
   | "warmth" | "kick" | "whistle" | "cheer" | "carrom" | "page" | "scribble" | "flick" | "knock" | "yes"
   | "hurry" | "done" | "puff" | "sparkle" | "rev" | "crunch" | "slurp" | "dim" | "projector" | "heartbeat"
   | "sting" | "popcorn" | "fridge" | "fizz" | "sip" | "wrapper" | "toy" | "camera" | "clink" | "steps"
-  | "clap" | "phrase";
+  | "clap" | "phrase"
+  | "schoolbell" | "zip" | "jingle" | "chalk" | "chatter" | "bus" | "sticker" | "byebye";
 
 /** A cue at a point in its scene's scroll. `step` picks the key, note or heave in a series. */
 export type Mark = { art: string; at: number; cue: Cue; step?: number };
@@ -147,6 +148,50 @@ export const FIRST_MOVIE_MARKS: readonly Mark[] = [
   { art: "finale", at: 0.52, cue: "chime", step: 2 },
   { art: "finale", at: 0.66, cue: "clap" },
   { art: "finale", at: 0.72, cue: "chime", step: 4 },
+  { art: "finale", at: 0.79, cue: "chord" },
+];
+
+/** Every cue in Last Exam & a Heart Keychain. */
+export const HEART_KEYCHAIN_MARKS: readonly Mark[] = [
+  { art: "cover", at: 0.2, cue: "jingle" },
+  // the last paper: my pencil, the holidays in my head, a page turned
+  { art: "exam", at: 0.16, cue: "scribble", step: 0 },
+  { art: "exam", at: 0.36, cue: "thought" },
+  { art: "exam", at: 0.62, cue: "page" },
+  // the clock I kept checking, and my answers getting shorter until I knew I'd pass
+  { art: "clock", at: 0.1, cue: "clock" },
+  { art: "clock", at: 0.42, cue: "scribble", step: 0 },
+  { art: "clock", at: 0.62, cue: "scribble", step: 1 },
+  { art: "clock", at: 0.78, cue: "done" },
+  { art: "shy", at: 0.35, cue: "warmth" },
+  { art: "chat", at: 0.2, cue: "chatter" },
+  { art: "chat", at: 0.6, cue: "thought" },
+  // packing the gifts: the bag's zip, toffee wrappers, a sticker
+  { art: "gifts", at: 0.12, cue: "zip" },
+  { art: "gifts", at: 0.35, cue: "crinkle" },
+  { art: "gifts", at: 0.56, cue: "sticker" },
+  { art: "keychain", at: 0.2, cue: "jingle" },
+  { art: "keychain", at: 0.45, cue: "sparkle" },
+  { art: "bag", at: 0.35, cue: "zip" },
+  // the bell after the last paper, chalk on the board, the class talking
+  { art: "holidays", at: 0.06, cue: "schoolbell" },
+  { art: "holidays", at: 0.3, cue: "chalk" },
+  { art: "holidays", at: 0.52, cue: "chatter" },
+  { art: "giving", at: 0.22, cue: "jingle" },
+  { art: "giving", at: 0.5, cue: "thought" },
+  { art: "bye", at: 0.3, cue: "byebye" },
+  { art: "bus", at: 0.12, cue: "bus" },
+  // the years after: a bell as seventh and eighth begin, then my books
+  { art: "apart", at: 0.08, cue: "schoolbell" },
+  { art: "apart", at: 0.36, cue: "schoolbell" },
+  { art: "apart", at: 0.66, cue: "page" },
+  { art: "innocence", at: 0.4, cue: "musicBox" },
+  { art: "first", at: 0.4, cue: "phrase" },
+  // the keychain stepping out of my hand (.44–.66), the pad and pencil arriving, the title (.78)
+  { art: "finale", at: 0.3, cue: "chime", step: 0 },
+  { art: "finale", at: 0.46, cue: "swish" },
+  { art: "finale", at: 0.52, cue: "chime", step: 2 },
+  { art: "finale", at: 0.7, cue: "chime", step: 4 },
   { art: "finale", at: 0.79, cue: "chord" },
 ];
 
@@ -981,6 +1026,112 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
     // This is life: three music-box notes falling home, the last left ringing.
     phrase(at) {
       [NOTE.C6, NOTE.A5, NOTE.F5].forEach((freq, index) => musicBox(at + index * 0.36, freq, db(-14), index === 2 ? 3 : 1.6, 0.15 - index * 0.12));
+    },
+    // The school bell after the last paper: the hammer beating a small metal dome, for a second and a half.
+    schoolbell(at) {
+      const add = voice(filter("lowpass", 4200, BUTTERWORTH), ...panned(0.2));
+      const length = 1.5;
+      for (const [ratio, level] of [[1, 0.6], [2.42, 0.28], [3.9, 0.12]] as const) {
+        const osc = context.createOscillator();
+        osc.frequency.value = 900 * ratio;
+        const gain = context.createGain();
+        const top = db(-15) * level;
+        gain.gain.setValueAtTime(0, at);
+        for (let time = 0; time < length; time += 1 / 21) {
+          gain.gain.linearRampToValueAtTime(top, at + time + 0.003);
+          gain.gain.exponentialRampToValueAtTime(top * 0.35, at + time + 1 / 21 - 0.002);
+        }
+        gain.gain.exponentialRampToValueAtTime(FLOOR, at + length + 0.4);
+        add(osc, [gain], at, at + length + 0.4);
+      }
+    },
+    // The bag's zip: fine teeth clicking past, quickening and rising.
+    zip(at) {
+      const add = voice(filter("lowpass", 5400, BUTTERWORTH));
+      let time = 0;
+      for (let index = 0; index < 26; index++) {
+        const lift = index / 25;
+        grain(add, { at: at + time, freq: 2600 + 1400 * lift, q: 3, peak: db(-17) * (0.6 + 0.4 * Math.random()), attack: 0.002, decay: 0.01 });
+        time += 0.024 - 0.012 * lift;
+      }
+    },
+    // The keyring: a few small metal clinks, the chain settling.
+    jingle(at) {
+      const add = voice(filter("lowpass", 5600, BUTTERWORTH), ...panned(0.1));
+      let time = 0;
+      for (let index = 0; index < 4; index++) {
+        const freq = 2900 + Math.random() * 900;
+        tone(add, { at: at + time, freq, peak: db(-19) * (1 - index * 0.15), attack: 0.002, decay: 0.22 });
+        tone(add, { at: at + time, freq: freq * 1.52, peak: db(-25), attack: 0.002, decay: 0.12 });
+        time += 0.05 + Math.random() * 0.07;
+      }
+    },
+    // Chalk on the board: two short, dry strokes.
+    chalk(at) {
+      const add = voice(filter("lowpass", 5200, BUTTERWORTH));
+      grain(add, { at, freq: 3100, q: 5, peak: db(-19), attack: 0.02, hold: 0.16, decay: 0.05 });
+      grain(add, { at: at + 0.32, freq: 2800, q: 5, peak: db(-20), attack: 0.02, hold: 0.22, decay: 0.05 });
+    },
+    // The class talking at once: a soft murmur rising and falling in syllables.
+    chatter(at) {
+      const add = voice(filter("bandpass", 750, 0.8));
+      const source = context.createBufferSource();
+      source.buffer = noise;
+      const gain = context.createGain();
+      const length = 1.6;
+      const top = db(-21) / noisePeak("bandpass", 750, 0.8, false);
+      gain.gain.setValueAtTime(0, at);
+      for (let time = 0; time < length; time += 0.12 + Math.random() * 0.08) {
+        const level = top * Math.sin((Math.PI * time) / length) * (0.5 + Math.random() * 0.5);
+        gain.gain.linearRampToValueAtTime(Math.max(level, FLOOR * 2), at + time + 0.04);
+        gain.gain.exponentialRampToValueAtTime(Math.max(level * 0.4, FLOOR), at + time + 0.11);
+      }
+      gain.gain.exponentialRampToValueAtTime(FLOOR, at + length + 0.1);
+      add(source, [gain], at, at + length + 0.1, Math.random() * (noise.duration - length - 0.2));
+    },
+    // The bus pulling away: its diesel rumble, and one honk of its horn.
+    bus(at) {
+      const body = filter("lowpass", 380, BUTTERWORTH);
+      const add = voice(body);
+      const osc = context.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(58, at);
+      osc.frequency.linearRampToValueAtTime(82, at + 1.6);
+      const gain = context.createGain();
+      gain.gain.setValueAtTime(0, at);
+      let time = 0;
+      while (time < 1.8) {
+        const level = db(-13) * Math.min(1, 0.4 + time) * (time > 1.4 ? 1 - (time - 1.4) / 0.4 : 1);
+        gain.gain.linearRampToValueAtTime(Math.max(level, FLOOR * 2), at + time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(Math.max(level * 0.2, FLOOR), at + time + 0.07);
+        time += 1 / (9 + 5 * Math.min(1, time));
+      }
+      gain.gain.exponentialRampToValueAtTime(FLOOR, at + time + 0.1);
+      add(osc, [gain], at, at + time + 0.1);
+      const horn = voice(filter("lowpass", 1400, BUTTERWORTH), ...panned(-0.2));
+      for (const freq of [330, 415]) {
+        const reed = context.createOscillator();
+        reed.type = "square";
+        reed.frequency.value = freq;
+        const level = context.createGain();
+        horn(reed, [level], at + 0.5, swell(level.gain, at + 0.5, db(-22), 0.02, 0.28, 0.08));
+      }
+    },
+    // A sticker peeled off its sheet.
+    sticker(at) {
+      const band = filter("bandpass", 1500, 1.2);
+      band.frequency.setValueAtTime(1500, at);
+      band.frequency.exponentialRampToValueAtTime(4500, at + 0.16);
+      const add = voice(band);
+      const source = context.createBufferSource();
+      source.buffer = noise;
+      const gain = context.createGain();
+      add(source, [gain], at, swell(gain.gain, at, db(-16) / noisePeak("bandpass", 2600, 1.2, true), 0.02, 0.1, 0.05), Math.random() * (noise.duration - 1));
+    },
+    // Her goodbye, see you after the holidays: two music-box notes, the second a little lower.
+    byebye(at) {
+      musicBox(at, NOTE.C6, db(-15), 1.2, -0.15);
+      musicBox(at + 0.24, NOTE.A5, db(-15), 1.8, 0.15);
     },
     // The title: F major, home, rolled gently up from the bottom.
     chord(at) {
