@@ -49,6 +49,8 @@ export async function memoryShareImage(memory: Memory, poster: ReactNode) {
   const [titleFonts, textFonts] = await Promise.all([serif(), sans()]);
   const fonts = [...textFonts, ...(titleFonts ?? [])];
   const title = titleFonts ? "Instrument Serif" : undefined;
+  // each title line on one line in the 540 wide column: the serif runs about .38em a letter
+  const titleSize = Math.min(98, Math.floor(540 / (Math.max(...memory.title.map((line) => line.length)) * 0.38)));
   return new ImageResponse(
     (
       <div style={{ position: "relative", display: "flex", width: "100%", height: "100%", background: PAPER, fontFamily: textFonts.length ? "Geist" : undefined }}>
@@ -59,8 +61,8 @@ export async function memoryShareImage(memory: Memory, poster: ReactNode) {
           <div style={{ display: "flex", fontSize: 17, letterSpacing: 5, color: "#71717a", textTransform: "uppercase" }}>
             Core memory · {memory.number} · {memory.place}
           </div>
-          <div style={{ display: "flex", marginTop: 30, fontFamily: title, fontSize: 98, lineHeight: 1, letterSpacing: -2, color: INK }}>{memory.title[0]}</div>
-          <div style={{ display: "flex", marginTop: 4, fontFamily: title, fontStyle: "italic", fontSize: 98, lineHeight: 1, letterSpacing: -2, color: INK }}>{memory.title[1]}</div>
+          <div style={{ display: "flex", marginTop: 30, fontFamily: title, fontSize: titleSize, lineHeight: 1, letterSpacing: -2, color: INK }}>{memory.title[0]}</div>
+          <div style={{ display: "flex", marginTop: 4, fontFamily: title, fontStyle: "italic", fontSize: titleSize, lineHeight: 1, letterSpacing: -2, color: INK }}>{memory.title[1]}</div>
           <div style={{ display: "flex", marginTop: 34, width: 430, fontSize: 24, lineHeight: 1.5, color: "#a1a1aa" }}>
             {memory.summary}
           </div>
