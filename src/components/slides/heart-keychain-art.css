@@ -1,0 +1,71 @@
+/* the last exam: the holidays fill my head (.3–.42), then the clock runs on, a quarter to twelve towards twenty-five past */
+.keychain-art--exam .keychain-art__dream {
+  opacity: clamp(0, (var(--scene-progress, 0) - .3) / .12, 1);
+  translate: 0 calc((1 - clamp(0, (var(--scene-progress, 0) - .3) / .12, 1)) * 4px);
+}
+.keychain-art--clock .keychain-art__minute { rotate: calc(var(--scene-progress, 0) * 240deg); }
+.keychain-art--clock .keychain-art__hour { rotate: calc(var(--scene-progress, 0) * 20deg); }
+
+/* the cover's pad and keychain lean a little as it scrolls */
+.keychain-art--cover .keychain-art__keychain {
+  transform: translateY(calc((var(--scene-progress, .5) - .5) * -6px));
+}
+.keychain-art--cover .keychain-art__pad {
+  transform-origin: 560px 296px;
+  transform: rotate(calc((var(--scene-progress, .5) - .5) * -1.5deg));
+}
+
+/*
+ * The last shot, on the scene's scroll. The two of us fade around the keychain
+ * in my hand (.28–.44) while it moves into the cover (in script, .44–.66);
+ * the exam pad and the pencil join it (.56–.78).
+ */
+.keychain-art--finale .keychain-art__people { opacity: calc(1 - clamp(0, (var(--scene-progress, 0) - .28) / .16, 1)); }
+.keychain-art__arrive--pad {
+  opacity: clamp(0, (var(--scene-progress, 0) - .56) / .12, 1);
+  translate: calc((1 - clamp(0, (var(--scene-progress, 0) - .56) / .16, 1)) * -14px) 0;
+}
+.keychain-art__arrive--pencil {
+  opacity: clamp(0, (var(--scene-progress, 0) - .62) / .12, 1);
+  translate: 0 calc((1 - clamp(0, (var(--scene-progress, 0) - .62) / .14, 1)) * 8px);
+}
+
+/*
+ * Held up to look at, the keychain swings on its ring and dies down
+ * (.12–.42, the jingle at .2), the loose hearts sliding the other way; held
+ * out to her, a smaller swing.
+ */
+.keychain-art--keychain,
+.keychain-art--giving { --shake: clamp(0, (var(--scene-progress, 0) - .12) / .3, 1); --swing: calc(sin(var(--shake) * 15rad) * (1 - var(--shake))); }
+.keychain-art--keychain .keychain-art__swing { rotate: calc(var(--swing) * 12deg); }
+.keychain-art--giving .keychain-art__swing { rotate: calc(var(--swing) * 6deg); }
+.keychain-art--keychain .keychain-art__shaken { translate: calc(var(--swing) * -1.2px) 0; }
+.keychain-art--keychain .keychain-art__loose { translate: calc(var(--swing) * -3px) calc(var(--swing) * var(--swing) * -2px); }
+
+/* her wave */
+.memory-scene.is-live .keychain-art__wave { animation: keychain-wave 1.2s ease-in-out infinite; transform-origin: 555px 252px; }
+@keyframes keychain-wave { 50% { transform: rotate(-12deg); } }
+
+/* the years after: the boards change at .3 and .6, and she fades from .3 */
+.keychain-art__year { opacity: 0; }
+.keychain-art__year--0 { opacity: calc(1 - clamp(0, (var(--scene-progress, 0) - .3) / .06, 1)); }
+.keychain-art__year--1 { opacity: calc(clamp(0, (var(--scene-progress, 0) - .3) / .06, 1) - clamp(0, (var(--scene-progress, 0) - .6) / .06, 1)); }
+.keychain-art__year--2 { opacity: clamp(0, (var(--scene-progress, 0) - .6) / .06, 1); }
+.keychain-art--apart .keychain-art__her { opacity: calc(1 - clamp(0, (var(--scene-progress, 0) - .3) / .6, 1) * .75); }
+
+/* the bus rolls on, past the road */
+.keychain-art--bus .keychain-art__bus { transform: translateX(calc((.5 - var(--scene-progress, .5)) * 60px)); }
+.keychain-art--bus .keychain-art__road { transform: translateX(calc((var(--scene-progress, .5) - .5) * 80px)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .keychain-art--cover .keychain-art__keychain,
+  .keychain-art--cover .keychain-art__pad,
+  .keychain-art__bus,
+  .keychain-art__road { transform: none !important; }
+  .keychain-art__swing,
+  .keychain-art__shaken,
+  .keychain-art__loose { rotate: none !important; translate: none !important; }
+  .keychain-art__arrive--pad,
+  .keychain-art__arrive--pencil { translate: none; }
+  .memory-scene.is-live .keychain-art__wave { animation: none; }
+}
