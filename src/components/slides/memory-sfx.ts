@@ -196,6 +196,55 @@ export const HEART_KEYCHAIN_MARKS: readonly Mark[] = [
   { art: "finale", at: 0.79, cue: "chord" },
 ];
 
+export const CRICKET_SET_MARKS: readonly Mark[] = [
+  { art: "cover", at: 0.2, cue: "bat" },
+  { art: "anna", at: 0.35, cue: "warmth" },
+  // whenever he came: my feet running to him, and the joy of it
+  { art: "kind", at: 0.18, cue: "patter" },
+  { art: "kind", at: 0.5, cue: "sparkle" },
+  // the gate, me running down the lane, the gold in his hand
+  { art: "gate", at: 0.1, cue: "gate" },
+  { art: "gate", at: 0.32, cue: "patter" },
+  { art: "golden", at: 0.2, cue: "glint" },
+  { art: "golden", at: 0.45, cue: "sparkle" },
+  { art: "wonder", at: 0.14, cue: "thought" },
+  { art: "wonder", at: 0.5, cue: "wonder" },
+  // opening it: the paper tearing, again and again, then the box
+  { art: "unwrap", at: 0.12, cue: "tear", step: 0 },
+  { art: "unwrap", at: 0.3, cue: "tear", step: 1 },
+  { art: "unwrap", at: 0.46, cue: "tear", step: 0 },
+  { art: "unwrap", at: 0.62, cue: "crinkle" },
+  // the set, piece by piece (.08 bat, .16 ball, .24 stumps, .32 base), then the colours
+  { art: "set", at: 0.09, cue: "chime", step: 0 },
+  { art: "set", at: 0.17, cue: "chime", step: 2 },
+  { art: "set", at: 0.25, cue: "chime", step: 4 },
+  { art: "set", at: 0.47, cue: "glint" },
+  { art: "setup", at: 0.2, cue: "stumps", step: 0 },
+  { art: "setup", at: 0.42, cue: "stumps", step: 1 },
+  // playing: the ball's bounce on the lane and my bat on it
+  { art: "played", at: 0.3, cue: "bounce" },
+  { art: "played", at: 0.38, cue: "bat" },
+  { art: "batting", at: 0.2, cue: "bounce" },
+  { art: "batting", at: 0.27, cue: "bat" },
+  { art: "batting", at: 0.5, cue: "bounce" },
+  { art: "batting", at: 0.57, cue: "bat" },
+  { art: "leaving", at: 0.22, cue: "gate" },
+  { art: "leaving", at: 0.45, cue: "byebye" },
+  // years on, the same set, my cousins
+  { art: "years", at: 0.18, cue: "bounce" },
+  { art: "years", at: 0.25, cue: "bat" },
+  { art: "years", at: 0.5, cue: "chatter" },
+  { art: "level", at: 0.4, cue: "warmth" },
+  { art: "heart", at: 0.4, cue: "musicBox" },
+  { art: "matters", at: 0.4, cue: "phrase" },
+  // the two of us fading from the lane (.28–.44), the bat and ball coming to rest by the wicket (.48–.7), the title (.78)
+  { art: "finale", at: 0.3, cue: "chime", step: 0 },
+  { art: "finale", at: 0.46, cue: "swish" },
+  { art: "finale", at: 0.52, cue: "chime", step: 2 },
+  { art: "finale", at: 0.7, cue: "chime", step: 4 },
+  { art: "finale", at: 0.79, cue: "chord" },
+];
+
 /**
  * The pedalling texture `ride` plays, per scene. Stroke counts follow the
  * drawing: the cranks turn 7 times across `rush` and 2.4 times across `ride`
