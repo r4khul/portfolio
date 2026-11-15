@@ -454,19 +454,83 @@ function SchoolRoom({ glowId, layer }: { glowId: string; layer: Layer }) {
   );
 }
 
+/** The houses along our lane: [x, width, top]. */
+const HOUSES = [[-30, 220, 560], [206, 176, 612], [398, 214, 532], [1006, 196, 596], [1218, 196, 540], [1432, 210, 606]] as const;
+/** A house's front: its terrace parapet, the water tank up there, a grilled window under its sunshade, a door. */
+function houseFront(x: number, width: number, top: number) {
+  const tank = x + width * 0.58;
+  return [
+    `M${x} 822V${top}h${width}V822M${x - 8} ${top}h${width + 16}v-10h${-width - 16}Z`,
+    `M${tank} ${top - 10}v-28q0-7 17-7t17 7v28m-34-10h34m-34-10h34`,
+    `M${x + 26} ${top + 52}h60v60h-60Zm15 0v60m15-60v60m15-60v60M${x + 16} ${top + 44}h80`,
+    `M${x + width - 70} 822v-110h44v110`,
+  ];
+}
+
+/** Our lane in Chennai, by day: the neighbours' houses, a coconut palm, the pole and its wires; near, our compound wall. */
+function Lane({ layer }: { glowId: string; layer: Layer }) {
+  return layer === "back" ? (
+    <>
+      <g className="memory-environment__far" strokeWidth="1.3">
+        <circle cx="1240" cy="150" r="24" />
+        <path d={Array.from({ length: 10 }, (_, i) => {
+          const a = (i * Math.PI) / 5;
+          return `M${(1240 + Math.cos(a) * 34).toFixed(1)} ${(150 + Math.sin(a) * 34).toFixed(1)}l${(Math.cos(a) * 12).toFixed(1)} ${(Math.sin(a) * 12).toFixed(1)}`;
+        }).join("")} opacity=".45" />
+        {HOUSES.map(([x, width, top]) => {
+          const [wall, tank, window, door] = houseFront(x, width, top);
+          return (
+            <g key={x}>
+              <path d={wall} />
+              <path d={tank} opacity=".55" />
+              <path d={window} opacity=".4" />
+              <path d={door} opacity=".45" />
+            </g>
+          );
+        })}
+        <g opacity=".42"><Palm x={760} y={396} scale={.96} /></g>
+        {/* the electric pole, and the wires every street is strung with */}
+        <g opacity=".45" strokeWidth="1.2">
+          <path d="M890 822V470m-6 0h12" />
+          <path d="M862 484h56m-50 0v6m44-6v6" />
+          <path d="M-20 548Q420 612 862 488M918 488Q1090 560 1300 548T1640 470M-20 568Q430 632 890 488" opacity=".7" />
+        </g>
+        <path d="M0 822h1600m-37 7H-10" opacity=".45" />
+      </g>
+
+      <g className="memory-environment__floor" strokeWidth="1.1" opacity=".35">
+        <path d="M-40 866q452-29 980-10t700-4M0 904q497-22 900-8t744-1" opacity=".45" />
+        <path d="M67 947h120m13-1h43m853-38h161m48-1h60m-801 67h104m23-1h30m547-71h128m-1347-50h59m1165-12h94" />
+      </g>
+    </>
+  ) : (
+    <>
+      <g className="memory-environment__near" strokeWidth="1.6">
+        {/* our compound wall, its pillars, and the palm leaning over it */}
+        <g>
+          <path d="M1120 815V690h520m-520 0v-10h520" />
+          {[1120, 1270, 1420, 1570].map((x) => <path key={x} d={`M${x - 14} 815V664h28V815M${x - 18} 664h36v-8h-36Z`} />)}
+          <path d="M1134 726h122m28 0h122m28 0h122m-422 40h122m28 0h122m28 0h122" opacity=".25" />
+        </g>
+        <g opacity=".6"><Palm x={1500} y={300} scale={1.18} /></g>
+      </g>
+    </>
+  );
+}
+
 /**
  * The room or street behind each scene, faint. It is two stacked drawings,
  * the far wall or skyline and the near furniture or shopfronts, so each layer
  * can drift at its own depth as a whole: the browser moves them on the GPU
  * without redrawing a line.
  */
-export type Place = "interior" | "street" | "city" | "hall" | "foyer" | "restaurant" | "classroom";
+export type Place = "interior" | "street" | "city" | "hall" | "foyer" | "restaurant" | "classroom" | "lane";
 
-const PLACES: Record<Exclude<Place, "interior" | "street" | "city">, typeof Hall> = { hall: Hall, foyer: Foyer, restaurant: Restaurant, classroom: SchoolRoom };
+const PLACES: Record<Exclude<Place, "interior" | "street" | "city">, typeof Hall> = { hall: Hall, foyer: Foyer, restaurant: Restaurant, classroom: SchoolRoom, lane: Lane };
 
 export function MemoryEnvironment({ scene, place }: { scene: string; place?: Place }) {
   const id = useId().replace(/:/g, "");
-  const inside = place ? place !== "street" && place !== "city" : ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
+  const inside = place ? place !== "street" && place !== "city" && place !== "lane" : ["cousins", "laptop", "four", "brick", "console", "price", "packed", "gift", "taking", "pocket", "permission"].includes(scene);
   const Place = place && place in PLACES ? PLACES[place as keyof typeof PLACES] : inside ? HouseInterior : place === "city" ? City : Street;
   const svg = (layer: Layer) => (
     <svg
