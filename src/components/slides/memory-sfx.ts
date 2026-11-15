@@ -36,7 +36,8 @@ export type Cue =
   | "hurry" | "done" | "puff" | "sparkle" | "rev" | "crunch" | "slurp" | "dim" | "projector" | "heartbeat"
   | "sting" | "popcorn" | "fridge" | "fizz" | "sip" | "wrapper" | "toy" | "camera" | "clink" | "steps"
   | "clap" | "phrase"
-  | "schoolbell" | "zip" | "jingle" | "chalk" | "chatter" | "bus" | "sticker" | "byebye";
+  | "schoolbell" | "zip" | "jingle" | "chalk" | "chatter" | "bus" | "sticker" | "byebye"
+  | "patter" | "gate" | "tear" | "stumps" | "bounce" | "bat";
 
 /** A cue at a point in its scene's scroll. `step` picks the key, note or heave in a series. */
 export type Mark = { art: string; at: number; cue: Cue; step?: number };
@@ -1132,6 +1133,62 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
     byebye(at) {
       musicBox(at, NOTE.C6, db(-15), 1.2, -0.15);
       musicBox(at + 0.24, NOTE.A5, db(-15), 1.8, 0.15);
+    },
+    // Small feet running down the lane: quick, light, slippers slapping.
+    patter(at) {
+      const add = voice(filter("lowpass", 2600, BUTTERWORTH));
+      for (let index = 0; index < 8; index++) {
+        const time = at + index * 0.15;
+        grain(add, { type: "lowpass", at: time, freq: 700, q: BUTTERWORTH, peak: db(-16) * (0.7 + 0.3 * (index % 2)), attack: 0.002, decay: 0.035 });
+        grain(add, { at: time + 0.01, freq: 1800, q: 1.4, peak: db(-22), attack: 0.002, decay: 0.012 });
+      }
+    },
+    // Our iron gate: the latch's clank and its ring, then a short creak as it swings.
+    gate(at) {
+      const add = voice(filter("lowpass", 4200, BUTTERWORTH), ...panned(-0.2));
+      grain(add, { at, freq: 2200, q: 6, peak: db(-12), attack: 0.002, decay: 0.03 });
+      tone(add, { at, freq: 1180, peak: db(-20), attack: 0.002, decay: 0.25 });
+      tone(add, { at, freq: 1730, peak: db(-24), attack: 0.002, decay: 0.18 });
+      for (let index = 0; index < 14; index++) {
+        grain(add, { at: at + 0.12 + index * 0.03, freq: 700 + index * 26, q: 6, peak: db(-21) * (0.6 + 0.4 * Math.sin((index / 13) * Math.PI)), attack: 0.004, decay: 0.02 });
+      }
+    },
+    // The golden paper tearing: a quick rasp of fibres giving way, and the sheet's soft rush.
+    tear(at, step) {
+      const add = voice(filter("lowpass", 6000, BUTTERWORTH), ...panned(step ? 0.15 : -0.1));
+      let time = 0;
+      for (let index = 0; index < (step ? 16 : 22); index++) {
+        grain(add, { at: at + time, freq: 1500 + Math.random() * 2600, q: 1.2, peak: db(-14) * (0.5 + 0.5 * Math.random()), attack: 0.002, decay: 0.01 + Math.random() * 0.014 });
+        time += 0.008 + Math.random() * 0.012;
+      }
+      grain(add, { at, freq: 900, q: 0.9, peak: db(-18), attack: 0.03, decay: 0.16 });
+    },
+    // A plastic stump pushed into its base, scraping in and clicking home; for the bails, two small clicks.
+    stumps(at, step) {
+      const add = voice(filter("lowpass", 5000, BUTTERWORTH));
+      if (step) {
+        grain(add, { at, freq: 3000, q: 5, peak: db(-15), attack: 0.002, decay: 0.012 });
+        grain(add, { at: at + 0.16, freq: 3300, q: 5, peak: db(-16), attack: 0.002, decay: 0.012 });
+        return;
+      }
+      grain(add, { at, freq: 1600, q: 1.4, peak: db(-20), attack: 0.03, hold: 0.06, decay: 0.05 });
+      grain(add, { at: at + 0.13, freq: 2400, q: 4, peak: db(-12), attack: 0.002, decay: 0.016 });
+      tone(add, { at: at + 0.13, freq: 880, peak: db(-22), attack: 0.002, decay: 0.05 });
+    },
+    // The plastic ball bouncing once on the lane, light and hollow.
+    bounce(at) {
+      const add = voice(filter("lowpass", 2400, BUTTERWORTH), ...panned(0.15));
+      grain(add, { type: "lowpass", at, freq: 900, q: BUTTERWORTH, peak: db(-14), attack: 0.002, decay: 0.03 });
+      tone(add, { at, freq: 380, peak: db(-18), attack: 0.002, decay: 0.05 });
+    },
+    // The plastic bat meeting the plastic ball: a hollow tok.
+    bat(at) {
+      const add = voice(filter("lowpass", 4200, BUTTERWORTH), ...panned(-0.1));
+      grain(add, { at, freq: 1900, q: 2.2, peak: db(-10), attack: 0.001, decay: 0.018 });
+      const body = tone(add, { at, freq: 640, peak: db(-13), attack: 0.002, decay: 0.07 });
+      body.frequency.setValueAtTime(640, at);
+      body.frequency.exponentialRampToValueAtTime(520, at + 0.06);
+      tone(add, { at, freq: 1460, peak: db(-22), attack: 0.002, decay: 0.04 });
     },
     // The title: F major, home, rolled gently up from the bottom.
     chord(at) {
