@@ -12,6 +12,12 @@ const at = ({ x = 0, y = 0, angle = 0, scale = 1 }: At) => `translate(${x} ${y})
 /** From the bat's toe to where the top hand grips it. */
 export const GRIP = 64;
 
+/** The bat in a hand: its grip at [x, y], turned `angle` from straight down (0), so its toe lands GRIP away. */
+export const batIn = ([x, y]: readonly [number, number], angle: number) => {
+  const radians = (angle * Math.PI) / 180;
+  return { x: x - GRIP * Math.sin(radians), y: y + GRIP * Math.cos(radians), angle };
+};
+
 /** The bat, red plastic, its toe on the origin and its handle straight up. */
 export function Bat(props: At) {
   return (

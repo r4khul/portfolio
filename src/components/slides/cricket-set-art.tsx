@@ -2,7 +2,7 @@ import "./cricket-set-art.css";
 import type { ReactNode } from "react";
 import { paper, type Point } from "./memory-figures";
 import { Person, handsOf, type PersonProps } from "./memory-people";
-import { Ball, Bail, Base, Bat, GRIP, GoldenGift, Scrap, STILL, StillLife, Stump, Wicket } from "./cricket-set-props";
+import { Ball, Bail, Base, Bat, GoldenGift, Scrap, STILL, StillLife, Stump, Wicket, batIn } from "./cricket-set-props";
 
 const mono = { fontFamily: "var(--font-geist-mono), monospace" } as const;
 
@@ -14,12 +14,6 @@ const Floor = ({ y, from = 380, to = 820 }: { y: number; from?: number; to?: num
 /** Me in third standard, small beside him. */
 const KID = 0.82;
 const ANNA = 0.86;
-
-/** The bat in a hand: its grip there, turned `angle` from straight down (0), so its toe lands GRIP away. */
-const batIn = ([x, y]: Point, angle: number) => {
-  const radians = (angle * Math.PI) / 180;
-  return { x: x - GRIP * Math.sin(radians), y: y + GRIP * Math.cos(radians), angle };
-};
 
 /** A thought above someone's head, the same cloud the other memories think in, holding `children`. */
 function Thought({ x, y, from, children }: { x: number; y: number; from: Point; children?: ReactNode }) {

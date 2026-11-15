@@ -1,5 +1,27 @@
-import { Ball, Bat, GoldenGift, Scrap, Wicket } from "./cricket-set-props";
+import { Ball, Bat, GoldenGift, Scrap, Wicket, batIn } from "./cricket-set-props";
+import { Person, handsOf, type PersonProps } from "./memory-people";
 import { GROUND, PosterSky } from "./memory-poster";
+
+/** The two of us playing, as in the lane: the wicket, me at it with the bat, him bowling to me underarm. Ground at 0, the wicket on the origin. */
+const ME: PersonProps = { who: "me", x: 42, y: 0, scale: 0.82, mood: "excited", lean: 10, tilt: 4, near: [16, -6], far: [12, -4] };
+const ANNA: PersonProps = { who: "relative", facing: -1, x: 250, y: 0, scale: 0.86, mood: "smile", lean: 8, near: [44, 4], far: "hang" };
+function Playing() {
+  const grip = handsOf(ME).near;
+  const release = handsOf(ANNA).near;
+  return (
+    <>
+      <Scrap x={-40} y={2} angle={-8} wide={1.2} />
+      <Scrap x={300} y={3} angle={10} />
+      <Wicket />
+      <Person {...ME} part="body" />
+      <Bat {...batIn(grip, -14)} />
+      <Person {...ME} part="arm" />
+      <Person {...ANNA} />
+      <path d={`M${release[0]} ${release[1]}Q${(release[0] + 126) / 2} ${release[1] - 18} 126 -44`} strokeWidth="1" strokeDasharray="2 4" opacity=".45" />
+      <Ball x={122} y={-44} />
+    </>
+  );
+}
 
 /** Our lane at dusk: the neighbours' houses with their water tanks, our gate in the compound wall, a palm, the lamp's light on the lane. */
 function LaneEvening() {
@@ -38,9 +60,9 @@ function LaneEvening() {
 
 /**
  * Early Birthday & a Cricket Set's poster, on a 1200×630 dusk in our lane:
- * the gate, the houses, the lamp, and, up and to the right as on the other
- * posters, the present in its golden paper beside the wicket, the bat leaning
- * on it and the ball at its foot.
+ * the gate, the houses, and the two of us playing under the lamp, the golden
+ * paper at our feet; up and to the right as on the other posters, the present
+ * itself, still wrapped.
  *
  * Plain drawing only, for the page and the share-image renderer alike.
  */
@@ -50,13 +72,9 @@ export function CricketPosterArt() {
       <PosterSky />
       <LaneEvening />
       <g fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-        <ellipse cx="930" cy="380" rx="170" ry="13" fill="url(#poster-shade)" stroke="none" />
-        <Scrap x={812} y={378} angle={-10} scale={2} wide={1.1} />
-        <Scrap x={1046} y={380} angle={12} scale={1.8} />
-        <GoldenGift x={846} y={378} scale={1.6} glints />
-        <Wicket x={968} y={378} scale={2.15} />
-        <Ball x={926} y={370} scale={2.1} />
-        <Bat x={1024} y={379} angle={-17} scale={2.15} />
+        <g transform={`translate(560 ${GROUND}) scale(1.15)`}><Playing /></g>
+        <ellipse cx="1004" cy="350" rx="90" ry="10" fill="url(#poster-shade)" stroke="none" />
+        <GoldenGift x={1000} y={348} scale={1.9} glints />
       </g>
     </g>
   );
