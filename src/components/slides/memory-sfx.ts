@@ -37,7 +37,7 @@ export type Cue =
   | "sting" | "popcorn" | "fridge" | "fizz" | "sip" | "wrapper" | "toy" | "camera" | "clink" | "steps"
   | "clap" | "phrase"
   | "schoolbell" | "zip" | "jingle" | "chalk" | "chatter" | "bus" | "sticker" | "byebye"
-  | "patter" | "gate" | "tear" | "stumps" | "bounce" | "bat";
+  | "birthday" | "patter" | "gate" | "tear" | "stumps" | "crease" | "bounce" | "whiff" | "bat";
 
 /** A cue at a point in its scene's scroll. `step` picks the key, note or heave in a series. */
 export type Mark = { art: string; at: number; cue: Cue; step?: number };
@@ -296,6 +296,29 @@ const WONDER_PAN = [-0.3, 0.2, -0.1, 0.3] as const;
 const CHIMES = [NOTE.C6, NOTE.D6, NOTE.F6, NOTE.G6, NOTE.A6] as const;
 /** The brick game's start-up tune. [seconds, pitch, held for] */
 const BRICK = [[0, NOTE.A5, 0.055], [0.085, NOTE.C6, 0.055], [0.17, NOTE.D6, 0.055], [0.255, NOTE.F6, 0.15]] as const;
+/**
+ * "Happy birthday" on a music box, in F: the second line of the song, C C D C
+ * G F, which keeps to the bed's pentatonic and lands home on F. [seconds,
+ * pitch, ring] in waltz time, a beat to 0.46 s.
+ */
+const BIRTHDAY = [[0, NOTE.C6, 0.8], [0.345, NOTE.C6, 0.5], [0.46, NOTE.D6, 1], [0.92, NOTE.C6, 1.5], [1.38, NOTE.G6, 1.1], [1.84, NOTE.F6, 2.6]] as const;
+/** How loud each kind of ball and bat sound is: the one on screen, the last shot's, a rally ball, a rally ball years later. */
+const PLAY_LEVEL = [1, 0.55, 0.8, 0.6] as const;
+/**
+ * Scenes where, while the reader scrolls, he keeps bowling and I keep batting:
+ * a bounce on the lane, then my bat, again and again, quicker as they hurry.
+ * `from` is where in the scene it starts; `gap` the seconds between balls,
+ * strolling to hurrying; `full` the scroll speed (screen heights a second)
+ * that is hurrying; `step` the level in PLAY_LEVEL.
+ */
+type Rally = { from: number; gap: readonly [number, number]; full: number; step: number };
+const RALLY: Partial<Record<string, Rally>> = {
+  // a hundred, two hundred balls that day
+  batting: { from: 0.45, gap: [1.5, 0.8], full: 0.8, step: 2 },
+  // and years later, with my cousins
+  years: { from: 0.1, gap: [1.7, 1], full: 0.8, step: 3 },
+};
+
 /** Four clock ticks that come up out of the quiet and go back into it. */
 const CLOCK = [0.7, 0.9, 1, 0.75] as const;
 /** Paper crinkles. [seconds, centre Hz, decay, level] */
@@ -475,6 +498,8 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
   let fired = 0;
   let bike: Bike | null = null;
   let engine: Engine | null = null;
+  // when the next ball of a rally comes, and in which scene
+  let rally: { art: string; next: number } | null = null;
 
   const filter = (type: BiquadFilterType, frequency: number, q: number) => {
     const node = context.createBiquadFilter();
@@ -1183,61 +1208,95 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
       musicBox(at, NOTE.C6, db(-15), 1.2, -0.15);
       musicBox(at + 0.24, NOTE.A5, db(-15), 1.8, 0.15);
     },
-    // Small feet running down the lane: quick, light, slippers slapping.
+    // "Happy birthday" on a music box: on the cover only its first words, C C D C,
+    // left hanging; when he remembers my birthday, the whole line, home on F.
+    birthday(at, step) {
+      const line = step ? BIRTHDAY : BIRTHDAY.slice(0, 4);
+      line.forEach(([time, freq, ring], index) => musicBox(at + time, freq, db(-13) * (index === line.length - 1 ? 1 : 0.88), ring, -0.18 + index * 0.07));
+    },
+    // Me running down the lane in my slippers: each step a soft thud, then the
+    // slipper slapping up against my heel, a little uneven, as a child runs.
     patter(at) {
-      const add = voice(filter("lowpass", 2600, BUTTERWORTH));
-      for (let index = 0; index < 8; index++) {
-        const time = at + index * 0.15;
-        grain(add, { type: "lowpass", at: time, freq: 700, q: BUTTERWORTH, peak: db(-16) * (0.7 + 0.3 * (index % 2)), attack: 0.002, decay: 0.035 });
-        grain(add, { at: time + 0.01, freq: 1800, q: 1.4, peak: db(-22), attack: 0.002, decay: 0.012 });
-      }
-    },
-    // Our iron gate: the latch's clank and its ring, then a short creak as it swings.
-    gate(at) {
-      const add = voice(filter("lowpass", 4200, BUTTERWORTH), ...panned(-0.2));
-      grain(add, { at, freq: 2200, q: 6, peak: db(-12), attack: 0.002, decay: 0.03 });
-      tone(add, { at, freq: 1180, peak: db(-20), attack: 0.002, decay: 0.25 });
-      tone(add, { at, freq: 1730, peak: db(-24), attack: 0.002, decay: 0.18 });
-      for (let index = 0; index < 14; index++) {
-        grain(add, { at: at + 0.12 + index * 0.03, freq: 700 + index * 26, q: 6, peak: db(-21) * (0.6 + 0.4 * Math.sin((index / 13) * Math.PI)), attack: 0.004, decay: 0.02 });
-      }
-    },
-    // The golden paper tearing: a quick rasp of fibres giving way, and the sheet's soft rush.
-    tear(at, step) {
-      const add = voice(filter("lowpass", 6000, BUTTERWORTH), ...panned(step ? 0.15 : -0.1));
+      const add = voice(filter("lowpass", 5200, BUTTERWORTH), ...panned(0.2));
       let time = 0;
-      for (let index = 0; index < (step ? 16 : 22); index++) {
-        grain(add, { at: at + time, freq: 1500 + Math.random() * 2600, q: 1.2, peak: db(-14) * (0.5 + 0.5 * Math.random()), attack: 0.002, decay: 0.01 + Math.random() * 0.014 });
-        time += 0.008 + Math.random() * 0.012;
+      for (let index = 0; index < 7; index++) {
+        const level = (index % 2 ? 0.8 : 1) * (0.55 + 0.45 * Math.min(1, (index + 1) / 3));
+        grain(add, { type: "lowpass", at: at + time, freq: 420, q: BUTTERWORTH, peak: db(-15) * level, attack: 0.003, decay: 0.04 });
+        grain(add, { at: at + time + 0.055, freq: 2300, q: 0.9, peak: db(-11) * level, attack: 0.001, decay: 0.022 });
+        time += 0.15 + (index % 2 ? 0.02 : -0.012);
       }
-      grain(add, { at, freq: 900, q: 0.9, peak: db(-18), attack: 0.03, decay: 0.16 });
     },
-    // A plastic stump pushed into its base, scraping in and clicking home; for the bails, two small clicks.
-    stumps(at, step) {
-      const add = voice(filter("lowpass", 5000, BUTTERWORTH));
-      if (step) {
-        grain(add, { at, freq: 3000, q: 5, peak: db(-15), attack: 0.002, decay: 0.012 });
-        grain(add, { at: at + 0.16, freq: 3300, q: 5, peak: db(-16), attack: 0.002, decay: 0.012 });
-        return;
+    // Our iron gate: the latch lifted with a clink, the hinge squeaking as it
+    // swings, the leaf knocking softly against its stop.
+    gate(at) {
+      const add = voice(filter("lowpass", 5000, BUTTERWORTH), ...panned(-0.25));
+      grain(add, { at, freq: 2600, q: 5, peak: db(-13), attack: 0.001, decay: 0.02 });
+      for (const [ratio, level, ring] of [[1, 1, 0.42], [1.47, 0.6, 0.3], [2.24, 0.35, 0.2]] as const) {
+        tone(add, { at, freq: 1180 * ratio, peak: db(-21) * level, attack: 0.002, decay: ring });
       }
+      // the hinge: iron catching and slipping, its pitch rising as the leaf opens
+      for (let index = 0; index < 16; index++) {
+        const along = index / 15;
+        tone(add, { at: at + 0.16 + index * 0.031 + Math.random() * 0.006, freq: 620 + along * 190, type: "triangle", peak: db(-24) * (0.5 + 0.5 * Math.sin(Math.PI * (0.15 + along * 0.85))), attack: 0.004, decay: 0.028 });
+      }
+      grain(add, { at: at + 0.74, freq: 1500, q: 3, peak: db(-17), attack: 0.002, decay: 0.03 });
+      tone(add, { at: at + 0.74, freq: 760, peak: db(-25), attack: 0.002, decay: 0.16 });
+    },
+    // The golden paper ripping: the sheet's rush swelling and rising, and the
+    // fibres giving way under it, fastest in the middle of the tear.
+    tear(at, step) {
+      const length = step ? 0.18 : 0.36;
+      const add = voice(filter("lowpass", 6400, BUTTERWORTH), ...panned(step ? 0.2 : -0.12));
+      grain(add, { at, freq: step ? 2500 : 2100, q: 0.7, peak: db(-14), attack: length * 0.4, hold: length * 0.3, decay: length * 0.5 });
+      let time = 0;
+      while (time < length) {
+        const along = time / length;
+        grain(add, { at: at + time, freq: 1800 + along * 1800 + Math.random() * 600, q: 2, peak: db(-11) * (0.5 + 0.5 * Math.random()) * Math.sin(Math.PI * (0.1 + along * 0.8)), attack: 0.001, decay: 0.006 + Math.random() * 0.008 });
+        time += 0.006 + 0.014 * Math.abs(along - 0.5) * 2 + Math.random() * 0.004;
+      }
+    },
+    // A plastic stump pushed into its base: a short scrape in, and a click as it seats.
+    stumps(at) {
+      const add = voice(filter("lowpass", 5000, BUTTERWORTH));
       grain(add, { at, freq: 1600, q: 1.4, peak: db(-20), attack: 0.03, hold: 0.06, decay: 0.05 });
       grain(add, { at: at + 0.13, freq: 2400, q: 4, peak: db(-12), attack: 0.002, decay: 0.016 });
       tone(add, { at: at + 0.13, freq: 880, peak: db(-22), attack: 0.002, decay: 0.05 });
     },
-    // The plastic ball bouncing once on the lane, light and hollow.
-    bounce(at) {
-      const add = voice(filter("lowpass", 2400, BUTTERWORTH), ...panned(0.15));
-      grain(add, { type: "lowpass", at, freq: 900, q: BUTTERWORTH, peak: db(-14), attack: 0.002, decay: 0.03 });
-      tone(add, { at, freq: 380, peak: db(-18), attack: 0.002, decay: 0.05 });
+    // Ready at the stumps: two taps of the bat's toe on the lane.
+    crease(at) {
+      const add = voice(filter("lowpass", 2600, BUTTERWORTH), ...panned(-0.1));
+      [1, 0.8].forEach((level, index) => {
+        const time = at + index * 0.34;
+        grain(add, { type: "lowpass", at: time, freq: 700, q: BUTTERWORTH, peak: db(-15) * level, attack: 0.002, decay: 0.03 });
+        tone(add, { at: time, freq: 400, peak: db(-21) * level, attack: 0.002, decay: 0.05 });
+      });
     },
-    // The plastic bat meeting the plastic ball: a hollow tok.
-    bat(at) {
-      const add = voice(filter("lowpass", 4200, BUTTERWORTH), ...panned(-0.1));
-      grain(add, { at, freq: 1900, q: 2.2, peak: db(-10), attack: 0.001, decay: 0.018 });
-      const body = tone(add, { at, freq: 640, peak: db(-13), attack: 0.002, decay: 0.07 });
-      body.frequency.setValueAtTime(640, at);
-      body.frequency.exponentialRampToValueAtTime(520, at + 0.06);
-      tone(add, { at, freq: 1460, peak: db(-22), attack: 0.002, decay: 0.04 });
+    // The hollow plastic ball bouncing once on the lane: a bright tick, the shell's short ring, a light thump.
+    bounce(at, step) {
+      const level = PLAY_LEVEL[step % PLAY_LEVEL.length];
+      const pitch = step >= 2 ? 0.94 + Math.random() * 0.12 : 1;
+      const add = voice(filter("lowpass", 5200, BUTTERWORTH), ...panned(0.18));
+      grain(add, { at, freq: 2700 * pitch, q: 3, peak: db(-14) * level, attack: 0.001, decay: 0.012 });
+      tone(add, { at, freq: 1150 * pitch, peak: db(-20) * level, attack: 0.001, decay: 0.045 });
+      grain(add, { type: "lowpass", at, freq: 260, q: BUTTERWORTH, peak: db(-19) * level, attack: 0.002, decay: 0.03 });
+    },
+    // My bat swinging through and missing: a short rush of air.
+    whiff(at) {
+      const band = filter("bandpass", 600, 0.8);
+      band.frequency.setValueAtTime(600, at);
+      band.frequency.exponentialRampToValueAtTime(1700, at + 0.2);
+      grain(voice(band, ...panned(-0.15)), { type: "lowpass", at, freq: 4000, q: BUTTERWORTH, peak: db(-10), attack: 0.08, decay: 0.14 });
+    },
+    // The plastic bat meeting the plastic ball: a hollow pock, the bat's body under the ball's ring.
+    bat(at, step) {
+      const level = PLAY_LEVEL[step % PLAY_LEVEL.length];
+      const pitch = step >= 2 ? 0.95 + Math.random() * 0.1 : 1;
+      const add = voice(filter("lowpass", 5200, BUTTERWORTH), ...panned(-0.12));
+      grain(add, { at, freq: 3000 * pitch, q: 1.5, peak: db(-13) * level, attack: 0.001, decay: 0.009 });
+      const body = tone(add, { at, freq: 440 * pitch, peak: db(-14) * level, attack: 0.001, decay: 0.08 });
+      body.frequency.setValueAtTime(440 * pitch, at);
+      body.frequency.exponentialRampToValueAtTime(360 * pitch, at + 0.07);
+      tone(add, { at, freq: 1150 * pitch, peak: db(-19) * level, attack: 0.001, decay: 0.05 });
     },
     // The title: F major, home, rolled gently up from the bottom.
     chord(at) {
@@ -1401,6 +1460,29 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
     }
   };
 
+  /** While the reader scrolls through a rally, the next ball: its bounce on the lane, then my bat, sooner the faster they go. */
+  const runRally = (art: string, speed: number) => {
+    const setting = RALLY[art];
+    if (!setting || context.state !== "running" || progress < setting.from) {
+      rally = null;
+      return;
+    }
+    const clock = performance.now() / 1000;
+    const pace = Number.isFinite(speed) ? Math.abs(speed) : 0;
+    // the first ball a moment after the rally begins
+    if (!rally || rally.art !== art) rally = { art, next: clock + 0.5 };
+    if (pace < STILL || clock < rally.next) return;
+    const amount = Math.min(1, pace / setting.full);
+    const at = context.currentTime + LEAD;
+    try {
+      voices.bounce(at, setting.step);
+      voices.bat(at + 0.17 + Math.random() * 0.03, setting.step);
+    } catch {
+      // a context closing between frames: this ball simply doesn't come
+    }
+    rally.next = clock + (setting.gap[0] + (setting.gap[1] - setting.gap[0]) * amount) * (0.9 + Math.random() * 0.2);
+  };
+
   return {
     update(art, value) {
       if (disposed || !Number.isFinite(value)) return;
@@ -1428,6 +1510,7 @@ export function createMemorySfx(context: AudioContext, output: AudioNode, cues: 
     ride(art, speed) {
       if (disposed) return;
       runEngine(art, speed);
+      runRally(art, speed);
       const setting = BICYCLE[art];
       if (bike && (bike.art !== art || !setting)) stopBike();
       if (!setting || context.state !== "running") return;
