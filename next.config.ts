@@ -50,6 +50,11 @@ const nextConfig: NextConfig = {
         destination: "/slides/first-movie-and-a-burger",
         permanent: true,
       },
+      {
+        source: "/slides/early-birthday-and-a-cricket-set/:path*",
+        destination: "/slides/my-birthday-and-a-cricket-set/:path*",
+        permanent: true,
+      },
     ];
   },
 

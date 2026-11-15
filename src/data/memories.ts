@@ -65,9 +65,9 @@ export const memories: Memory[] = ([
     published: "2026-11-10T00:00:00+05:30",
   },
   {
-    slug: "early-birthday-and-a-cricket-set",
+    slug: "my-birthday-and-a-cricket-set",
     number: "04",
-    title: ["Early Birthday", "& a Cricket Set"],
+    title: ["My Birthday", "& a Cricket Set"],
     place: "Chennai",
     summary: "My first cricket set, wrapped in golden paper, and the cool Anna who didn’t just give it to me. He played with me.",
     scenes: cricketSetMemory,

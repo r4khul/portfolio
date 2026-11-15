@@ -59,7 +59,7 @@ function LaneEvening() {
 }
 
 /**
- * Early Birthday & a Cricket Set's poster, on a 1200×630 dusk in our lane:
+ * My Birthday & a Cricket Set's poster, on a 1200×630 dusk in our lane:
  * the gate, the houses, and the two of us playing under the lamp, the golden
  * paper at our feet; up and to the right as on the other posters, the present
  * itself, still wrapped.

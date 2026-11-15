@@ -40,7 +40,7 @@ const POSTERS: Record<string, { Art: ComponentType; crop: string }> = {
   // the bus under the lamp, the exam pad and the keychain
   "last-exam-and-a-heart-keychain": { Art: KeychainPosterArt, crop: "170 22 1030 579" },
   // our lane at dusk, the golden present and the wicket
-  "early-birthday-and-a-cricket-set": { Art: CricketPosterArt, crop: "170 22 1030 579" },
+  "my-birthday-and-a-cricket-set": { Art: CricketPosterArt, crop: "170 22 1030 579" },
 };
 
 export function SlideCard({ memory }: { memory: Memory }) {

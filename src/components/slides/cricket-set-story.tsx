@@ -50,8 +50,8 @@ function Environment({ scene }: { scene: string }) {
 }
 
 const film: MemoryFilm = {
-  title: ["Early Birthday", "& a Cricket Set"],
-  label: "Early Birthday and a Cricket Set",
+  title: ["My Birthday", "& a Cricket Set"],
+  label: "My Birthday and a Cricket Set",
   number: "04",
   scenes: cricketSetMemory,
   cameras,
