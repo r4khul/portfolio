@@ -197,51 +197,56 @@ export const HEART_KEYCHAIN_MARKS: readonly Mark[] = [
 ];
 
 export const CRICKET_SET_MARKS: readonly Mark[] = [
-  { art: "cover", at: 0.2, cue: "bat" },
+  // "Happy birthday…", its first words on a music box, left hanging
+  { art: "cover", at: 0.2, cue: "birthday", step: 0 },
   { art: "anna", at: 0.35, cue: "warmth" },
-  // whenever he came: my feet running to him, and the joy of it
-  { art: "kind", at: 0.18, cue: "patter" },
-  { art: "kind", at: 0.5, cue: "sparkle" },
-  // the gate, me running down the lane, the gold in his hand
+  // whenever he came: my slippers down the lane, and the joy of him
+  { art: "kind", at: 0.14, cue: "patter" },
+  { art: "kind", at: 0.46, cue: "sparkle" },
+  // the gate opening for him, me running to him, the gold in his hands
   { art: "gate", at: 0.1, cue: "gate" },
   { art: "gate", at: 0.32, cue: "patter" },
-  { art: "golden", at: 0.2, cue: "glint" },
-  { art: "golden", at: 0.45, cue: "sparkle" },
+  { art: "golden", at: 0.18, cue: "glint" },
+  { art: "golden", at: 0.42, cue: "rustle" },
+  // the question filling my head (.1–.24), then: let's open it and see
   { art: "wonder", at: 0.14, cue: "thought" },
-  { art: "wonder", at: 0.5, cue: "wonder" },
-  // opening it: the paper tearing, again and again, then the box
-  { art: "unwrap", at: 0.12, cue: "tear", step: 0 },
-  { art: "unwrap", at: 0.3, cue: "tear", step: 1 },
-  { art: "unwrap", at: 0.46, cue: "tear", step: 0 },
-  { art: "unwrap", at: 0.62, cue: "crinkle" },
-  // the set, piece by piece (.08 bat, .16 ball, .24 stumps, .32 base), then the colours
-  { art: "set", at: 0.09, cue: "chime", step: 0 },
-  { art: "set", at: 0.17, cue: "chime", step: 2 },
-  { art: "set", at: 0.25, cue: "chime", step: 4 },
-  { art: "set", at: 0.47, cue: "glint" },
-  { art: "setup", at: 0.2, cue: "stumps", step: 0 },
-  { art: "setup", at: 0.42, cue: "stumps", step: 1 },
-  // playing: the ball's bounce on the lane and my bat on it
+  { art: "wonder", at: 0.5, cue: "wonder", step: 0 },
+  // the paper ripping, again and again, the scraps flying (.1–.5), the box
+  { art: "unwrap", at: 0.1, cue: "tear", step: 0 },
+  { art: "unwrap", at: 0.24, cue: "tear", step: 1 },
+  { art: "unwrap", at: 0.38, cue: "tear", step: 0 },
+  { art: "unwrap", at: 0.56, cue: "crinkle" },
+  // the set, one rising note a piece as each appears (.08 bat, .16 ball, .24 stumps, .32 base), then its colours (.46)
+  { art: "set", at: 0.09, cue: "wonder", step: 0 },
+  { art: "set", at: 0.17, cue: "wonder", step: 1 },
+  { art: "set", at: 0.25, cue: "wonder", step: 2 },
+  { art: "set", at: 0.33, cue: "wonder", step: 3 },
+  { art: "set", at: 0.48, cue: "sparkle" },
+  // two stumps pushed into the base, then my bat tapping at the crease: let's play
+  { art: "setup", at: 0.2, cue: "stumps" },
+  { art: "setup", at: 0.38, cue: "stumps" },
+  { art: "setup", at: 0.6, cue: "crease" },
+  // the ball out of his hand, bouncing, onto my bat
   { art: "played", at: 0.3, cue: "bounce" },
   { art: "played", at: 0.38, cue: "bat" },
-  { art: "batting", at: 0.2, cue: "bounce" },
-  { art: "batting", at: 0.27, cue: "bat" },
-  { art: "batting", at: 0.5, cue: "bounce" },
-  { art: "batting", at: 0.57, cue: "bat" },
-  { art: "leaving", at: 0.22, cue: "gate" },
-  { art: "leaving", at: 0.45, cue: "byebye" },
-  // years on, the same set, my cousins
-  { art: "years", at: 0.18, cue: "bounce" },
-  { art: "years", at: 0.25, cue: "bat" },
-  { art: "years", at: 0.5, cue: "chatter" },
+  // pretty bad at first: a bounce, and my bat swinging through air, twice; from .45 the rally (RALLY)
+  { art: "batting", at: 0.12, cue: "bounce" },
+  { art: "batting", at: 0.17, cue: "whiff" },
+  { art: "batting", at: 0.3, cue: "bounce" },
+  { art: "batting", at: 0.35, cue: "whiff" },
+  // the gate behind him; then he knew my birthday: the whole line, home
+  { art: "leaving", at: 0.18, cue: "gate" },
+  { art: "leaving", at: 0.5, cue: "birthday", step: 1 },
+  // years on, my cousins talking over the rally (RALLY)
+  { art: "years", at: 0.45, cue: "chatter" },
   { art: "level", at: 0.4, cue: "warmth" },
   { art: "heart", at: 0.4, cue: "musicBox" },
   { art: "matters", at: 0.4, cue: "phrase" },
-  // the two of us fading from the lane (.28–.44), the bat and ball coming to rest by the wicket (.48–.7), the title (.78)
+  // the two of us fading from the lane (.28–.44), the ball settling by the wicket (.52–.64), the bat coming to rest on it (.56–.7), the title (.78)
   { art: "finale", at: 0.3, cue: "chime", step: 0 },
-  { art: "finale", at: 0.46, cue: "swish" },
-  { art: "finale", at: 0.52, cue: "chime", step: 2 },
-  { art: "finale", at: 0.7, cue: "chime", step: 4 },
+  { art: "finale", at: 0.44, cue: "chime", step: 2 },
+  { art: "finale", at: 0.58, cue: "bounce", step: 1 },
+  { art: "finale", at: 0.68, cue: "bat", step: 1 },
   { art: "finale", at: 0.79, cue: "chord" },
 ];
 
