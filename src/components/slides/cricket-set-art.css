@@ -1,0 +1,42 @@
+/* the cover's set settles a little as it scrolls */
+.cricket-art--cover .cricket-art__still { transform: translateY(calc((var(--scene-progress, .5) - .5) * -5px)); }
+
+/* the question fills my head (.1–.24) */
+.cricket-art--wonder .cricket-art__thought {
+  opacity: clamp(0, (var(--scene-progress, 0) - .1) / .14, 1);
+  translate: 0 calc((1 - clamp(0, (var(--scene-progress, 0) - .1) / .14, 1)) * 4px);
+}
+
+/* the golden paper flies off as I tear (.1–.5) */
+.cricket-art--unwrap .cricket-art__scraps { translate: 0 calc(clamp(0, (var(--scene-progress, 0) - .1) / .4, 1) * -10px); }
+
+/* out of the box, piece by piece: the bat, the ball, the stumps and bails, the base; then the colours */
+.cricket-art--set .cricket-art__piece,
+.cricket-art--set .cricket-art__label { opacity: 0; }
+.cricket-art--set .cricket-art__piece--bat { opacity: clamp(0, (var(--scene-progress, 0) - .08) / .08, 1); }
+.cricket-art--set .cricket-art__piece--ball { opacity: clamp(0, (var(--scene-progress, 0) - .16) / .08, 1); }
+.cricket-art--set .cricket-art__piece--stumps { opacity: clamp(0, (var(--scene-progress, 0) - .24) / .08, 1); }
+.cricket-art--set .cricket-art__piece--base { opacity: clamp(0, (var(--scene-progress, 0) - .32) / .08, 1); }
+.cricket-art--set .cricket-art__label { opacity: clamp(0, (var(--scene-progress, 0) - .46) / .1, 1); }
+
+/* his wave from the gate */
+.memory-scene.is-live .cricket-art__wave { animation: cricket-wave 1.2s ease-in-out infinite; }
+@keyframes cricket-wave { 50% { transform: rotate(12deg); } }
+
+/*
+ * The last shot, on the scene's scroll. The two of us fade from the lane
+ * (.28–.44), and the bat, the ball and the golden paper come to rest by the
+ * wicket as they lie on the cover (.48–.7).
+ */
+.cricket-art--finale .cricket-art__people { opacity: calc(1 - clamp(0, (var(--scene-progress, 0) - .28) / .16, 1)); }
+.cricket-art__arrive { opacity: clamp(0, (var(--scene-progress, 0) - .48) / .12, 1); }
+.cricket-art__arrive--bat { opacity: clamp(0, (var(--scene-progress, 0) - .56) / .12, 1); translate: calc((1 - clamp(0, (var(--scene-progress, 0) - .56) / .14, 1)) * 10px) 0; }
+.cricket-art__arrive--ball { opacity: clamp(0, (var(--scene-progress, 0) - .52) / .12, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cricket-art--cover .cricket-art__still { transform: none !important; }
+  .cricket-art--wonder .cricket-art__thought,
+  .cricket-art--unwrap .cricket-art__scraps,
+  .cricket-art__arrive--bat { translate: none; }
+  .memory-scene.is-live .cricket-art__wave { animation: none; }
+}
