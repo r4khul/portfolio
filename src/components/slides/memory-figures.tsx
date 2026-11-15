@@ -17,11 +17,12 @@
  * - clown: the McDonald's clown on his bench: a mop of curls, a round nose, a painted smile
  * - girl: the girl I sat beside in sixth standard, her hair in two plaits tied with ribbons
  * - teacher: our class teacher, her hair in a neat bun, in spectacles
+ * - relative: Anna, a distant relative eighteen years older: clean-shaven, his hair combed up and to the side, in spectacles
  */
 export const paper = "var(--background)";
 
 export type Point = readonly [x: number, y: number];
-export type Role = "narrator" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "anna" | "amma" | "tenant" | "akka" | "vendor" | "clown" | "girl" | "teacher" | "adult";
+export type Role = "narrator" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "anna" | "amma" | "tenant" | "akka" | "vendor" | "clown" | "girl" | "teacher" | "relative" | "adult";
 export type Mood = "calm" | "excited" | "awe" | "down" | "sad" | "focus" | "worried" | "soft" | "talk" | "smile" | "scared" | "asleep";
 
 const r1 = (value: number) => Math.round(value * 10) / 10;
@@ -115,6 +116,7 @@ const HAIR: Record<Role, string> = {
   vendor: "M-27 14C-36-6-31-32-9-37C12-41 26-31 28-19C18-19 8-17 2-13C-2-9-3-4-3 1L-7 5L-12-2C-16 4-20 10-27 14Z",
   girl: "M-27 16C-38-4-32-36-8-40C14-44 30-32 30-17C24-22 14-24 6-20C0-16-2-10-2-3L-6 4L-12-2C-16 4-21 11-27 16Z",
   teacher: "M-27 12C-36-6-30-32-6-37C12-40 26-31 28-18C20-22 8-22 0-16C-4-12-4-6-3-1L-6 6L-12 0C-16 6-20 10-27 12Z",
+  relative: "M-27 15C-38-6-33-37-7-43C18-47 35-35 33-19C27-22 18-22 10-19C3-16-1-10-2-3L-6 4L-12-2C-16 4-20 10-27 15Z",
   clown: "M-24 18L-38 8Q-50 4-46-8Q-56-16-46-26Q-50-38-36-40Q-34-52-20-48Q-12-58 0-50Q12-56 20-46Q32-48 32-36Q42-32 36-22Q40-14 32-12Q26-14 22-17Q16-13 10-17Q4-14-1-9L-3 0L-7 5L-12-1C-16 6-20 13-24 18Z",
 };
 
@@ -143,6 +145,10 @@ const HAIR_DETAIL: Partial<Record<Role, { d: string; width: number; opacity: num
   tenant: [
     { d: "M-20-29C-8-38 8-39 22-31", width: 1.6, opacity: 0.55 },
     { d: "M4-38C10-30 14-26 20-22", width: 1.1, opacity: 0.45 },
+  ],
+  relative: [
+    { d: "M-12-40C-6-32 0-28 8-26", width: 1.3, opacity: 0.6 },
+    { d: "M-22-24C-12-35 6-41 26-32", width: 1.5, opacity: 0.5 },
   ],
   akka: [
     { d: "M-2-38C-6-28-6-20-2-14", width: 1.3, opacity: 0.6 },

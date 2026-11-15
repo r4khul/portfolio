@@ -21,10 +21,11 @@ import { Head, Neck, Plait, Ponytail, capsule, joint, paper, place, type Mood, t
  * - clown: the McDonald's clown, sitting on his bench in his striped sleeves and big shoes
  * - girl: the girl I sat beside in sixth standard, in her school pinafore over a white shirt
  * - teacher: our class teacher, in a saree
+ * - relative: Anna, a distant relative eighteen years older: tall and fit, a full-sleeved shirt tucked into trousers, shoes, spectacles
  *
  * `wear` dresses anyone differently for one scene: my school uniform, my hoodie.
  */
-export type Who = "me" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "amma" | "anna" | "tenant" | "akka" | "vendor" | "clown" | "girl" | "teacher";
+export type Who = "me" | "brother" | "cousin" | "cousin-swept" | "chithappa" | "amma" | "anna" | "tenant" | "akka" | "vendor" | "clown" | "girl" | "teacher" | "relative";
 type Top = "stripe" | "solid" | "pin" | "pocket" | "full-shirt" | "shirt" | "blouse" | "check" | "kurti" | "hoodie" | "vest" | "jumpsuit" | "pinafore";
 type Bottom = "shorts" | "track" | "plain" | "trousers" | "saree" | "jumpsuit" | "pinafore";
 export type Wear = { top?: Top; bottom?: Bottom; shoes?: boolean };
@@ -57,11 +58,12 @@ const CAST: Record<Who, Build> = {
   vendor: { role: "vendor", heads: 6.3, depth: 0.13, leg: 0.48, arm: [0.19, 0.165], limb: 0.04, top: "vest", bottom: "plain" },
   clown: { role: "clown", heads: 5.2, depth: 0.17, leg: 0.43, arm: [0.18, 0.16], limb: 0.05, top: "jumpsuit", bottom: "jumpsuit", shoes: true },
   girl: { role: "girl", heads: 4.8, depth: 0.15, leg: 0.42, arm: [0.175, 0.15], limb: 0.048, top: "pinafore", bottom: "pinafore", shoes: true },
+  relative: { role: "relative", heads: 6.7, depth: 0.135, leg: 0.48, arm: [0.19, 0.165], limb: 0.04, top: "full-shirt", bottom: "trousers", shoes: true, spectacles: true },
   teacher: { role: "teacher", heads: 6.1, depth: 0.145, leg: 0.47, arm: [0.18, 0.155], limb: 0.04, top: "blouse", bottom: "saree", spectacles: true },
 };
 
 /** Standing heights, relative to each other. My brother is only a little taller than me. */
-export const HEIGHT: Record<Who, number> = { me: 170, brother: 198, cousin: 194, "cousin-swept": 190, chithappa: 226, amma: 198, anna: 218, tenant: 238, akka: 224, vendor: 214, clown: 228, girl: 166, teacher: 204 };
+export const HEIGHT: Record<Who, number> = { me: 170, brother: 198, cousin: 194, "cousin-swept": 190, chithappa: 226, amma: 198, anna: 218, tenant: 238, akka: 224, vendor: 214, clown: 228, girl: 166, teacher: 204, relative: 236 };
 
 export function measure(who: Who, height = HEIGHT[who], wear: Wear = {}) {
   const build: Build = { ...CAST[who], ...wear };
