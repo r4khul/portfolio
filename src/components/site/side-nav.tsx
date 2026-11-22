@@ -34,7 +34,17 @@ const nav = [
   { label: "Contact",     href: "/#contact",     icon: Mail },
 ] as const;
 
-const SECTION_IDS = nav.map((n) => n.href.replace("/#", ""));
+const SECTION_IDS: string[] = nav.map((n) => n.href.replace("/#", ""));
+
+// Off the home page, a route lights the section it belongs to: its first path
+// segment names it (/projects, /open-source/flutter, /blogs/category/x, ...).
+// Ente's record is the one exception. Experience links to it and its back link
+// returns there, so it belongs to Experience rather than Open Source.
+function sectionForPath(pathname: string): string {
+  if (pathname === "/open-source/ente") return "experience";
+  const segment = pathname.split("/")[1] ?? "";
+  return SECTION_IDS.includes(segment) ? segment : "";
+}
 
 export const SideNav = memo(() => {
   const pathname = usePathname();
@@ -60,17 +70,7 @@ export const SideNav = memo(() => {
 
   useEffect(() => {
     if (pathname !== "/") {
-      if (pathname.startsWith("/projects/")) {
-        setActive("projects");
-      } else if (pathname.startsWith("/blogs")) {
-        setActive("blogs");
-      } else if (pathname.startsWith("/stories")) {
-        setActive("stories");
-      } else if (pathname.startsWith("/slides")) {
-        setActive("slides");
-      } else {
-        setActive("");
-      }
+      setActive(sectionForPath(pathname));
       return;
     }
 
