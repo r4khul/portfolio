@@ -34,13 +34,13 @@ import {
   SiJavascript,
   SiMongodb,
   SiNodedotjs,
-  SiOpenai,
   SiPostman,
   SiPython,
   SiReact,
   SiSqlite,
   SiSupabase,
 } from "react-icons/si";
+import { RiOpenaiFill } from "react-icons/ri";
 import { skills } from "@/data/profile";
 import { Section } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
@@ -88,7 +88,7 @@ const skillVisuals: Record<string, SkillVisual> = {
   Cursor: { icon: MousePointer2, color: "#6D28D9", darkColor: "#C4B5FD" },
   "Claude Code": { icon: SiClaude, color: "#C15F3C", darkColor: "#DFA084" },
   OpenCode: { icon: Terminal, color: "#0D9488", darkColor: "#5EEAD4" },
-  Codex: { icon: SiOpenai, color: "#10A37F", darkColor: "#5BD5AF" },
+  Codex: { icon: RiOpenaiFill, color: "#10A37F", darkColor: "#5BD5AF" },
 };
 
 type SkillStyle = CSSProperties & {
