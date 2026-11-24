@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { profile, education } from "@/data/profile";
 import { Project } from "@/lib/projects";
 import { Toy } from "@/lib/toys";
@@ -39,7 +40,7 @@ export function JsonLd() {
     <Script
       id="json-ld-person"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(personData) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(personData) }}
     />
   );
 }
@@ -64,7 +65,7 @@ export function ProjectJsonLd({ project }: { project: Project }) {
     <Script
       id="json-ld-project"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(projectData) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(projectData) }}
     />
   );
 }
@@ -95,7 +96,7 @@ export function ToyJsonLd({ toy }: { toy: Toy }) {
     <Script
       id="json-ld-toy"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(toyData) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(toyData) }}
     />
   );
 }
@@ -119,7 +120,7 @@ export function BlogPostJsonLd({ blog }: { blog: Blog }) {
     <Script
       id="json-ld-blog"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(blogData) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogData) }}
     />
   );
 }
@@ -143,7 +144,7 @@ export function StoryPostJsonLd({ story }: { story: Story }) {
     <Script
       id="json-ld-story"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(storyData) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(storyData) }}
     />
   );
 }

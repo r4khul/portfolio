@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { profile } from "@/data/profile";
 import { homePlace, nativePlace, nowPlace, places } from "@/data/travel";
 import { AtlasExplorer } from "@/components/home/travel/atlas-explorer";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 /*
  * /travels: the full-screen atlas.
@@ -91,8 +92,7 @@ function TravelsJsonLd() {
   return (
     <script
       type="application/ld+json"
-      // JSON.stringify output is safe here: all values are our own static data
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );
 }

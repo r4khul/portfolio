@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 import { Ratelimit } from '@upstash/ratelimit';
+import { getBlog } from '@/lib/blogs';
+import { getStory } from '@/lib/stories';
+
+// Only real posts get a counter. Without this check any string becomes a new
+// Redis key, so a script could fill the store with junk counters.
+function isTrackedSlug(slug: string): boolean {
+  return Boolean(getBlog(slug) ?? getStory(slug));
+}
 
 // Ephemeral cache to aggressively reduce Redis rate limiting reads
 const cache = new Map();
@@ -22,7 +30,7 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
-    if (!slug) return new NextResponse('Slug is required', { status: 400 });
+    if (!isTrackedSlug(slug)) return new NextResponse('Not found', { status: 404 });
 
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     
@@ -74,7 +82,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    if (!slug) return new NextResponse('Slug is required', { status: 400 });
+    if (!isTrackedSlug(slug)) return new NextResponse('Not found', { status: 404 });
 
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     
