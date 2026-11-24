@@ -11,25 +11,33 @@ const getTweet = unstable_cache(
 );
 
 async function TweetContent({ id }: { id: string }) {
+  // Only the fetch can throw here. Rendering stays outside the try, since a
+  // try/catch never sees errors thrown while React renders the result.
+  let tweet: Awaited<ReturnType<typeof getTweet>>;
   try {
-    const tweet = await getTweet(id);
-    return tweet ? <EmbeddedTweet tweet={tweet} /> : <TweetNotFound />;
+    tweet = await getTweet(id);
   } catch {
-    const url = `https://x.com/i/web/status/${id}`;
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group my-8 inline-flex items-center gap-2 rounded-2xl border border-edge bg-surface px-4 py-3 font-mono text-[11px] text-faint no-underline transition-colors hover:text-foreground"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="size-3.5 fill-current shrink-0">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.259 5.629L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
-        </svg>
-        View on X ↗
-      </a>
-    );
+    return <TweetLink id={id} />;
   }
+  return tweet ? <EmbeddedTweet tweet={tweet} /> : <TweetNotFound />;
+}
+
+/** Shown when the tweet cannot be fetched: a plain link to it on X. */
+function TweetLink({ id }: { id: string }) {
+  const url = `https://x.com/i/web/status/${id}`;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group my-8 inline-flex items-center gap-2 rounded-2xl border border-edge bg-surface px-4 py-3 font-mono text-[11px] text-faint no-underline transition-colors hover:text-foreground"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="size-3.5 fill-current shrink-0">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.259 5.629L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+      </svg>
+      View on X ↗
+    </a>
+  );
 }
 
 export function TweetEmbed({ id }: { id: string }) {

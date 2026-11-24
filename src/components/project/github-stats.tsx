@@ -121,7 +121,7 @@ export function GithubStats({ repo }: { repo: string }) {
               Last Commit
             </span>
             <p className="mt-2.5 text-[13px] leading-snug text-muted line-clamp-2 font-sans font-medium">
-              "{commit.message}"
+              &quot;{commit.message}&quot;
             </p>
           </div>
           <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-faint">

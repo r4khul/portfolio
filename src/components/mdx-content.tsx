@@ -2,7 +2,6 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
-// @ts-ignore -- highlight.js is a transitive dep of rehype-highlight
 import dart from "highlight.js/lib/languages/dart";
 import type { ComponentProps } from "react";
 import { TweetEmbed } from "@/components/mdx/tweet-embed";

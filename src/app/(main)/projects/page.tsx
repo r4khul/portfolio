@@ -55,7 +55,7 @@ export default function ProjectsPage() {
             Projects
           </h1>
           <p className="mt-3 max-w-prose text-[15px] leading-relaxed text-muted">
-            A collection of tools, apps, and experiments I've built, focusing on
+            A collection of tools, apps, and experiments I&apos;ve built, focusing on
             mobile engineering, architecture, and shipping software people actually use.
           </p>
         </header>
@@ -63,7 +63,7 @@ export default function ProjectsPage() {
 
       <div className="bleed-line px-4 pt-8 pb-14 sm:px-8 sm:pt-10">
         <div className="grid gap-px overflow-hidden rounded-lg border border-edge bg-edge sm:grid-cols-2">
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <Link
               key={project.slug}
               href={`/projects/${project.slug}`}

@@ -54,6 +54,7 @@ export async function memoryShareImage(memory: Memory, poster: ReactNode) {
   return new ImageResponse(
     (
       <div style={{ position: "relative", display: "flex", width: "100%", height: "100%", background: PAPER, fontFamily: textFonts.length ? "Geist" : undefined }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse draws this with Satori into a PNG; next/image does not apply */}
         <img src={`data:image/svg+xml;base64,${Buffer.from(art).toString("base64")}`} width={POSTER.width} height={POSTER.height} alt="" style={{ position: "absolute", top: 0, left: 0 }} />
         {/* a quiet wash behind the words, so the night stays behind them */}
         <div style={{ position: "absolute", top: 0, left: 0, width: 700, height: "100%", display: "flex", background: "linear-gradient(90deg, rgba(9,9,11,0.94) 0%, rgba(9,9,11,0.82) 55%, rgba(9,9,11,0) 100%)" }} />
