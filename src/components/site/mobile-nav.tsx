@@ -94,11 +94,15 @@ export function MobileNav() {
         aria-expanded={isOpen}
         aria-controls="mobile-navigation"
       >
+        {/* Each line keeps one fixed path; the outer two slide to the middle and
+            turn 45° to make the X. Motion no longer morphs a path's d reliably,
+            and moving whole lines is cheaper to animate anyway. */}
         <svg width="20" height="20" viewBox="0 0 24 24" className="text-foreground">
           <Path
+            d="M 4 6 L 20 6"
             variants={{
-              closed: { d: "M 4 6 L 20 6" },
-              open: { d: "M 6 6 L 18 18" }
+              closed: { y: 0, rotate: 0 },
+              open: { y: 6, rotate: 45 }
             }}
             animate={isOpen ? "open" : "closed"}
             transition={{ duration: 0.25, ease: "easeInOut" }}
@@ -113,9 +117,10 @@ export function MobileNav() {
             transition={{ duration: 0.2, ease: "easeInOut" }}
           />
           <Path
+            d="M 4 18 L 20 18"
             variants={{
-              closed: { d: "M 4 18 L 20 18" },
-              open: { d: "M 6 18 L 18 6" }
+              closed: { y: 0, rotate: 0 },
+              open: { y: -6, rotate: -45 }
             }}
             animate={isOpen ? "open" : "closed"}
             transition={{ duration: 0.25, ease: "easeInOut" }}
