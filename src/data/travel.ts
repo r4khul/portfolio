@@ -145,6 +145,15 @@ export const places: Place[] = [
     lng: 74.7943,
   },
   {
+    id: "nellore",
+    name: "Nellore",
+    region: "Penna River",
+    state: "Andhra Pradesh",
+    note: "Rice country on the Penna, a few hours up the coast from Chennai.",
+    lat: 14.4426,
+    lng: 79.9865,
+  },
+  {
     id: "mumbai",
     name: "Mumbai",
     region: "Maharashtra",
